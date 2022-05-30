@@ -292,7 +292,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
 ***
 # '## Abstract
-#' Ruff *Calidris pugnax* is a Palearctic lekking shorebird with three strikingly different mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’[@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998; @Jukema2006]. An autosomal inversion [@Lank1995; @Kupper2015; @Lamichhaney2015] drives the developments of the major morph-differences in mating behaviours, ornamentation, body  and relative testis size. However, whether the morphs also differ in sperm traits has not been investigated. Here, we used a captive-breeding population of ruffs to investigate morph-differences in  sperm morphology and velocity. We found
+#' Ruff *Calidris pugnax* is a Palearctic lekking shorebird with three strikingly different mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’[@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998; @Jukema2006]. An autosomal inversion [@Lank1995; @Kupper2015; @Lamichhaney2015] drives the developments of the major morph-differences in mating behaviours, ornamentation, body and relative testis size. However, whether the morphs also differ in sperm traits has not been investigated. Here, we used a captive-breeding population of ruffs to reveal that in comparison to independents, satellites have longer tails and hence sperm (because tails determine the total sperm length) and perhaps shorter nucleus and hence heads,and faeders had longer midpiece. In addition, there was a tendency for shorter nucleaus (and hence heads) in satellites  investigate morph-differences in  sperm morphology and velocity. We found
 
  
 # Background 
