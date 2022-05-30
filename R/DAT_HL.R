@@ -1,9 +1,11 @@
+# generates homozygosity by locus from the microsat data and using GENHETv3.1 function (Coulon 2010;  https://doi.org/10.1111/j.1755-0998.2009.02731.x) 
 
-require(data.table)
-require(gtools)
-require(readxl)
+# tools
+    require(data.table)
+    require(gtools)
+    require(readxl)
 
-source('R/GENHETv3.1.R')
+    source('R/GENHETv3.1.R')
 
 # merge datasets
     n1 = data.table(read_excel(here::here("Data/Ruffs_microsat_2020.xlsx"), sheet = "allBins", na = "NA"))
@@ -24,7 +26,7 @@ source('R/GENHETv3.1.R')
     n[ ,(change_columns) := lapply(.SD, as.numeric),
            .SDcols = change_columns]
     nn = n
-# adjust bird IDS
+# adjust bird IDs
     nn[ OriginalRing== '7 -04 - 105', OriginalRing := 704105]
     nn[ OriginalRing== 'AIF AO - 15 - 11', OriginalRing := 'AIFAO15-11']
     nn[ OriginalRing== 'A 8209 AIF AO 16 507', OriginalRing := 'AIFAO16507']
@@ -63,4 +65,7 @@ source('R/GENHETv3.1.R')
     df3[, HL_all := as.numeric(HL_all)]
     ggplot(df3, aes(x = HL_all, y = HL)) + geom_point() + geom_abline(slope =1 )
 
-fwrite(file="Data/DAT_HL.txt", df3)
+# export the estimates
+    fwrite(file="Data/DAT_HL.txt", df3)
+
+# end    
