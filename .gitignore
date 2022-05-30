@@ -1,0 +1,30 @@
+# Ignore everything
+/*
+
+# also in subdirectories
+/*/
+
+# Except for (add what you want to track)
+!README.md
+!version_log.md
+!.gitignore
+!LICENSE
+!LICENSE.txt
+
+!/Data/
+!/R/
+!/Output/
+!/Reports/
+!/Protocols/
+!/Permits/
+!/sperm_pics/
+!/sperm_rec/
+!/sperm_measured/
+
+# Ignore everything in freeze (even if in Except)
+freeze/
+.DS_Store
+MS_files/
+MS_cache/
+
+# End
