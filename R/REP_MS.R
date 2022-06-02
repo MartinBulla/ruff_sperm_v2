@@ -316,6 +316,97 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
 Males exhibiting ARTs typically differ in the extent to which they invest in traits that improve their mating success, or the extent to which they face sperm competition.This has led to the widespread prediction that males exhibiting ARTs associated with a high sperm competition risk, or lower investment into traits that improve their competitiveness before mating, should invest more heavily into traits that improve their competitiveness after mating, such as large ejaculates and high-quality sperm.
 
+#' fig_test
+  t = data.table(read_excel(here::here('Data/testes.xlsx'), sheet = 1))#, range = "A1:G161"))
+  t[, Morph := factor(Morph, levels=c("Res", "Sat", "Faed"))] 
+  t[Morph == 'Res', Morph := 'Independent']
+  t[Morph == 'Sat', Morph := 'Satellite']
+  t[Morph == 'Faed', Morph := 'Faeder']
+  t[, soma := Bodymass - Gonadmass]
+
+  #t = t[!Gonadmass<2] 
+  leveneTest(Gonadmass~Morph,t) # ok
+
+  ai=aov(Gonadmass~Morph+soma +Morph:soma,t)
+  Anova(ai, type="III")
+  
+  as=aov(Gonadmass~Morph+soma,t)
+  Anova(as, type="III")
+  mi = lm(Gonadmass~Morph+soma + Morph:soma, t)
+  summary(glht(m))
+  summary((m))
+
+  ms = lm(Gonadmass~Morph+soma, t)
+
+  AIC(mi,ms)
+
+  mil = lm(log(Gonadmass)~Morph+log(soma) + Morph:log(soma), t)
+  msl = lm(log(Gonadmass)~Morph+log(soma), t)
+
+  AIC(mil,msl)
+
+
+  line_orig = data.table(Gonadmass= mean(t$Gonadmass)+c(-1,1), soma = mean(t$soma)*c(-1,1), Morph = 'Faeder')
+  line_ = data.table(Gonadmass= exp(mean(log(t$Gonadmass))+c(-0.37,0,0.2)), soma = exp(mean(log(t$soma))+c(-0.37,0,0.2)), Morph = 'Faeder')
+
+  ggplot(t, aes(y = Gonadmass, x = SacDateDD, col = Morph)) + 
+      stat_smooth(method = 'lm', se = FALSE) +
+      geom_point() 
+
+ ggplot(t, aes(y = Gonadmass, x = SacDateDD, col = Morph, shape = as.factor(SacDateYYYY))) + 
+      stat_smooth(method = 'lm', se = FALSE) +
+      geom_point() 
+ 
+ ggplot(t, aes(y = soma, x = SacDateDD, col = Morph, shape = as.factor(SacDateYYYY))) + 
+      stat_smooth(method = 'lm', se = FALSE) +
+      geom_point() 
+
+  ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
+      stat_smooth(method = 'lm') +
+      stat_cor(aes(label = ..r.label..),  size = 3)+ #label.x = 1, 
+      geom_line(data = line_, aes(y = Gonadmass, x = soma), col = 'black', lty = 3)+
+      geom_point(y = mean(log(t$Gonadmass)), x=mean(log(t$soma)), col = 'black')+
+      scale_x_continuous(trans = 'log', 'Body - gonad mass [g]')+
+      scale_y_continuous(trans = 'log','Gonad mass [g]')
+
+  ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
+      stat_smooth(method = 'lm') +
+      stat_cor(aes(label = ..r.label..),  label.x = 125, size = 3)+
+      geom_line(data = line_orig, aes(y = Gonadmass, x = soma), col = 'black', lty = 3)+
+      geom_point(x=mean(t$soma), y = mean(t$Gonadmass), col = 'black')+
+      scale_x_continuous('Body - gonad mass [g]')+
+      scale_y_continuous('Gonad mass [g]')    
+
+# plot
+  g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
+    geom_boxplot() + 
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(), col = 'darkgrey', aes(fill =Morph))+
+    scale_fill_viridis(discrete=TRUE)+
+    ylab('Gonad Mass\n[g]') +
+    theme_bw() +
+    theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.title.y = element_text(size = 8),
+      legend.position = "none")
+
+  g2 = ggplot(t, aes(x = Morph, y = GSI)) + 
+    geom_boxplot() +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(), col = 'darkgrey', aes(fill =Morph))+
+    scale_fill_viridis(discrete=TRUE)+
+    ylab('Gonadosomatic Index\n[% of body mass\naccounted for by testes]') +
+    theme_bw()+theme(legend.position = "none",
+      axis.title.y = element_text(size = 8)
+      )
+                      
+
+  
+  gg1 <- ggplotGrob(g1)
+  gg2 <- ggplotGrob(g2) 
+  grid.draw(rbind(gg1, gg2))
+
+
+  ggsave('Output/Fig_1-testes.png',rbind(gg1,gg2, size = "last"), width = 7, height =10, units = 'cm')  
 
 METHODS
 
