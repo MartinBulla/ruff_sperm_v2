@@ -45,16 +45,26 @@ require(reshape2)
     nn[ OriginalRing== 'AO 3999-18-4-NL 6.5', OriginalRing := 'AO3999-18-4-NL'] 
 
   fwrite(nn,file = 'Data/Dat_GenotypesRuff.txt', col.names = FALSE,sep="\t")
-  input <- readgenotypedata('Data/Dat_GenotypesRuff.txt')  
+  fwrite(nn[OriginalRing %in% unique(b$bird_ID)],file = 'Data/Dat_GenotypesRuff_sampled.txt', col.names = FALSE,sep="\t")
+  input_all <- readgenotypedata('Data/Dat_GenotypesRuff.txt')  
+  input <- readgenotypedata('Data/Dat_GenotypesRuff_sampled.txt')  
 
 # test estimators
   compareestimators(input, 100) # we compared Correlation Coefficients Between Observed & Expected Values for each estimator. The lynchli estimator correlates best with the expected values (although by small margin) and hence we use this estimator. 
 
+  for all:
   Correlation Coefficients Between Observed & Expected Values:
         wang        0.885598
         lynchli     0.889864
         lynchrd     0.788119
         quellergt   0.880375
+  
+  for our sample
+  Correlation Coefficients Between Observed & Expected Values:
+    wang        0.878313
+    lynchli     0.893336
+    lynchrd     0.831443
+    quellergt   0.883814
 
 # make kingship matrix
   rel <- coancestry(input$gdata, lynchli=1)
@@ -75,12 +85,15 @@ require(reshape2)
     ToDo <- ra[pair.no==unique(ra$pair.no)[i]]
     if(ToDo$ind1.id == ToDo$ind2.id){ next } else { m[which(rownames(m)==ToDo$ind2.id),which(colnames(m)==ToDo$ind1.id)] <- ToDo$lynchli
         }
+        
     }    
 #fwrite(file="Data/DAT_rel-mat.txt", m)
+#save(m, file = 'DATA/DAT_rel-mat_all.RData')
 save(m, file = 'DATA/DAT_rel-mat.RData')
 #write.table(m, file="Data/DAT_rel-mat_test.txt", row.names=TRUE, col.names=TRUE)
 
 #read(file = 'DATA/DAT_rel-mat.RData')
+
 
 # TESTNING
  input <- readgenotypedata('Data/GenotypeData.txt')

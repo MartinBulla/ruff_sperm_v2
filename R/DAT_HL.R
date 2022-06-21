@@ -20,7 +20,7 @@
     setcolorder(n2, names(n1))
     n2 = n2[!OriginalRing%in%n1$OriginalRing]
     n = rbind(n1,n2)
-    n[, c('Ruff8a', 'Ruff8b') := NULL]
+    #n[, c('Ruff8a', 'Ruff8b') := NULL] # all in the dataset have it
 
     change_columns = names(n)[2:length(names(n))]
     n[ ,(change_columns) := lapply(.SD, as.numeric),
@@ -44,7 +44,7 @@
     nn[ OriginalRing== 'G 5.0 - 14 - 223', OriginalRing := 'G14223']
     nn[ OriginalRing== 'G 5.0 - 17 - 267', OriginalRing := 'G17267']
     nn[substr(OriginalRing, 1,3) == 'G20', OriginalRing := paste0('G20', substring(OriginalRing, 5,8))]
-
+    
 # identify all loci 
     lo = names(n)[2:length(names(n))]
     lo = substring(lo,1,nchar(lo)-1)

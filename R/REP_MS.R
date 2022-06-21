@@ -15,8 +15,6 @@
 #+ r setup, include=FALSE 
 knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
-
-
 #' # Code to load tools and data
   # TOOLS 
     require(here)
@@ -298,84 +296,21 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
  
 #' ## Background 
 
-#' Males of ruff *Calidris pugnax* have three strikingly different reproductive tactics. Aggressive 'independents' constitute 80-95% of male ruffs, show spectacular diversity of predominantly dark ornamental plumage, and are dominant holders of display sites on leks [@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998]. Submissive and slightly smaller 'satellites' constitute 5-20% of males, show predominantly white ornamental plumage and do not defend display sites [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Widemo1998]. 'Independents' behave differently with 'satellites' than they do with other 'independents'. Presence of satellites on the lek assists independents with female attraction and allows satellites to 'steal' copulations [@Widemo1998]. Rare 'faeders' (<1%) mimic females in their plumage and smaller size and attempt rapid copulations (i.e. 'steal' copulations) when females solicit matings from ornamented displaying males [@Jukema2006]. However, how 'faeders' behave in the the wild is largely unknown. On the lek, the dominant 'independents' get multiple copulations and multiple females [@Lank2002; @Vervoort2019]. The likelihood of copulation for other ‘independents’ and ‘satellites’ is driven by the amount of time an individual spends on the lek [@Vervoort2019], whereas 'faeders' have the least copulation opportunity. 
+#' Males of ruff *Calidris pugnax* have three strikingly different reproductive tactics. Aggressive 'independents' constitute 80-95% of male ruffs, show spectacular diversity of predominantly dark ornamental plumage, and are dominant holders of display sites on leks [@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998]. Submissive and slightly smaller 'satellites' constitute 5-20% of males, show predominantly white ornamental plumage and do not defend display sites [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Widemo1998]. 'Independents' behave differently with 'satellites' than they do with other 'independents'. Presence of satellites on the lek assists independents with female attraction and allows satellites to 'steal' copulations [@Widemo1998]. Rare 'faeders' (<1%) mimic females in their plumage and smaller size and attempt rapid copulations (i.e. 'steal' copulations) when females solicit matings from ornamented displaying males [@Jukema2006]. However, how 'faeders' behave in the the wild is largely unknown. On the lek, the dominant 'independents' get multiple copulations and multiple females [@Lank2002; @Vervoort2019]. The likelihood of copulation for other ‘independents’ and ‘satellites’ is driven by the amount of time an individual spends on the lek [@Vervoort2019], whereas 'faeders' seem to have the least copulation opportunity. 
 
 #' An autosomal inversion is associated with the major differences in body and relative testis size, ornamentation, and mating behaviours of 'satellites' and 'faeders' [@Lank1995; @Kupper2015; @Lamichhaney2015]. In other words, the inversion is linked to how the three morphs invest in the pre-copulatory male-male competition. However, whether the morphs also differ in post-copulatory male-male competition, such as ejaculate volume, sperm density and/or sperm morphology and swimming speed (motility), is unknown.
 
 #' Here, we investigate the differences in sperm morphology and motility among the three male ruff morphs by sampling the sperm from a captive breeding population, maintained since 1985. In addition, we tested whether sperm morphology predicts sperm swimming speed. 
 #' 
-#' Alternative male tactics Males often face different levels of sperm competition, i.e. competition between the sperm from different males for access to a female’s eggs (Parker, 1970; Simmons, 2001). Although the mating system of the ruffs appears to be well studied [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Lank1995; @Kupper2015; @Lamichhaney2015; @Vervoort2019], rare faeders (female mimics) are tough to observe in the wild, and hence we know little about their behaviour in the wild. For predictions about sperm morphology and motility based on morph-specific behaviour, we need to know whether the frequency of copulations on the lek is linked to the siring success. Whereas we know that dominant independents get most of the copulations on the lek [@Vervoort2019], we do not know whether females that copulate with faeders also always copulate with other males. In other words, we do not know  whether faeder sperm may experience different level of competition than sperm of the other two morphs. Consequently, instead of clear predictions, we provide three scenarios that we envision for the sperm traits among the three morphs.
+#' Alternative male tactics often face different levels of sperm competition, i.e. competition between the sperm from different males for access to a female’s eggs (@Parker1970; @Simmons2001). Although the mating system of the ruffs appears to be well studied [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Lank1995; @Kupper2015; @Lamichhaney2015; @Vervoort2019], rare faeders (female mimics) are tough to observe in the wild, and hence we know little about their behaviour in the wild. For predictions about sperm morphology and motility based on morph-specific behaviour, we need to know whether the frequency of copulations on the lek is linked to the siring success. Whereas we know that dominant independents get most of the copulations on the lek [@Vervoort2019], we do not know whether females that copulate with faeders also always copulate with other males. In other words, we do not know  whether faeder sperm may experience different level of competition than sperm of the other two morphs. Consequently, instead of clear predictions, we provide three scenarios that we envision for the sperm traits among the three morphs.
 
-#' First, we expect no between-morph differences in total sperm length because in birds sperm length strongly co-evolved with the length of female sperm storage tubules [@Briskie1993] and ruffs show no hint of assortative mating by morph. Since males of all three morphs attempt to mate with the same pool of females (**unpublished data**), they should have sperm of similar length. Moreover, all three morphs are under selection to optimize sperm, and a steeper selection gradient in 'faeders' due to its low chance of copulating (**what citation is the best: @Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006**) does not mean that a beneficial mutation enhancing sperm speed will occur there rather than elsewhere. This prediction of “no difference” is mirrored in a recent studies (Kustra and Alonzo 2020; Dougherty et al 2022), which found no consistent differences in sperm traits between dominant and sneaker males across taxa. 
-
-
-#' Second, the three morphs may differ in sperm traits, if genes regulating their development reside on the autosomal inversion that is behind the phenotypes of 'satelites' and 'faeders'. Indeed, the inversion contains a gene GAS8 that has been associated with sperm velocity, at least in mice [@Yeh2002]. The gene GAS8 lies in a region with the strongest differences between 'independents' and the other two morphs. Hence, we expect 'independents' to have a slower sperm than 'satellites' and 'faeders'.
-
-#' Third, the morphs may also differ in sperm traits if investment in pre-copulatory male-male competition trade-offs with investment in post-copulatory male-male competition. We see gradient in pre-copulatory investment with 'independents' investing the most on the lek and 'faeders' the least, i.e. 'faeders' having the lowest frequency and chance of copulations [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006]. This gradient in pre-copulatory investment is perhaps mirrored in the post-copulatory investment because independents have the smallest and faeders the largest relative (but not absolute) testes size [@Jukema2006; @Kupper2015; Figure 1 based on data from Loveland et al in prep]. Given these differences in frequency and chance of copulation, 'faeders' are expected to deliver the largest ejaculates with faster sperm and sperm morphology optimized for speed, albeit it is not clear how sperm that is optimized for speed should look alike. Despite the general expectation that sneaker males should produce sperm that are more competitive (higher quality or performance), the existing theory and data do not clearly predict how sneaker males should differ in sperm traits (Dougherty et al 2022). Between species, species with higher levels of sperm competition typically produce sperm that are longer (including longer sperm components) and swim faster (@Simmons2012 Simmons & Fitzpatrick, 2012; @Lupold2020 Lüpold et al., 2020). Within species, sperm fertilisation ability has been linked to sperm length (Lüpold et al., 2012; Bennison et al., 2015), swimming speed (Birkhead et al., 1999; Gageet al., 2004), and viability (Garcıá -Gonz alez & Simmons, 2005), but the direction of these effects varies. For example, in some species longer sperm are better at fertilisation, in other species shorter sperm are better (@Simmons2012 Simmons & Fitzpatrick, 2012). Drawing on the comparative work, we predict that 'faeders' might have the longest sperm, midpiece and tail or midpiece and flagellum length relative to the whole sperm length and  sperm that is fastest of the three morphs (Figure 2 & 3). As 'faeders' invest little in pre-copulatory male-male competition, we also expect 'faeders' sperm to differ the most from the sperm of 'independents', while we expect 'satellites', who partly invest in pre-copulatory male-male competition, but to a lesser extant than 'independents' [@Vervoort2019], to have intermediate sperm between the two (Figure 2 & 3). 
+#' First, we expect no between-morph differences in total sperm length because in birds sperm length strongly co-evolved with the length of female sperm storage tubules [@Briskie1993] and ruffs show no hint of assortative mating by morph (**our unpublished data**). Since males of all three morphs attempt to mate with the same pool of females (**unpublished data**), they should have sperm of similar length. Moreover, all three morphs are under selection to optimize sperm, and a steeper selection gradient in 'faeders' due to its low chance of copulating (**what citation is the best here: @Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006**) does not mean that a beneficial mutation enhancing sperm speed will occur there rather than elsewhere. This prediction of “no difference” is mirrored in a recent studies (Kustra and Alonzo 2020; Dougherty et al 2022), which found no consistent differences in sperm traits between dominant and sneaker males across taxa. 
 
 
-Males exhibiting ARTs typically differ in the extent to which they invest in traits that improve their mating success, or the extent to which they face sperm competition.This has led to the widespread prediction that males exhibiting ARTs associated with a high sperm competition risk, or lower investment into traits that improve their competitiveness before mating, should invest more heavily into traits that improve their competitiveness after mating, such as large ejaculates and high-quality sperm.
+#' Second, the three morphs may differ in sperm traits, if genes regulating their development reside on the autosomal inversion that drives the phenotypes of 'satelites' and 'faeders'. Indeed, the inversion contains a gene GAS8 that has been associated with sperm velocity, at least in mice [@Yeh2002]. The gene GAS8 lies in a region with the strongest differences between 'independents' and the other two morphs. Hence, we expect 'independents' to have a different sperm than 'satellites' and 'faeders'.
 
-#' fig_test
-  t = data.table(read_excel(here::here('Data/testes.xlsx'), sheet = 1))#, range = "A1:G161"))
-  t[, Morph := factor(Morph, levels=c("Res", "Sat", "Faed"))] 
-  t[Morph == 'Res', Morph := 'Independent']
-  t[Morph == 'Sat', Morph := 'Satellite']
-  t[Morph == 'Faed', Morph := 'Faeder']
-  t[, soma := Bodymass - Gonadmass]
+#' Third, the morphs may also differ in sperm traits if investment in pre-copulatory male-male competition trade-offs with investment in post-copulatory male-male competition. We see gradient in pre-copulatory investment with 'independents' investing the most on the lek and 'faeders' the least [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006]. DELETE THE FOLLOWING AS IT IS UNCLEAR **This gradient in pre-copulatory investment is perhaps mirrored in the post-copulatory investment because independents have the smallest and faeders the largest relative (but not absolute) testes size [@Jukema2006; @Kupper2015; Figure 1 based on data from Loveland et al in prep].** Given these differences in frequency and chance of copulation, 'faeders' are expected to deliver the largest ejaculates with faster sperm and sperm morphology optimized for speed, albeit it is not clear how sperm that is optimized for speed should look alike. Despite the general expectation that sneaker males should produce sperm that are more competitive (higher quality or performance), the existing theory and data do not clearly predict how sneaker males should differ in sperm traits (Dougherty et al 2022). Between species, species with higher levels of sperm competition typically produce sperm that are longer (including longer sperm components) and swim faster (@Simmons2012 Simmons & Fitzpatrick, 2012; @Lupold2020 Lüpold et al., 2020). Within species, sperm fertilisation ability has been linked to sperm length (Lüpold et al., 2012; Bennison et al., 2015), swimming speed (Birkhead et al., 1999; Gageet al., 2004), and viability (Garcıá -Gonz alez & Simmons, 2005), but the direction of these effects varies. For example, in some species longer sperm seem better at fertilisation, in other species shorter sperm seem better (@Simmons2012 Simmons & Fitzpatrick, 2012). Drawing on the comparative work, we predict that 'faeders' might have the longest sperm, midpiece and tail or midpiece and flagellum length relative to the whole sperm length and sperm that is fastest of the three morphs (Figure 2 & 3). As 'faeders' invest little in pre-copulatory male-male competition, we also expect 'faeders' sperm to differ the most from the sperm of 'independents', while we expect 'satellites', who partly invest in pre-copulatory male-male competition, but to a lesser extant than 'independents' [@Vervoort2019], to have intermediate sperm between the two (Figure 2 & 3). 
 
-  #t = t[!Gonadmass<2] 
-  leveneTest(Gonadmass~Morph,t) # ok
-
-  ai=aov(Gonadmass~Morph+soma +Morph:soma,t)
-  Anova(ai, type="III")
-  
-  as=aov(Gonadmass~Morph+soma,t)
-  Anova(as, type="III")
-  mi = lm(Gonadmass~Morph+soma + Morph:soma, t)
-  summary(glht(m))
-  summary((m))
-
-  ms = lm(Gonadmass~Morph+soma, t)
-
-  AIC(mi,ms)
-
-  mil = lm(log(Gonadmass)~Morph+log(soma) + Morph:log(soma), t)
-  msl = lm(log(Gonadmass)~Morph+log(soma), t)
-
-  AIC(mil,msl)
-
-
-  line_orig = data.table(Gonadmass= mean(t$Gonadmass)+c(-1,1), soma = mean(t$soma)*c(-1,1), Morph = 'Faeder')
-  line_ = data.table(Gonadmass= exp(mean(log(t$Gonadmass))+c(-0.37,0,0.2)), soma = exp(mean(log(t$soma))+c(-0.37,0,0.2)), Morph = 'Faeder')
-
-  ggplot(t, aes(y = Gonadmass, x = SacDateDD, col = Morph)) + 
-      stat_smooth(method = 'lm', se = FALSE) +
-      geom_point() 
-
- ggplot(t, aes(y = Gonadmass, x = SacDateDD, col = Morph, shape = as.factor(SacDateYYYY))) + 
-      stat_smooth(method = 'lm', se = FALSE) +
-      geom_point() 
- 
- ggplot(t, aes(y = soma, x = SacDateDD, col = Morph, shape = as.factor(SacDateYYYY))) + 
-      stat_smooth(method = 'lm', se = FALSE) +
-      geom_point() 
-
-  ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
-      stat_smooth(method = 'lm') +
-      stat_cor(aes(label = ..r.label..),  size = 3)+ #label.x = 1, 
-      geom_line(data = line_, aes(y = Gonadmass, x = soma), col = 'black', lty = 3)+
-      geom_point(y = mean(log(t$Gonadmass)), x=mean(log(t$soma)), col = 'black')+
-      scale_x_continuous(trans = 'log', 'Body - gonad mass [g]')+
-      scale_y_continuous(trans = 'log','Gonad mass [g]')
-
-  ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
-      stat_smooth(method = 'lm') +
-      stat_cor(aes(label = ..r.label..),  label.x = 125, size = 3)+
-      geom_line(data = line_orig, aes(y = Gonadmass, x = soma), col = 'black', lty = 3)+
-      geom_point(x=mean(t$soma), y = mean(t$Gonadmass), col = 'black')+
-      scale_x_continuous('Body - gonad mass [g]')+
-      scale_y_continuous('Gonad mass [g]')    
 
 # plot
   g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
