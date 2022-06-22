@@ -6,7 +6,43 @@
   require(MCMCglmm)
   require(gap)
   require(matrixcalc)
+  require(pedigreemm)
 
+# function from https://stats.stackexchange.com/questions/18563/estimating-random-effects-and-applying-user-defined-correlation-covariance-struc#
+  relmatmm <- function (formula, data, family = NULL, REML = TRUE, relmat = list(), 
+    control = list(), start = NULL, verbose = FALSE, subset, 
+    weights, na.action, offset, contrasts = NULL, model = TRUE, 
+    x = TRUE, ...) {
+    mc <- match.call()
+    lmerc <- mc
+    lmerc[[1]] <- as.name("lmer")
+    lmerc$relmat <- NULL
+    if (!length(relmat)) 
+        return(eval.parent(lmerc))
+    stopifnot(is.list(relmat), length(names(relmat)) == length(relmat))
+    lmerc$doFit <- FALSE
+    lmf <- eval(lmerc, parent.frame())
+    relfac <- relmat
+    relnms <- names(relmat)
+    stopifnot(all(relnms %in% names(lmf$FL$fl)))
+    asgn <- attr(lmf$FL$fl, "assign")
+    for (i in seq_along(relmat)) {
+        tn <- which(match(relnms[i], names(lmf$FL$fl)) == asgn)
+        if (length(tn) > 1) 
+            stop("a relationship matrix must be associated with only one random effects term")
+        Zt <- lmf$FL$trms[[tn]]$Zt
+        relmat[[i]] <- Matrix(relmat[[i]][rownames(Zt), rownames(Zt)], 
+            sparse = TRUE)
+        relfac[[i]] <- chol(relmat[[i]])
+        lmf$FL$trms[[tn]]$Zt <- lmf$FL$trms[[tn]]$A <- relfac[[i]] %*% Zt
+    }
+    ans <- do.call(if (!is.null(lmf$glmFit)) 
+        lme4:::glmer_finalize
+    else lme4:::lmer_finalize, lmf)
+    ans <- new("pedigreemm", relfac = relfac, ans)
+    ans@call <- match.call()
+    ans
+}
 # no need to run - makes kinship matrix
     input <- readgenotypedata('Data/Dat_GenotypesRuff_sampled.txt')  
     rel <- coancestry(input$gdata, lynchli=1)
