@@ -1,6 +1,7 @@
 require(car)
 require(data.table)
-require(ggplot)
+require(effects)
+require(ggplot2)
 require(ggpubr)
 require(here)
 require(multcomp)
@@ -24,6 +25,9 @@ t[, soma := Bodymass - Gonadmass]
   Anova(as, type="III")
 
 
+  md = lm(log10(Gonadmass)~ poly(SacDateDD,2) + Morph+log10(soma) + Morph:log10(soma), t)
+  mdi = lm(log10(Gonadmass)~ poly(SacDateDD,2) + Morph+log10(soma) + Morph:log10(soma) + poly(SacDateDD,2):Morph, t)
+  
   mi = lm(log10(Gonadmass)~Morph+log10(soma) + Morph:log10(soma), t)
   summary(glht(mi))
   summary((mi))
@@ -79,6 +83,31 @@ t[, soma := Bodymass - Gonadmass]
 
   ggsave(file = 'Outputs/testes_body_allometry_log10.png', width = 6, height = 5)
 
+# plot - reduced major axis
+
+    line_log10 = data.table(Gonadmass= 10^(mean(log10(t$Gonadmass))+c(-0.15,0,0.1)), soma = 10^(mean(log10(t$soma))+c(-0.15,0,0.1)), morph = 'Faeder')    
+    fit2 <- with(t[Morph == 'Independent'], line.cis(log10(Gonadmass), log10(soma)))    
+    fit2_i = data.frame(morph = 'Independent', intercept = fit2[1,1],slope=fit2[2,1], int_lwr = fit2[1,2], sl_lwr=fit2[2,2], int_upr = fit2[1,3], sl_upr = fit2[2,3])
+ 
+    fit2 <- with(t[Morph == 'Satellite'], line.cis(log10(Gonadmass), log10(soma)))  
+    fit2_s = data.frame(morph = 'Satellite', intercept = fit2[1,1],slope=fit2[2,1], int_lwr = fit2[1,2], sl_lwr=fit2[2,2], int_upr = fit2[1,3], sl_upr = fit2[2,3]) 
+
+    fit2 <- with(t[Morph == 'Faeder'], line.cis(log10(Gonadmass), log10(soma)))   
+    #fit2 <- with(t[Morph == 'Faeder' & Gonadmass>2], line.cis(log10(Gonadmass), log10(soma)))   
+    fit2_f = data.frame(morph = 'Faeder', intercept = fit2[1,1],slope=fit2[2,1], int_lwr = fit2[1,2], sl_lwr=fit2[2,2], int_upr = fit2[1,3], sl_upr = fit2[2,3])
+
+    fit2 = rbind(fit2_i,fit2_s,fit2_f)
+
+    ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
+      geom_abline(data = fit2, aes(intercept=intercept, slope=slope, col=morph))+ 
+      geom_abline(data = fit2, aes(intercept=int_lwr, slope=sl_lwr, col=morph), lty = 3)+ 
+      geom_abline(data = fit2, aes(intercept=int_upr, slope=sl_upr, col=morph),lty = 3)+ 
+      geom_line(data = line_log10, aes(y = Gonadmass, x = soma), col = 'black', lty = 3)+
+      scale_x_continuous(trans = 'log10', 'Body - gonad mass [g]')+
+      scale_y_continuous(trans = 'log10','Gonad mass [g]')+
+      labs(tag = 'RMS')
+  
+    ggsave(file = 'Outputs/testes_body_allometry_log10_reduced.png', width = 6, height = 5)
 # other  
   ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
       stat_smooth(method = 'lm') +
