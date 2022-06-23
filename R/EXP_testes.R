@@ -15,7 +15,11 @@ t[Morph == 'Faed', Morph := 'Faeder']
 t[, soma := Bodymass - Gonadmass]
 
 # allometry
-  
+   summary(lm(log10(Gonadmass)~log10(soma), data = t))
+   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Independent']))
+   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Satellite']))
+   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Faeder']))
+
   leveneTest(log10(Gonadmass)~Morph,t) # ok
 
   ai=aov(log10(Gonadmass)~Morph+log10(soma) +Morph:log10(soma),t)
