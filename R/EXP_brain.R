@@ -280,9 +280,82 @@ b[, soma := bodyweight - brainweight]
       scale_x_continuous(trans = 'log10', 'Body mass [g]')+
       scale_y_continuous(trans = 'log10','Brain mass [g]')+
       theme(legend.position = 'none')  
+# simulation 2 also x noise - USE
+  # generate species data
+    #d = data.table(body_mass=c(seq(5,200, by =2), seq(220, 500, by = 20), seq(550, 1000, by = 50), seq(2000, 8000, by = 1000)))
+    d = data.table(body_mass=c(5,50,500,5000))
+    int_ = -1.081081 # get a precise intercept from Tsuboi et al 2018
+    d[ , body_mass_log10 := log10(body_mass)]
+    d[ , brain_mass_log10 := int_ +0.57*body_mass_log10] # !!! NO CLUE WHY -1.14 and not -2.3
+    d[ , brain_mass := 10^brain_mass_log10]
+    d[ , species := 1:nrow(d)]
+    d = d[rep(1:nrow(d),1000),]
+    d = d[order(species)]
+    d[, pk :=1:nrow(d)]
 
-grid.draw(
-    rbind(ggplotGrob(g2), ggplotGrob(g3), size = "first")
-    )
-ggsave('Outputs/brain-allo-sim.png', rbind(ggplotGrob(g2),ggplotGrob(g3)), width = 4, height =8)
+    ggplot(d, aes(x = body_mass,  y =brain_mass))+
+      geom_abline(intercept=int_, slope=0.57, col = 'red', lty = 3) +
+      geom_point() +
+      annotate("text", x=1000, y=0.6, label= "Evolutionary allometry for Aves", col = 'red',  angle = 45) + 
+      scale_x_continuous(trans = 'log10', 'Body mass [g]')+
+      scale_y_continuous(trans = 'log10', 'Brain mass [g]')
+
+  # add within species variation along the allometry   
+    d[ , body_mass_with_sp:= rnorm(n = 1 , mean = body_mass, sd =body_mass*0.05), by = pk]
+    d[ , body_mass_with_sp_log10 := log10(body_mass_with_sp)]
+    d[ , brain_mass_with_sp_log10 := int_ +0.57*body_mass_with_sp_log10]
+    d[ , brain_mass_with_sp := 10^brain_mass_with_sp_log10]
+
+    ggplot(d, aes(x = body_mass_with_sp,  y =brain_mass_with_sp, col = factor(species), fill = factor(species)))+
+      geom_abline(intercept=int_, slope=0.57, col = 'red', lty = 3) +
+      geom_point(pch = 21, alpha = 0.6) +
+      #geom_smooth(method = 'lm', se = FALSE) +
+      annotate("text", x=1000, y=0.6, label= "Evolutionary allometry for Aves", col = 'red',  angle = 45) + 
+      scale_x_continuous(trans = 'log10', 'Body mass [g]')+
+      scale_y_continuous(trans = 'log10','Brain mass [g]')+
+      theme(legend.position = 'none')    
+
+  # add random noise along y axis
+    d[ , brain_mass_with_sp_var := rnorm(n = 1 , mean = brain_mass_with_sp, sd =abs(brain_mass_with_sp*0.045)), by = pk]
+    d[ , brain_mass_with_sp_var_log10 := log10(brain_mass_with_sp_var)]
+
+  # add random noise along x axis
+    d[ , body_mass_with_sp_var := rnorm(n = 1 , mean = body_mass_with_sp, sd =abs(body_mass_with_sp*0.08)), by = pk]
+    d[ , body_mass_with_sp_var_log10 := log10(body_mass_with_sp_var)]  
+
+    dc = data.table(species = unique(d$species))
+    for(i in unique(d$species)){
+      di = d[species == i]
+      dc[species == i, OLS := coef(lm(log10(brain_mass_with_sp_var)~log10(body_mass_with_sp_var), data = di))[2]]
+      dc[species == i, RMS :=  with(di, line.cis(log10(brain_mass_with_sp_var), log10(body_mass_with_sp_var)))[2,1]]  
+      dc[species == i, RMS_int :=  with(di, line.cis(log10(brain_mass_with_sp_var), log10(body_mass_with_sp_var)))[1,1]]  
+      dc[ species == i, min_body := min(di$body_mass_with_sp_var_log10)]  
+      dc[ species == i, max_body := max(di$body_mass_with_sp_var_log10)]  
+    }
+    
+    dc[ ,body_mass_with_sp_var := c(12, 120, 1200, 1800)] # coordinates for labels
+    dc[ ,brain_mass_with_sp_var := c(0.2, 0.8, 3, 10)] # coordinates for labels
+
+    dc[, label := paste0('OLS = ', round(OLS,2), '\nRMS = ', round(RMS,2))]
+
+    dc[ ,min_brain := RMS_int+RMS*min_body] # need addin of the intercept
+    dc[ ,max_brain := RMS_int+RMS*max_body]  
+
+    g4=
+    ggplot(d, aes(x = body_mass_with_sp_var,  y =brain_mass_with_sp_var, col = factor(species), fill = factor(species)))+
+      geom_abline(intercept=int_, slope=0.57, col = 'red', lty = 3) +
+      geom_point(pch = 21, alpha = 0.6) +
+      geom_smooth(method = 'lm', se = FALSE, col = 'black') +
+      geom_segment(data = dc, aes(x = 10^min_body, xend = 10^max_body, y = 10^min_brain, yend = 10^max_brain), col = 'darkgrey', lwd=1.5) +
+      geom_text(data = dc, aes(x = body_mass_with_sp_var,  y =brain_mass_with_sp_var, col = factor(species), label = label), size = 3)+
+      annotate("text", x=160, y=1.5, label= "Evolutionary allometry\nfor Aves = 0.57", col = 'red',  angle = 45, size = 3) + 
+      scale_x_continuous(trans = 'log10', 'Body mass [g]')+
+      scale_y_continuous(trans = 'log10','Brain mass [g]')+
+      theme(legend.position = 'none')  
+    g4
+    d[, range(body_mass_with_sp_var), by = species] 
+    d[, range(brain_mass_with_sp_var), by = species] 
+
+    ggsave('Outputs/brain-allo-sim2mod.png', g4, width = 4, height =4)
+
 # END
