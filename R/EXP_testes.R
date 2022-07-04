@@ -15,10 +15,10 @@ t[Morph == 'Faed', Morph := 'Faeder']
 t[, soma := Bodymass - Gonadmass]
 
 # allometry
-   summary(lm(log10(Gonadmass)~log10(soma), data = t))
-   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Independent']))
-   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Satellite']))
-   summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Faeder']))
+  summary(lm(log10(Gonadmass)~log10(soma), data = t))
+  summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Independent']))
+  summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Satellite']))
+  summary(lm(log10(Gonadmass)~log10(soma), data = t[Morph == 'Faeder']))
 
   leveneTest(log10(Gonadmass)~Morph,t) # ok
 
@@ -75,7 +75,7 @@ t[, soma := Bodymass - Gonadmass]
       scale_x_continuous(trans = 'log', 'Body - gonad mass [g]')+
       scale_y_continuous(trans = 'log','Gonad mass [g]')
 
-  ggsave(file = 'Outputs/testes_body_allometry_ln.png', width = 6, height = 5)
+  ggsave(file = 'Outputs/testes_body_allometry_ln_new.png', width = 6, height = 5)
 
   ggplot(t, aes(y = Gonadmass, x = soma, col = Morph)) + geom_point() + 
       stat_smooth(method = 'lm') +
@@ -85,7 +85,7 @@ t[, soma := Bodymass - Gonadmass]
       scale_x_continuous(trans = 'log10', 'Body - gonad mass [g]')+
       scale_y_continuous(trans = 'log10','Gonad mass [g]')
 
-  ggsave(file = 'Outputs/testes_body_allometry_log10.png', width = 6, height = 5)
+  ggsave(file = 'Outputs/testes_body_allometry_log10_new.png', width = 6, height = 5)
 
 # plot - reduced major axis
 
