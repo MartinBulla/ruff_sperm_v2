@@ -87,6 +87,39 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
          
          return(ri)
          }
+      # custom ggplot theme
+         theme_MB = theme(  
+                  title = element_text(size=8, colour="grey30"),
+                  axis.line = element_blank(),
+                  #axis.line = element_line(colour="grey70", size=0.25),
+                  axis.title = element_text(size=7, colour="grey30"),
+                  axis.title.y = element_text(vjust=3.5),
+                  axis.title.x = element_text(vjust=1),
+                  axis.text = element_text(size=6),#, vjust = 0.5, hjust=1),# margin=units(0.5,"mm")),
+                  axis.ticks.length=unit(0.5,"mm"),
+                  axis.ticks = element_line(colour = "grey70", size = 0.1),
+                  #axis.ticks.margin,
+                  
+                  strip.text.x = element_text(size = 6, color="grey30",  margin=margin(1,1,1,1,"mm")), #grey50
+                  strip.text.y = element_text(size = 6, color="grey30",  margin=margin(1,1,1,1,"mm")), #grey50
+                  strip.background = element_rect(fill="grey99",colour="grey70", size=0.25),
+                    #strip.background = element_blank(), 
+                    #strip.text = element_blank(),
+                  panel.spacing = unit(0, "mm"),
+                  panel.background=element_blank(),
+                  panel.border = element_rect(colour="grey70", size=0.1, fill = NA), #panel.border=element_blank(),
+                  panel.grid = element_blank(),
+
+                  legend.text=element_text(size=6),
+                  legend.title=element_text(size=6),
+                  legend.key = element_rect(colour = NA, fill = NA),
+                  legend.key.height= unit(0.5,"line"),
+                  legend.key.width = unit(0.25, "cm"),
+                  legend.margin = margin(0,0,0,0, unit="cm"),
+                  legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
+                  legend.background = element_blank()
+                  )  
+    
   # DATA 
     # composite measures
       x = fread(here::here('Data/morphometrics.csv')) 
@@ -287,9 +320,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       a$CV = cv_$CV[match(a$bird_ID, cv_$bird_ID)]
       #save(b,br,a,ar, file = 'Data/ruff_sperm_for_Mihai.RData')
 
-#' ## To decide
-#' - who shall be a co-author apart from us two, Kim, Tomas & Michael? Surely guess Dove and Wolfgang, perhaps Clemens, Jasmin, Katrin?
-
 ***
 # '## Abstract
 #' Ruff *Calidris pugnax* is a Palearctic lekking shorebird with three strikingly different mating morphs: aggressive ‘independents’, semi-cooperative ‘satellites’ and female-mimic ‘faeders’[@Hogan-Warburg1966; @vanRhijn1991; @Widemo1998; @Jukema2006]. An autosomal inversion [@Lank1995; @Kupper2015; @Lamichhaney2015] drives the developments of the major morph-differences in mating behaviours, ornamentation, and body size. However, whether the morphs also differ in sperm traits has not been investigated. Here, we used a captive-breeding population of ruffs to reveal that in comparison to independents, satellites have longer tail and hence longer sperm  (because tail determine the total sperm length) and perhaps shorter nucleus and hence head, whereas faeders had longer midpiece. The coefficient of variation in sperm traits as well as sperm motility were largely similar across the three morphs, with a tendency for feathers to have more variable and the slowest sperm. The effects of morphological traits on sperm motility were low and noisy. In sum, although we found some morph-specificity in sperm traits, the differences seem random and hence not supporting a single prediction, but corroborating the synthetic finding about lack of differences in sperm traits of alternative mating tactics.
@@ -314,7 +344,14 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 #' Third, the morphs may also differ in sperm traits if investment in pre-copulatory male-male competition trade-offs with investment in post-copulatory male-male competition. We see gradient in pre-copulatory investment with 'independents' investing the most on the lek and 'faeders' the least [@Hogan-Warburg1966; @Höglund1989; @vanRhijn1991; @Jukema2006]. This gradient in pre-copulatory investment is perhaps mirrored in the post-copulatory investment because the morphs have similar testes size, despite the striking body size differences (independents have the smallest and faeders the largest relative (but not absolute) testes size [@Jukema2006; @Kupper2015; Figure 1 based on data from Loveland et al in prep].** Given these differences in frequency and chance of copulation, 'faeders' are expected to deliver the largest ejaculates with faster sperm and sperm morphology optimized for speed, albeit it is not clear how sperm that is optimized for speed should look alike. Despite the general expectation that sneaker males should produce sperm that are more competitive (higher quality or performance), the existing theory and data do not clearly predict how sneaker males should differ in sperm traits (Dougherty et al 2022). Between species, species with higher levels of sperm competition typically produce sperm that are longer (including longer sperm components) and swim faster (@Simmons2012 Simmons & Fitzpatrick, 2012; @Lupold2020 Lüpold et al., 2020). Within species, sperm fertilisation ability has been linked to sperm length (Lüpold et al., 2012; Bennison et al., 2015), swimming speed (Birkhead et al., 1999; Gageet al., 2004), and viability (Garcıá -Gonz alez & Simmons, 2005), but the direction of these effects varies. For example, in some species longer sperm seem better at fertilisation, in other species shorter sperm seem better (@Simmons2012 Simmons & Fitzpatrick, 2012). Drawing on the comparative work, we predict that 'faeders' might have the longest sperm, midpiece and tail or midpiece and flagellum length relative to the whole sperm length and sperm that is fastest of the three morphs (Figure 2 & 3). As 'faeders' invest little in pre-copulatory male-male competition, we also expect 'faeders' sperm to differ the most from the sperm of 'independents', while we expect 'satellites', who partly invest in pre-copulatory male-male competition, but to a lesser extant than 'independents' [@Vervoort2019], to have intermediate sperm between the two (Figure 2 & 3). 
 
 
-# plot
+# Fig 1
+  t = data.table(read_excel(here::here('Data/testes.xlsx'), sheet = 1))#, range = "A1:G161"))
+  t[, Morph := factor(Morph, levels=c("Res", "Sat", "Faed"))] 
+  t[Morph == 'Res', Morph := 'Independent']
+  t[Morph == 'Sat', Morph := 'Satellite']
+  t[Morph == 'Faed', Morph := 'Faeder']
+  t[, soma := Bodymass - Gonadmass]
+
   img_i=readPNG('Illustrations/independent.png')
   img_s=readPNG('Illustrations/satelite.png')
   img_f=readPNG('Illustrations/faeder_crop.png')
@@ -332,7 +369,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   sat = 'white'
   ind = '#303030'
   # images - within the plot
-  g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
+   g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=4.5, ymax=5.1) + 
     annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=4.5, ymax=5.1) + 
     annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=4.47, ymax=4.9) +
@@ -346,7 +383,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       #axis.title.y = element_text(size = 8),
       legend.position = "none")
 
-  g2 = ggplot(t, aes(x = Morph, y = Bodymass)) + 
+   g2 = ggplot(t, aes(x = Morph, y = Bodymass)) + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=139, ymax=160) + 
     annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=139, ymax=160) + 
     annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=140, ymax=151) + 
@@ -360,32 +397,31 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       #axis.title.y = element_text(size = 8)
       )                  
   
-  gg1 <- ggplotGrob(g1)
-  gg2 <- ggplotGrob(g2) 
-  grid.draw(rbind(gg1, gg2))
+   gg1 <- ggplotGrob(g1)
+   gg2 <- ggplotGrob(g2) 
+   grid.draw(rbind(gg1, gg2))
 
-
-  ggsave('Outputs/Fig_1-testes-body_01.png',rbind(gg1,gg2, size = "last"), width = 7, height =10, units = 'cm')  
+   ggsave('Outputs/Fig_1-testes-body_01.png',rbind(gg1,gg2, size = "last"), width = 7, height =10, units = 'cm')  
 
   # images - ontop of the plot
-  g0 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
+   g0 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     geom_boxplot() + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin = 4.665) + 
     annotation_custom(gs, xmin=1.75, xmax=2.25, ymin = 4.665)+#, ymin=4.5, ymax=5.1) + 
     annotation_custom(gfc, xmin=2.77, xmax=3.23,ymin=4.655)+#, ymin=4.68, ymax=4.82) +
-    scale_y_continuous('Testes mass [g]', limits = c(4.7,4.8))+#scale_y_continuous(limits = c(4.9,5.1))+
+    scale_y_continuous('Testes mass [g]', limits = c(4.7,4.8), breaks = c(4.7,4.8))+#scale_y_continuous(limits = c(4.9,5.1))+
     theme_minimal() +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
-          axis.title.y = element_text(color = 'transparent'), axis.text.y = element_text(color = 'transparent'),
+          axis.title.y = element_text(size = 10, color = 'transparent'), axis.text.y = element_text(color = 'transparent'),
           axis.ticks = element_blank(),
-          plot.margin = unit(c(0,1.75,0,2), "mm"),
+          plot.margin = unit(c(1,1.75,0,2), "mm"),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
           plot.background  = element_rect(fill='white', color = 'white'),
           legend.position = "none"
           )
    
-  g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
+   g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=4.5, ymax=5.1) + 
     #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=4.5, ymax=5.1) + 
     #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=4.47, ymax=4.9) +
@@ -397,12 +433,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     scale_y_continuous('Testes mass [g]', limits = c(1.93,4.5),expand = c(0, 0))+
     theme_bw() +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.title = element_text(size = 10),
       axis.ticks = element_blank(),
       panel.border = element_rect(color = 'grey70'),
       #axis.title.y = element_text(size = 8),
       legend.position = "none")
 
-  g2 = ggplot(t, aes(x = Morph, y = Bodymass)) + 
+   g2 = ggplot(t, aes(x = Morph, y = Bodymass)) + 
     #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=139, ymax=160) + 
     #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=139, ymax=160) + 
     #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=140, ymax=151) + 
@@ -413,20 +450,86 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     scale_color_manual(values=c('black','darkgrey','#bf925a'))+ #scale_fill_viridis(discrete=TRUE)+
     scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
     scale_y_continuous('Body mass [g]', limits = c(100,200), expand = c(0, 0))+
-    theme_bw()+theme(axis.ticks = element_blank(),
+    theme_bw()+
+    theme(axis.ticks = element_blank(),
+      axis.title = element_text(size = 10),
       panel.border = element_rect(color = 'grey70'),
       legend.position = "none"
       #axis.title.y = element_text(size = 8)
       )     
 
-  ggA = ggarrange(
+   ggA = ggarrange(
     g0,#+theme(plot.margin = unit(c(0,1.75,0,2), "mm")),
     g1+theme(plot.margin = unit(c(0,1.75,0.3,2), "mm")),
     g2+theme(plot.margin = unit(c(1.5,1.75,0.3,2), "mm")),  
-    nrow=3, heights=c(1, 4, 4.8),  align = 'v'
+    nrow=3, heights=c(1.5, 4, 4.8),  align = 'v'
     )  
-  ggA         
-  ggsave('Outputs/Fig_1-testes-body_03_test.png',ggA, width = 7, height =12, units = 'cm', bg="white", dpi = 600)
+   ggA         
+   ggsave('Outputs/Fig_1-testes-body_v4.png',ggA, width = 7, height =12, units = 'cm', bg="white", dpi = 600)
+
+  # images - ontop of the plot - smaller
+   g0 = ggplot(t, aes(x = Morph, y = round(Gonadmass,1))) + 
+    geom_boxplot() + 
+    annotation_custom(gi, xmin=0.75, xmax=1.25, ymin = 4.665) + 
+    annotation_custom(gs, xmin=1.75, xmax=2.25, ymin = 4.665)+#, ymin=4.5, ymax=5.1) + 
+    annotation_custom(gfc, xmin=2.77, xmax=3.23,ymin=4.655)+#, ymin=4.68, ymax=4.82) +
+    scale_y_continuous('Testes mass [g]', limits = c(4.7,4.8), breaks = c(4.7,4.8))+#scale_y_continuous(limits = c(4.9,5.1))+
+    theme_minimal() +
+    theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+          axis.title.y = element_text(size=7, color = 'transparent'), axis.text.y = element_text(size=6, color = 'transparent'), 
+          axis.ticks = element_blank(),
+          plot.margin = unit(c(1,1.75,0,2), "mm"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          plot.background  = element_rect(fill='white', color = 'white'),
+          legend.position = "none"
+          )
+   
+   g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
+    #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=4.5, ymax=5.1) + 
+    #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=4.5, ymax=5.1) + 
+    #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=4.47, ymax=4.9) +
+    geom_boxplot(col = 'grey50', outlier.shape = NA) + 
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(), col = 'darkgrey', aes(fill =Morph), dotsize = 1.1)+
+    scale_color_manual(values=c(ind,sat,fae))+
+    scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
+    scale_y_continuous('Testes mass [g]', limits = c(1.93,4.5),expand = c(0, 0))+
+    theme_MB +
+    theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
+     # axis.title = element_text(size = 10),
+      axis.ticks = element_blank(),
+      panel.border = element_rect(color = 'grey70'),
+      #axis.title.y = element_text(size = 8),
+      legend.position = "none")
+
+   g2 = ggplot(t, aes(x = Morph, y = Bodymass)) + 
+    #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=139, ymax=160) + 
+    #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=139, ymax=160) + 
+    #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=140, ymax=151) + 
+    geom_boxplot(col = 'grey50',outlier.shape = NA) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(fill =Morph, col = Morph))+
+    
+    scale_color_manual(values=c('black','darkgrey','#bf925a'))+ #scale_fill_viridis(discrete=TRUE)+
+    scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
+    scale_y_continuous('Body mass [g]', limits = c(100,200), expand = c(0, 0))+
+    theme_MB+
+    theme(axis.ticks = element_blank(),
+      #axis.title = element_text(size = 10),
+      panel.border = element_rect(color = 'grey70'),
+      legend.position = "none"
+      #axis.title.y = element_text(size = 8)
+      )     
+
+   ggA = ggarrange(
+    g0,#+theme(plot.margin = unit(c(0,1.75,0,2), "mm")),
+    g1+theme(plot.margin = unit(c(0,1.75,0.3,2), "mm")),
+    g2+theme(plot.margin = unit(c(1.5,1.75,0.3,2), "mm")),  
+    nrow=3, heights=c(1.5, 4, 4.8),  align = 'v'
+    )  
+   ggA         
+   ggsave('Outputs/Fig_1-testes-body_v5-small.png',ggA, width = 5, height =8.57, units = 'cm', bg="white", dpi = 600)
 
   #gg0 <- ggplotGrob(g0)
   #gg1 <- ggplotGrob(g1)
