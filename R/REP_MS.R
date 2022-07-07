@@ -42,6 +42,10 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       nsim = 5000 # number of simulations to extract estimates and 95%CrI
       ax_lines = "grey60" # defines color of the axis lines
       colors <- c("#999999", "#E69F00", "#56B4E9") #viridis(3)
+
+      fae = '#d4b691' # 'ffd6af'
+      sat = 'white'
+      ind = '#303030'
     
     # functions
       getime = function (x) {ifelse(is.na(x), as.numeric(NA), as.numeric(difftime(x, trunc(x,"day"), units = "hours")))}
