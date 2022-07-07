@@ -32,6 +32,7 @@ using<-function(...) {
               #axis.ticks.margin,
               
               strip.text.x = element_text(size = 6, color="grey30",  margin=margin(1,1,1,1,"mm")), #grey50
+              strip.text.y = element_text(size = 6, color="grey30",  margin=margin(1,1,1,1,"mm")), #grey50
               strip.background = element_rect(fill="grey99",colour="grey70", size=0.25),
                 #strip.background = element_blank(), 
                 #strip.text = element_blank(),
@@ -49,3 +50,5 @@ using<-function(...) {
               legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
               legend.background = element_blank()
               )
+
+# END
