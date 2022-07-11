@@ -16,6 +16,7 @@ using<-function(...) {
     packages = c('data.table', 'ggplot2', 'ggthemes','glue','grid', 'gridExtra','htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','raster','RColorBrewer','readxl','scales','scatterplot3d','stringr','zoo','viridis','writexl')
   sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
 
+
 # Set system time
    Sys.setenv(TZ="UTC")
 
@@ -51,4 +52,9 @@ using<-function(...) {
               legend.background = element_blank()
               )
 
+# Functions
+  getime = function (x) {ifelse(is.na(x), as.numeric(NA), as.numeric(difftime(x, trunc(x,"day"), units = "hours")))}
+      
+  getDay = function (x) {as.Date(trunc(x, "day"))}
+     
 # END
