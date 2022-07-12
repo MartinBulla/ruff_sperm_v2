@@ -54,7 +54,15 @@
          
          return(ri)
          }
-
+     # for adding single images to single panels in ggplot
+      annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) {
+        layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+            geom = ggplot2:::GeomCustomAnn,
+            inherit.aes = TRUE, params = list(grob = grob, 
+                                              xmin = xmin, xmax = xmax, 
+                                              ymin = ymin, ymax = ymax))
+      }
+   
 # DATA
   source(here::here('R/DAT_prepare.R'))       
   dr = d[bird_ID%in%d[duplicated(bird_ID), bird_ID]]
@@ -104,7 +112,6 @@
         theme_bw() +
         theme(plot.subtitle = element_text(size=9),
           legend.position = "none")
-
 # Morphology
     lfrpt = list()
     for(i in c('Total','Flagellum','Head','Tail','Midpiece','Nucleus','Acrosome')){
@@ -166,7 +173,7 @@
     labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Motility')+
     coord_flip()+
     theme_bw() +
-    theme(plot.subtitle = element_text(size=9),
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
           axis.ticks = element_blank(),
           axis.title.x = element_blank(),
           axis.text.x = element_blank(),
@@ -186,9 +193,9 @@
     labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Morphology')+
     coord_flip()+
     theme_bw() +
-    theme(plot.subtitle = element_text(size=9),
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
           axis.ticks = element_blank(),
-          axis.title = element_text(size = 10),
+          axis.title = element_text(size = 10, color ='grey10'),
           panel.border = element_rect(color = 'grey70'),
           plot.margin = margin(3,3,1,1, "mm"),
           legend.position = "none"
@@ -198,8 +205,10 @@
     gv,gm, 
     nrow=2, heights=c(3,7), align = 'v'
     )  
+  
   ggA
-  ggsave(here::here'Outputs/Fig_R.png',ggA, width = 6, height =9, units = 'cm', dpi = 600)
+  
+  ggsave(here::here('Outputs/Fig_R_width-43mm.png'),ggA, width = 4.3/(5/7), height =9, units = 'cm', dpi = 600)
 # Combine 2
     r[, part:=motility]
     r[, what := 'Motility']
@@ -250,4 +259,254 @@
     g
     ggsave(here::here('Outputs/Fig_R_v2.png'),g, width = 6, height =9, units = 'cm', dpi = 600)   
 
+# Correlations
+    drw = reshape(dr[,.(month,bird_ID,VAP,VSL,VCL, motileCount, Morph, age)], idvar = c('bird_ID','Morph','age'), timevar = 'month', direction = "wide") 
+    summary(factor(drw$Morph))
+    g1 = 
+    ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = MASS::rlm, aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
+    ggtitle('Curvilinear')+
+    ylab('Velocity in June [μm/s[') + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+        axis.text = element_text(size=7), 
+        axis.title.x = element_text(size = 8, color = 'white'),
+        axis.title.y = element_text(size = 8),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size=8, hjust = 0.5))
+    
+    g2 = 
+    ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
+    ggtitle('Average path')+
+    xlab('Velocity in May [μm/s]') + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+        axis.text = element_text(size=7), 
+        axis.title.y = element_blank(), 
+        axis.title.x = element_text(size = 8, hjust = 0.5),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size=8, hjust = 0.5))
+
+    g3 = 
+    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
+    ggtitle('Straight line')+
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+      axis.text = element_text(size=7), 
+      axis.title.x = element_blank(), 
+      axis.title.y = element_blank(), 
+      strip.text.x = element_text(size = 7),
+      plot.title = element_text(size=8, hjust = 0.5))
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Outputs/Fig_SC.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =7*1.5, units = 'cm')  
+# Correlations 2
+  g1 = 
+    ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = MASS::rlm, aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
+    ggtitle('Curvilinear')+
+    ylab('Velocity in June [μm/s[') + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+        plot.title = element_text(size=7, color="grey20", hjust = 0.5),
+
+        axis.title.x = element_text(size = 8, color = 'white'),
+        axis.title.y = element_text(size = 8,colour="grey10"),
+        axis.text = element_text(size=7), 
+        axis.text.y = element_text(margin = margin(r = -1)),
+        axis.text.x = element_text(margin = margin(b = -1)),
+        axis.ticks = element_blank(),
+
+        
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+
+        panel.spacing = unit(-0.2, "mm"),
+        panel.border = element_rect(color = 'grey70')
+        )
+    
+  g2 = 
+    ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
+    ggtitle('Average path')+
+    xlab('Velocity in May [μm/s]') + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+        plot.title = element_text(size=7, color="grey20", hjust = 0.5),
+        
+        axis.title.x = element_text(size = 8, colour="grey10", hjust = 0.5),
+        axis.title.y = element_blank(), 
+        axis.text.y = element_text(size=7, margin = margin(r = -1)),
+        axis.text.x = element_text(size=7, margin = margin(b = -1)), 
+        axis.ticks = element_blank(),
+
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+
+        panel.spacing = unit(-0.2, "mm"),
+        panel.border = element_rect(color = 'grey70')
+        )
+
+  g3 = 
+    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    stat_smooth(method = 'lm', aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
+    ggtitle('Straight line')+
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+      theme(legend.position = "none",
+        plot.title = element_text(size=7, color="grey20",, hjust = 0.5),
+       
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank(), 
+        axis.text.x = element_text(size=7, margin = margin(b = -1)), 
+        axis.text.y = element_text(size=7, margin = margin(r = -1)),
+        axis.ticks = element_blank(),
+
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+
+        panel.spacing = unit(-0.2, "mm"),
+        panel.border = element_rect(color = 'grey70')
+        )
+
+  dummy = data.table(VSL.May = 5, VSL.June = 15, Morph = unique(drw$Morph), stringsAsFactors = FALSE)  
+  gl = 
+    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
+    facet_wrap(~Morph, ncol = 1)  +
+    geom_point(pch = 21, col = 'transparent')+
+    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    annotation_custom2(gi, data=dummy[Morph == 'Independent'], ymin = 12, ymax = 28, xmin = 0.5)+ #, xmin = 0.05, xmax =0.5, ymax = 2.6)+
+    annotation_custom2(gs, data=dummy[Morph == 'Satellite'], ymin = 12, ymax = 28, xmin = 0.5)+ #, xmin = 0.05, xmax =0.5, ymax = 2.6)+
+    annotation_custom2(gf, data=dummy[Morph == 'Faeder'], ymin = 14, ymax = 26, xmin = 0.5)+ #, xmin = 0.05, xmax =0.5, ymax = 2.6)+
+    theme_transparent() + 
+      theme(legend.position = "none",
+        plot.title = element_text(size=8, hjust = 0.5),
+        strip.background = element_blank(),
+        strip.text.x = element_blank(),
+        panel.spacing = unit(-0.2, "mm")
+        )
+
+    #grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3),ggplotGrob(gl), size = "first"))
+    
+  gg1 <- ggplotGrob(g1)
+  gg2 <- ggplotGrob(g2) 
+  gg3 <- ggplotGrob(g3) 
+  ggl <- ggplotGrob(gl) 
+
+  g_exp =
+      ggarrange(
+        g1,
+        g2,
+        g3, 
+        gl, 
+        ncol=4, align = 'h' #heights=c(1.5, 4, 4.8),  
+        )   
+
+  #ggsave(here::here('Outputs/Fig_SC_v2.png'),g_exp, width = 9/(5/7), height =9, units = 'cm')  
+  ggsave(here::here('Outputs/Fig_SC_v3.png'),cbind(gg1,gg2,gg3,ggl, size = "first"), width = 9/(5/7), height =9, units = 'cm')  
+  # not working
+    drl = melt(dr[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")
+   drlw = reshape(drl, idvar = c('bird_ID','Morph','mot'), timevar = 'month', direction = "wide") 
+    
+    # dummy layer
+    r_VAP <- range(dr$VAP)
+    r_VCL <- range(dr$VCL)
+    r_VSL <- range(dr$VSL)
+
+    d <- reshape2::melt(results, id.vars = "pred")
+
+    dummy = rbind(
+        data.frame(value.May = r_VAP, value.June = r_VAP, Morph = 'Independent', mot = 'VAP', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VAP, value.June = r_VAP, Morph = 'Satellite', mot = 'VAP', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VAP, value.June = r_VAP, Morph = 'Faeder', mot = 'VAP', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VCL, value.June = r_VCL, Morph = 'Independent', mot = 'VCL', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VCL, value.June = r_VCL, Morph = 'Satellite', mot = 'VCL', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VCL, value.June = r_VCL, Morph = 'Faeder', mot = 'VCL', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VSL, value.June = r_VSL, Morph = 'Independent', mot = 'VSL', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VSL, value.June = r_VSL, Morph = 'Satellite', mot = 'VSL', stringsAsFactors=FALSE),
+        data.frame(value.May = r_VSL, value.June = r_VSL, Morph = 'Faeder', mot = 'VSL', stringsAsFactors=FALSE)
+        )
+
+    g = 
+    ggplot(drlw, aes(x = value.May, y = value.June)) +
+    facet_grid(rows = vars(Morph), cols = vars(mot), scales = 'free')  +
+    #facet_wrap(rows = vars(Morph), cols = vars(mot), scales = 'free_y')  +
+    geom_blank(data=dummy) +
+    stat_smooth(method = MASS::rlm, aes(col = Morph))+
+    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    geom_abline(slope = 1, col = 'red', lty = 3) + 
+    #xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  
+    #ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
+    #ggtitle('Curvilinear')+
+    xlab('Velocity in May [μm/s]') + 
+    ylab('Velocity in June [μm/s]') + 
+    scale_color_manual(values = colors)+
+    scale_fill_manual(values = colors)+
+    theme_bw() + 
+    theme(legend.position = "none",
+        axis.text = element_text(size=7), 
+        axis.title.x = element_text(size = 8),
+        axis.title.y = element_text(size = 8),
+        strip.text.x = element_text(size = 7),
+        plot.title = element_text(size=8, hjust = 0.5)
+        )
+    
+
+    grid.draw(cbind(ggplotGrob(g1), ggplotGrob(g2), ggplotGrob(g3), size = "first"))
+    
+    gg1 <- ggplotGrob(g1)
+    gg2 <- ggplotGrob(g2) 
+    gg3 <- ggplotGrob(g3) 
+    ggsave(here::here('Outputs/Fig_SC.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =7*1.5, units = 'cm')  
+  
 # END      
