@@ -124,7 +124,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
                   legend.box.margin = margin(l = -6), #legend.justification = c(-1,0),
                   legend.background = element_blank()
                   )  
-   
+  # prepare images
+    img_i=readPNG('Illustrations/independent.png')
+    img_s=readPNG('Illustrations/satelite.png')
+    img_f=readPNG('Illustrations/faeder_crop.png')
+    img_fc=readPNG('Illustrations/faeder_crop.png')
+    gi <- rasterGrob(img_i, interpolate=TRUE)
+    gs <- rasterGrob(img_s, interpolate=TRUE)
+    gf <- rasterGrob(img_f, interpolate=TRUE)
+    gfc <- rasterGrob(img_fc, interpolate=TRUE)
   # DATA 
     # composite measures
       x = fread(here::here('Data/morphometrics.csv')) 
@@ -334,15 +342,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   t[Morph == 'Faed', Morph := 'Faeder']
   t[, soma := Bodymass - Gonadmass]
 
-  img_i=readPNG('Illustrations/independent.png')
-  img_s=readPNG('Illustrations/satelite.png')
-  img_f=readPNG('Illustrations/faeder_crop.png')
-  img_fc=readPNG('Illustrations/faeder_crop.png')
-  gi <- rasterGrob(img_i, interpolate=TRUE)
-  gs <- rasterGrob(img_s, interpolate=TRUE)
-  gf <- rasterGrob(img_f, interpolate=TRUE)
-  gfc <- rasterGrob(img_fc, interpolate=TRUE)
-
   # not used - images - within the plot
    g1 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=4.5, ymax=5.1) + 
@@ -378,7 +377,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
    ggsave('Outputs/Fig_1-testes-body_01.png',rbind(gg1,gg2, size = "last"), width = 7, height =10, units = 'cm')  
 
-  # images - ontop of the plot
+  # not used - images - ontop of the plot
    g0 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     geom_boxplot() + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin = 4.665) + 
@@ -465,11 +464,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=4.5, ymax=5.1) + 
     #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=4.5, ymax=5.1) + 
     #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=4.47, ymax=4.9) +
-    geom_boxplot(col = 'grey50') + 
+    geom_boxplot(col = 'grey50', outlier.shape = NA) + 
     geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(), col = 'darkgrey', aes(fill =Morph), dotsize = 1.1)+
-    scale_color_manual(values=c(ind,sat,fae))+
-    scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+ #col = 'darkgrey',
+    scale_color_manual(values=c('black','darkgrey','#bf925a'))+ #scale_fill_viridis(discrete=TRUE)+
+    scale_fill_manual(values=c(ind,sat,fae))+
+    #scale_color_manual(values=c(ind,sat,fae))+
+    #scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
     scale_y_continuous('Testes mass [g]', limits = c(1.93,4.5),expand = c(0, 0))+
     theme_bw() +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
@@ -483,7 +484,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     #annotation_custom(gi, xmin=0.75, xmax=1.25, ymin=139, ymax=160) + 
     #annotation_custom(gs, xmin=1.75, xmax=2.25, ymin=139, ymax=160) + 
     #annotation_custom(gf, xmin=2.75, xmax=3.25, ymin=140, ymax=151) + 
-    geom_boxplot(col = 'grey50') +
+    geom_boxplot(col = 'grey50', outlier.shape = NA) +
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(),  aes(fill =Morph, col = Morph))+
     
@@ -505,9 +506,9 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     nrow=3, heights=c(1.5, 4, 4.8),  align = 'v'
     )  
    ggA         
-   ggsave('Outputs/Fig_1-testes-body_width-50mm_v9.png',ggA, width = 7, height =13, units = 'cm', bg="white", dpi = 600)
+   ggsave('Outputs/Fig_1_width-50mm.png',ggA, width = 7, height =13, units = 'cm', bg="white", dpi = 600)
 
-  # images - ontop of the plot clean & 5cm
+  # not used - images - ontop of the plot clean & 5cm
    g0 = ggplot(t, aes(x = Morph, y = round(Gonadmass,1))) + 
     geom_boxplot() + 
     annotation_custom(gi, xmin=0.75, xmax=1.25, ymin = 4.665) + 
@@ -573,7 +574,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 
    ggA         
    ggsave('Outputs/Fig_1-testes-body_v10-small.png',ggA, width = 5, height =8.57, units = 'cm', bg="white", dpi = 600)
-  # images - ontop of the plot clean & 5cm & larger icons
+  # not used - images - ontop of the plot clean & 5cm & larger icons
    g0 = ggplot(t, aes(x = Morph, y = Gonadmass)) + 
     geom_boxplot() +
     annotation_custom(gi, xmin=0.725, xmax=1.3, ymin = 4.665) + 
@@ -799,10 +800,45 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
 # RESULTS
 
 bw[!duplicated(bird_ID),summary(Morph)] # N sampled males
-nrow(ss[duplicated(bird_ID)]) # for 42 males velocity recorded twice - in May and June - next
+nrow(ss[duplicated(bird_ID)]) # for 42 males velocity recorded twice - in May and June 
 ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
 
+# Fig Sm
+  dl = melt(d[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")
+  dl[mot =='VAP', mot:='Average path']
+  dl[mot =='VSL', mot:='Straight line']
+  dl[mot =='VCL', mot:='Curvilinear']
 
+  g = ggplot(dl, aes(x = Morph, y = value)) + 
+      facet_wrap(~mot, scales = 'free_y', nrow = 3, strip.position="right") +
+      geom_dotplot(binaxis = 'y', stackdir = 'center',
+                   position = position_dodge(),  aes(fill =Morph, col = Morph))+
+      geom_boxplot(col = 'grey50', fill = NA, outlier.shape = NA) +
+      scale_color_manual(values=c('black','darkgrey','#bf925a', '#a53708'))+
+      scale_fill_manual(values=c(ind,sat,fae,'#f89f79'))+
+      scale_y_continuous('Velocity [μm/s]', expand = c(0, 0))+
+      coord_cartesian(clip = 'off') +
+      theme_bw()+
+      theme(
+        axis.ticks = element_blank(),
+        axis.title = element_text(size = 10, colour="grey10"),
+        
+        strip.text.y.right = element_text(color="grey20",  margin=margin(1,1,1,1,"mm"), angle=90),
+        strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+        
+        panel.border = element_rect(color = 'grey70'),
+        plot.margin = margin(14,3,1,1, "mm"),
+
+        legend.position = "none"
+        #axis.title.y = element_text(size = 8)
+        )  
+  gg = ggarrange(g)   
+  ggExp = gg + 
+        annotation_custom(gi, xmin=0.125, xmax=0.275, ymin=0.91) + 
+        annotation_custom(gs, xmin=0.125+0.2, xmax=0.275+0.2, ymin=0.91) + 
+        annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) 
+   
+  ggsave('Outputs/Fig_Sm.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
   set.seed(1)
