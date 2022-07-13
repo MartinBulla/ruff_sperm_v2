@@ -16,8 +16,21 @@ using<-function(...) {
     packages = c('data.table', 'ggplot2', 'ggthemes','glue','grid', 'gridExtra','htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','raster','RColorBrewer','readxl','scales','scatterplot3d','stringr','zoo','viridis','writexl')
   sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
 
-
-# Set system time
+# constants
+    set.seed = 5
+    round_ = 3 # number of decimal places to round model coefficients
+    nsim = 5000 # number of simulations to extract estimates and 95%CrI
+    ax_lines = "grey60" # defines color of the axis lines
+    fae = '#d4b691' # 'ffd6af'
+    sat = 'white'
+    ind = '#303030'
+    colors = c(ind,sat,fae)
+    fills = c(ind,sat,fae)
+    cols = c('black','darkgrey','#bf925a')
+    fill_zf ='#a53708' 
+    col_zf = '#f89f79'
+ 
+ # Set system time
    Sys.setenv(TZ="UTC")
 
 # Customized ggplot theme
@@ -58,5 +71,14 @@ using<-function(...) {
   getime = function (x) {ifelse(is.na(x), as.numeric(NA), as.numeric(difftime(x, trunc(x,"day"), units = "hours")))}
       
   getDay = function (x) {as.Date(trunc(x, "day"))}
-     
+  
+  # for adding single images to single panels in ggplot
+    annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) {
+        layer(data = data, stat = StatIdentity, position = PositionIdentity, 
+            geom = ggplot2:::GeomCustomAnn,
+            inherit.aes = TRUE, params = list(grob = grob, 
+                                              xmin = xmin, xmax = xmax, 
+                                              ymin = ymin, ymax = ymax))
+      }
+      
 # END
