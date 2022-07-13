@@ -97,7 +97,7 @@
     #s[bird_ID%in%ajm[N>1, unique(V1)]]
     ss = s[rec_measured %in% 'yes']    
   d = merge(d, ss[,.(sample_ID, bird_ID, Morph, age, datetime, type, sperm, recording, month)], by = c('month','bird_ID'), all.x = TRUE)
- 
+   
   d[is.na(Morph), Morph := 'Zebra finch']
   d[Morph == 'F', Morph := 'Faeder']
   d[Morph == 'I', Morph := 'Independent']
