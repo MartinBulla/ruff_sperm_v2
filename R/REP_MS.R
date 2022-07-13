@@ -836,9 +836,9 @@ ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
   ggExp = gg + 
         annotation_custom(gi, xmin=0.125, xmax=0.275, ymin=0.91) + 
         annotation_custom(gs, xmin=0.125+0.2, xmax=0.275+0.2, ymin=0.91) + 
-        annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) 
-   
-  ggsave('Outputs/Fig_Sm.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+        annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) +
+        annotation_custom(gz, xmin=0.125+0.6, xmax=0.275+0.6, ymin=0.88) 
+  ggsave('Outputs/Fig_Sm_zebra.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
   set.seed(1)

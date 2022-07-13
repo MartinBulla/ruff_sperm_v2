@@ -13,7 +13,7 @@ using<-function(...) {
 }
 
 # load/install packages
-    packages = c('data.table', 'ggplot2', 'ggthemes','glue','grid', 'gridExtra','htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','raster','RColorBrewer','readxl','scales','scatterplot3d','stringr','zoo','viridis','writexl')
+    packages = c('data.table', 'ggplot2', 'ggthemes','glue','grid', 'gridExtra','htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'plyr','png','raster','RColorBrewer','readxl','scales','scatterplot3d','stringr','zoo','viridis','writexl')
   sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
 
 # constants
@@ -30,7 +30,7 @@ using<-function(...) {
     fill_zf ='#a53708' 
     col_zf = '#f89f79'
  
- # Set system time
+# Set system time
    Sys.setenv(TZ="UTC")
 
 # Customized ggplot theme
@@ -80,5 +80,16 @@ using<-function(...) {
                                               xmin = xmin, xmax = xmax, 
                                               ymin = ymin, ymax = ymax))
       }
-      
+
+# prepare images
+  img_i=readPNG('Illustrations/independent.png')
+  img_s=readPNG('Illustrations/satelite.png')
+  img_f=readPNG('Illustrations/faeder_crop.png')
+  img_fc=readPNG('Illustrations/faeder_crop.png')
+  img_z=readPNG('Illustrations/ZebraFinch_AusMale_crop.png')
+  gi <- rasterGrob(img_i, interpolate=TRUE)
+  gs <- rasterGrob(img_s, interpolate=TRUE)
+  gf <- rasterGrob(img_f, interpolate=TRUE)
+  gfc <- rasterGrob(img_fc, interpolate=TRUE)      
+  gz <- rasterGrob(img_z, interpolate=TRUE)      
 # END
