@@ -54,15 +54,7 @@
          
          return(ri)
          }
-     # for adding single images to single panels in ggplot
-      annotation_custom2 <- function (grob, xmin = -Inf, xmax = Inf, ymin = -Inf, ymax = Inf, data) {
-        layer(data = data, stat = StatIdentity, position = PositionIdentity, 
-            geom = ggplot2:::GeomCustomAnn,
-            inherit.aes = TRUE, params = list(grob = grob, 
-                                              xmin = xmin, xmax = xmax, 
-                                              ymin = ymin, ymax = ymax))
-      }
-   
+
 # DATA
   source(here::here('R/DAT_prepare.R'))       
   dr = d[bird_ID%in%d[duplicated(bird_ID), bird_ID]]
@@ -161,7 +153,7 @@
         theme_MB
 
     ggsave(file ='Outputs/Fig_R.png', g1, units = 'cm', width = 6, height = 6 )
-# Combine 1
+# Combine
   gv = 
   ggplot(r, aes(x = motility, y = pred)) +
     geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25) ) +
@@ -209,7 +201,7 @@
   ggA
   
   ggsave(here::here('Outputs/Fig_R_width-43mm.png'),ggA, width = 4.3/(5/7), height =9, units = 'cm', dpi = 600)
-# Combine 2
+# not used Combine 2
     r[, part:=motility]
     r[, what := 'Motility']
     y[, what := 'Sperm length']
@@ -453,10 +445,14 @@
 
   #ggsave(here::here('Outputs/Fig_SC_v2.png'),g_exp, width = 9/(5/7), height =9, units = 'cm')  
   ggsave(here::here('Outputs/Fig_SC_v3.png'),cbind(gg1,gg2,gg3,ggl, size = "first"), width = 9/(5/7), height =9, units = 'cm')  
-  # not working
-    drl = melt(dr[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")
-   drlw = reshape(drl, idvar = c('bird_ID','Morph','mot'), timevar = 'month', direction = "wide") 
-    
+
+# Pearson's r summary
+  drl = melt(dr[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")
+  drlw = reshape(drl, idvar = c('bird_ID','Morph','mot'), timevar = 'month', direction = "wide") 
+  summary(drlw[, cor(value.May,value.June), by = mot])  
+  summary(drlw[, cor(value.May,value.June), by = .(Morph,mot)])  
+
+  # what follows does not give the desired visual output
     # dummy layer
     r_VAP <- range(dr$VAP)
     r_VCL <- range(dr$VCL)
