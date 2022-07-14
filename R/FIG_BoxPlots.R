@@ -2,7 +2,7 @@
   require(here)
   source(here::here('R/tools.R'))
   require(arm)
-  require(facetscales)
+  #require(facetscales)
   require(ggpubr) 
   require(ggsci)
 
@@ -355,13 +355,16 @@
     scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
     scale_color_jco()+
     scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Motility')+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Motility', tag = "(a)")+
     guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
     #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
     #annotate(geom="text", x=0.65, y=2, label="Faeder\nrelative to\nindependent", color=cols_[2],hjust = 0, size = 3.25) +
     #annotate(geom="text", x=0.65, y=.87, label="Faeder\nrelative to\nsatellite", color=cols_[1],hjust = 0, size = 3.25) +
     theme_bw() +
-    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+    theme(
+        plot.tag.position = c(0.025, 1.42),
+        plot.tag = element_text(face='bold', size = 10),
+        plot.subtitle = element_text(size=9, color = 'grey30'),
         legend.title = element_blank(),
         legend.text=element_text(size=7.5, color = 'grey30'),
         legend.key.height= unit(0.2,"line"),
@@ -580,7 +583,7 @@
     nrow=3, align = 'v', heights=c(3,3,3.3)  
     )   
   ggsave('Outputs/Fig_ER_130mm.png',ggR, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
-# Fig ER v2 - FINISH SPACING
+# Fig ER v2
   aml[, mot2 := factor(mot,levels=c('Curvilinear','Average path','Straight line','w','x'))]
   #aml[,summary(value), by = mot2]
   llvpx[, value:=pred]
@@ -600,23 +603,27 @@
   llpcv_ = llpcv[!part%in%c('Head','Flagellum')]
   llpcv_[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
   llpcv_[,CV:=Length_avg]
-  
+  size_ =1.2
   gv =
   ggplot(aml, aes(x = Morph, y = value)) +
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
     geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
     geom_errorbar(data = llvpx, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = 0.75) +
+    geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
     xlab('Morph') +
+    labs(tag = '(b)')+
     guides(x =  guide_axis(angle = -15)) +
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.x = element_blank(), axis.text.x = element_blank(), 
       axis.ticks = element_blank(),
@@ -650,7 +657,7 @@
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
     geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
     geom_errorbar(data = llp_m, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = 0.75) +
+    geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -691,7 +698,7 @@
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
     geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
     geom_errorbar(data = llpcv_, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = 0.75) +
+    geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -709,7 +716,7 @@
       strip.text = element_blank(),
       strip.background = element_rect(fill=NA,colour=NA, size=0.25),
       
-      plot.margin = margin(b=10,1,1,1, "mm"),
+      plot.margin = margin(b=10.4,1,1,1, "mm"),
       panel.border = element_rect(color = 'grey70')
       ) 
 
@@ -753,10 +760,16 @@
     annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
     annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
     annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
-  
-  ggExp
-      
+  #ggExp   
   ggsave('Outputs/Fig_ER_130mm_v2.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+
+# mix the two - doesn't lead to a desired result
+  ggAR = ggarrange(
+    ggA,
+    ggR,  
+    nrow=1, widths=c(5,13), heights = c(16,13) 
+    ) 
+ ggsave('Outputs/Fig_test.png',ggAR, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
 
 
 # END
