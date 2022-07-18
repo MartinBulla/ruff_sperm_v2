@@ -80,7 +80,143 @@ using<-function(...) {
                                               xmin = xmin, xmax = xmax, 
                                               ymin = ymin, ymax = ymax))
       }
+  # for standardized model outputs
+    m_out = function(model = m, type = "mixed", 
+        name = "define", dep = "define", fam = 'Gaussian',
+        round_ = 3, nsim = 5000, aic = FALSE, save_sim = 'Data/model_sim/', back_tran = FALSE, perc_ = 1){
+          # perc_ 1 = proportion or 100%
+        bsim = sim(model, n.sim=nsim)  
+        
+        if(save_sim!=FALSE){save(bsim, file = paste0(save_sim, name,'.RData'))}
+       
+        if(type != "mixed"){
+          v = apply(bsim@coef, 2, quantile, prob=c(0.5))
+          ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
 
+          if(back_tran == TRUE & fam == "binomial"){
+           v = perc_*plogis(v)
+           ci = perc_*plogis(ci)
+           }
+          if(back_tran == TRUE & fam == "binomial_logExp"){
+                v = perc_*(1-plogis(v))
+                ci = perc_*(1-plogis(ci))
+                ci = rbind(ci[2,],ci[1,])
+               }
+
+          if(back_tran == TRUE & fam == "Poisson"){
+           v = exp(v)
+           ci = exp(ci)
+          }
+
+         oi=data.frame(type='fixed',effect=rownames(coef(summary(model))),estimate=v, lwr=ci[1,], upr=ci[2,])
+          rownames(oi) = NULL
+          oi$estimate_r=round(oi$estimate,round_)
+          oi$lwr_r=round(oi$lwr,round_)
+          oi$upr_r=round(oi$upr,round_)
+          if(perc_ == 100){
+           oi$estimate_r = paste0(oi$estimate_r,"%")
+           oi$lwr_r = paste0(oi$lwr_r,"%")
+           oi$upr_r = paste0(oi$upr_r,"%")
+          }
+         x=data.table(oi[c('type',"effect", "estimate_r","lwr_r",'upr_r')]) 
+       
+        }else{
+         v = apply(bsim@fixef, 2, quantile, prob=c(0.5))
+         ci = apply(bsim@fixef, 2, quantile, prob=c(0.025,0.975)) 
+
+         if(back_tran == TRUE & fam == "binomial"){
+          v = perc_*plogis(v)
+          ci = perc_*plogis(ci)
+         }
+          if(back_tran == TRUE & fam == "binomial_logExp"){
+                v = perc_*(1-plogis(v))
+                ci = perc_*(1-plogis(ci))
+                ci = rbind(ci[2,],ci[1,])
+               }
+
+          if(back_tran == TRUE & fam == "Poisson"){
+            v = exp(v)
+            ci = exp(ci)
+         }
+
+        oi=data.table(type='fixed',effect=rownames(coef(summary(model))),estimate=v, lwr=ci[1,], upr=ci[2,])
+            rownames(oi) = NULL
+            oi[,estimate_r := round(estimate,round_)]
+            oi[,lwr_r := round(lwr,round_)]
+            oi[,upr_r :=round(upr,round_)]
+            if(perc_ == 100){
+             oi[,estimate_r := paste0(estimate_r,"%")]
+             oi[,lwr_r := paste0(lwr_r,"%")]
+             oi[,upr_r := paste0(upr_r,"%")]
+            }
+         oii=oi[,c('type',"effect", "estimate_r","lwr_r",'upr_r')] 
+        
+         l=data.frame(summary(model)$varcor)
+         l = l[is.na(l$var2),]
+         l$var1 = ifelse(is.na(l$var1),"",l$var1)
+         l$pred = paste(l$grp,l$var1)
+
+         q050={}
+         q025={}
+         q975={}
+         pred={}
+         
+         # variance of random effects
+         for (ran in names(bsim@ranef)) {
+           ran_type = l$var1[l$grp == ran]
+           for(i in ran_type){
+            q050=c(q050,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.5)))
+            q025=c(q025,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.025)))
+            q975=c(q975,quantile(apply(bsim@ranef[[ran]][,,ran_type], 1, var), prob=c(0.975)))
+            pred= c(pred,paste(ran, i))
+            }
+           }
+         # residual variance
+         q050=c(q050,quantile(bsim@sigma^2, prob=c(0.5)))
+         q025=c(q025,quantile(bsim@sigma^2, prob=c(0.025)))
+         q975=c(q975,quantile(bsim@sigma^2, prob=c(0.975)))
+         pred= c(pred,'Residual')
+
+         ri=data.table(type='random %',effect=pred, estimate_r=round(100*q050/sum(q050)), lwr_r=round(100*q025/sum(q025)), upr_r=round(100*q975/sum(q975)))
+           
+         ri[lwr_r>upr_r, lwr_rt := upr_r]
+         ri[lwr_r>upr_r, upr_rt := lwr_r]
+         ri[!is.na(lwr_rt), lwr_r := lwr_rt]
+         ri[!is.na(upr_rt), upr_r := upr_rt]
+         ri$lwr_rt = ri$upr_rt = NULL
+
+         ri[,estimate_r := paste0(estimate_r,'%')]
+         ri[,lwr_r := paste0(lwr_r,'%')]
+         ri[,upr_r := paste0(upr_r,'%')]
+        
+        x = data.table(rbind(oii,ri))
+        }
+        
+        x[1, model := name]                                                                
+        x[1, response := dep]                                                                
+        x[1, error_structure := fam]      
+        N = length(resid(model))                                                          
+        x[1, N := N ]                                                                
+
+        x=x[ , c('model', 'response', 'error_structure', 'N', 'type',"effect", "estimate_r","lwr_r",'upr_r')] 
+
+        if (aic == TRUE){   
+            x[1, AIC := AIC(update(model,REML = FALSE))] 
+            }
+        if (aic == "AICc"){
+            aicc = AICc(model)
+            x[1, AICc := aicc] 
+        }
+        if(type == "mixed" & nrow(x[type=='random %' & estimate_r =='0%'])==0){
+          R2_mar = as.numeric(r2_nakagawa(model)$R2_marginal)
+          R2_con = as.numeric(r2_nakagawa(model)$R2_conditional)
+          x[1, R2_mar := R2_mar]
+          x[1, R2_con := R2_con]
+         }
+        x[is.na(x)] = ""
+        return(x)
+      } 
+       
 # prepare images
   img_i=readPNG('Illustrations/independent.png')
   img_s=readPNG('Illustrations/satelite.png')
