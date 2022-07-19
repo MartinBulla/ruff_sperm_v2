@@ -24,7 +24,8 @@
   a[, id := bird_ID]
   b[, animal := bird_ID]
   b[, id := bird_ID]
-
+  cv_[, animal := bird_ID]
+  cv_[, id := bird_ID]
   # prepare motility
     dd = d[!Morph%in%'Zebra finch']
     ddl = data.table(melt(dd[,.(bird_ID,month,Morph,age,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","motileCount"), variable.name = "Motility"))
@@ -231,8 +232,6 @@
   
   vs =list()
   va =list()
-  
-
 
   for(i in unique(ddl$mot)){
     #i = 'Average path'
@@ -286,14 +285,48 @@
         
       print(i)
   }
-
   vv = do.call(rbind,vs)
   wv = do.call(rbind,va)
-
   save(vv,wv, file = 'Outputs/temp_resPed_test_mot_40000
     .Rdata')
 
-arning messages:
+  vcv_ =list()
+  for(i in unique(b$part)){
+    #i = 'Acrosome'
+      ai = cv_[part == i]
+      m = lm(scale(CV) ~ Morph, ai)
+      ai[, res := resid(m)]
+    
+      prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+      
+      prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      
+      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_CV.Rdata'))
+      #summary(mp_yes)
+      #plot(mp_yes)
+      #mcmc_plot(mp_yes, type = "acf")
+
+      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+      yy =bayes_factor(mp_no, mp_yes)
+      zz = post_prob(mp_no, mp_yes)  
+      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+      vcv_[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+      #bsim = sim(mp, n.sim=nsim) 
+        
+      print(i)
+  }
+ 
+  wcv = do.call(rbind,vcv_)
+  save(vcw, file = 'Outputs/temp_resPed_test_CV_40000.Rdata')
+  
+###
+warning messages:
 1: There were 103 divergent transitions after warmup. See
 https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 to find out why this is a problem and how to eliminate them.
