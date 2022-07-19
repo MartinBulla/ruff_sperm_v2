@@ -31,7 +31,6 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     require(MASS)
     require(multcomp)
     require(PerformanceAnalytics)
-    require(png)
     require(readxl)
     require(rptR) 
     require(stringi)
@@ -468,13 +467,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   gv =
   ggplot(aml, aes(x = HL, y = value)) +
     stat_smooth(method = MASS::rlm, col ='grey30') +
-    geom_point(pch = 21, col = 'darkgrey', alpha = 0.5, aes(fill = Morph))+
+    geom_point(pch = 21, alpha = 0.75, aes(fill = Morph, col = Morph))+
     #stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
   
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+    scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     
     xlab('Homozygousity by locus') +
     ylab('Motility [μm/s]') +
@@ -503,13 +502,13 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   gm =
   ggplot(a, aes(x = HL, y = Length_avg)) +
     stat_smooth(method = MASS::rlm, col ='grey30') +
-    geom_point(pch = 21, col = 'darkgrey', alpha = 0.5, aes(fill = Morph))+
+    geom_point(pch = 21, alpha = 0.75, aes(fill = Morph, col = Morph))+
     #stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
-    facet_wrap(~part, scales = 'free_y', nrow = 1)+
-    
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+  
+    scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     
     xlab('Homozygousity by locus') +
     ylab('Length [µm]') +
@@ -529,16 +528,17 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
       
       panel.border = element_rect(color = 'grey70')
       )  
+  
   gcv = 
   ggplot(cv_, aes(x = HL, y = CV)) +
     stat_smooth(method = MASS::rlm, col ='grey30') +
-    geom_point(pch = 21, col = 'darkgrey', alpha = 0.5, aes(fill = Morph))+
+    geom_point(pch = 21, alpha = 0.75, aes(fill = Morph, col = Morph))+
     #stat_cor(aes(label = ..r.label..),  label.x = 0.3, size = 2)+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
-    facet_wrap(~part, scales = 'free_y', nrow = 1)+
-    
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+  
+    scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     
     xlab('Homozygousity by locus') +
     ylab('Coefficient of variation') +
@@ -563,14 +563,15 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     gcv,  
     nrow=3, align = 'v' #heights=c(1.5, 4, 4.8),  
     )   
-  # prepare legend
-    gp_ind = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color ='darkgrey', fill =ind) +
+  
+   # prepare legend
+    gp_ind = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[1], fill =ind) +
       theme_transparent()+
       theme(plot.margin = unit(c(0,0,0,0), "mm"))
-    gp_sat = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color ='darkgrey', fill =sat) +
+    gp_sat = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[2], fill =sat) +
       theme_transparent()+
       theme(plot.margin = unit(c(0,0,0,0), "mm"))
-    gp_fae = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color ='darkgrey', fill =fae) +
+    gp_fae = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[3], fill =fae) +
       theme_transparent()+
       theme(plot.margin = unit(c(0,0,0,0), "mm")) 
     gp_ind_grob = ggplotGrob(gp_ind)
@@ -586,7 +587,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = 0.5) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = 0.7) 
 
-   ggsave('Outputs/Fig_Shl_120mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
+   ggsave('Outputs/Fig_Shl_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
 
 
 # RESULTS
@@ -606,7 +607,7 @@ ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
       geom_dotplot(binaxis = 'y', stackdir = 'center',
                    position = position_dodge(),  aes(fill =Morph, col = Morph))+
       geom_boxplot(col = 'grey50', fill = NA, outlier.shape = NA) +
-      scale_color_manual(values=c('black','darkgrey','#bf925a', '#a53708'))+
+      scale_color_manual(values=c(cols, '#a53708'))+
       scale_fill_manual(values=c(ind,sat,fae,'#f89f79'))+
       scale_y_continuous('Velocity [μm/s]', expand = c(0, 0))+
       coord_cartesian(clip = 'off') +
@@ -630,7 +631,7 @@ ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
         annotation_custom(gs, xmin=0.125+0.2, xmax=0.275+0.2, ymin=0.91) + 
         annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) +
         annotation_custom(gz, xmin=0.125+0.6, xmax=0.275+0.6, ymin=0.88) 
-  ggsave('Outputs/Fig_Sm_zebra.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_Sm_zebra_v2.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
   set.seed(1)

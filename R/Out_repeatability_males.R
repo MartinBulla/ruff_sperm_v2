@@ -1,5 +1,4 @@
 # TOOLS
-
   require(here)
   source(here::here('R/tools.R'))
   require(ggpubr) 
@@ -251,7 +250,7 @@
     g
     ggsave(here::here('Outputs/Fig_R_v2.png'),g, width = 6, height =9, units = 'cm', dpi = 600)   
 
-# Correlations
+# not used Correlations
     drw = reshape(dr[,.(month,bird_ID,VAP,VSL,VCL, motileCount, Morph, age)], idvar = c('bird_ID','Morph','age'), timevar = 'month', direction = "wide") 
     summary(factor(drw$Morph))
     g1 = 
@@ -324,14 +323,14 @@
     ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
     facet_wrap(~Morph, ncol = 1)  +
     stat_smooth(method = MASS::rlm, aes(col = Morph))+
-    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     geom_abline(slope = 1, col = 'red', lty = 3) + 
     xlim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) +  ylim(c(min(c(drw$VCL.May,drw$VCL.June)), max(c(drw$VCL.May,drw$VCL.June)))) + 
     ggtitle('Curvilinear')+
     ylab('Velocity in June [μm/s[') + 
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+    scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     theme_bw() + 
     theme(legend.position = "none",
         plot.title = element_text(size=7, color="grey20", hjust = 0.5),
@@ -355,14 +354,14 @@
     ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
     facet_wrap(~Morph, ncol = 1)  +
     stat_smooth(method = 'lm', aes(col = Morph))+
-    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+    geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     geom_abline(slope = 1, col = 'red', lty = 3) + 
     xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
     ggtitle('Average path')+
     xlab('Velocity in May [μm/s]') + 
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+     scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     theme_bw() + 
     theme(legend.position = "none",
         plot.title = element_text(size=7, color="grey20", hjust = 0.5),
@@ -384,13 +383,13 @@
     ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
     facet_wrap(~Morph, ncol = 1)  +
     stat_smooth(method = 'lm', aes(col = Morph))+
-    geom_point(pch = 21, col = 'darkgrey', aes(fill = Morph))+
+     geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     geom_abline(slope = 1, col = 'red', lty = 3) + 
     xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
     ggtitle('Straight line')+
-    scale_color_manual(values = colors)+
-    scale_fill_manual(values = colors)+
+    scale_color_manual(values = cols)+
+    scale_fill_manual(values = fills)+
     theme_bw() + 
       theme(legend.position = "none",
         plot.title = element_text(size=7, color="grey20",, hjust = 0.5),
