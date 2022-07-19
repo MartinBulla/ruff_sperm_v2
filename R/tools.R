@@ -26,7 +26,7 @@ using<-function(...) {
     ind = '#303030'
     colors = c(ind,sat,fae)
     fills = c(ind,sat,fae)
-    cols = c('black','darkgrey','#bf925a')
+    cols = c('black','grey30','#bf925a') #grey30 instead of darkgrey
     fill_zf ='#a53708' 
     col_zf = '#f89f79'
  
