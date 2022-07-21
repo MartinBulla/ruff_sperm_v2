@@ -49,7 +49,7 @@
       else pairs(x, gap = 0, lower.panel = panel.smooth, upper.panel = panel.cor)
     }
   # modified pairs_panels - adjusting coefficient size, line colors and using loess also when no CIs are drawn
-  pairs.panels_MB<- function (x, smooth = TRUE, scale = TRUE, density = TRUE, ellipses = FALSE, 
+   pairs.panels_MB<- function (x, smooth = TRUE, scale = TRUE, density = TRUE, ellipses = FALSE, 
     digits = 2, method = "pearson", pch = 20, lm = FALSE, cor = TRUE, 
     jiggle = FALSE, factor = 2, hist.col = "light gray",dens.col = 'red',smooth.col ='red', show.points = TRUE, 
     rug = TRUE, breaks = "Sturges", cex.cor = 1, wt = NULL, smoother = FALSE, 
@@ -304,7 +304,7 @@
                 lower.panel = panel.lm, pch = pch, ...)
         }
     }
-}
+    }
   # add image function (from https://stackoverflow.com/questions/27800307/adding-a-picture-to-plot-in-r)
     addImg <- function(
       obj, # an image file imported as an array (e.g. png::readPNG, jpeg::readJPEG)
