@@ -14,9 +14,12 @@
 
   # constants for MCMC
   cores_ = 4
-  chains_ = 5
+  chains_ = 4
   iter_ = 40000
   thin_ = 20
+  adapt_delta_=0.999
+
+  sample_ = chains_*(iter_/2)/thin_
 # load data
   source(here::here('R/DAT_prepare.R'))      
 
@@ -169,6 +172,15 @@
   pc_ = pc[,.(Ind,Dam,Sire)]
   setnames(pc_, old = 'Ind', new = 'ID')
   Amat <- as.matrix(nadiv::makeA(pc_))
+  coln_ = colnames(Amat)
+  coln_ = coln_[coln_%in%unique(b$bird_ID)]
+  Amat = Amat[coln_,coln_]
+  # add slight jitter below and above diagonal
+    #Amat=jitter(Amat,0.0001)
+    #diag(Amat) = 1
+    #Amat[upper.tri(Amat)] <- t(Amat)[upper.tri(Amat)]
+
+  #mantel.test(Amat, Amat2, graph = TRUE)
 
   ls =list()
   la =list()
@@ -185,7 +197,8 @@
       prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
       mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
       
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin.Rdata'))
+      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
+
       
       yy =bayes_factor(mp_no, mp_yes)
       zz = post_prob(mp_no, mp_yes)
@@ -204,9 +217,9 @@
       mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
       
       prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg.Rdata'))
+      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      save(mp_no, mp_yes, file =  paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
+
       #summary(mp_yes)
       #plot(mp_yes)
       #mcmc_plot(mp_yes, type = "acf")
@@ -227,7 +240,7 @@
 
   v = do.call(rbind,ls)
   w = do.call(rbind,la)
-  save(v,w, file = 'Outputs/temp_resPed_test_40000.Rdata')
+  save(v,w, file = paste0('Outputs/resPed_mor'.sample_,'.Rdata')
   #load('Outputs/temp_resPed_test.Rdata')
   
   vs =list()
@@ -246,7 +259,8 @@
       prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
       mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
       
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin.Rdata'))
+      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
+
       
       yy =bayes_factor(mp_no, mp_yes)
       zz = post_prob(mp_no, mp_yes)
@@ -267,7 +281,7 @@
       prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
       mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
       
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg.Rdata'))
+      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
       #summary(mp_yes)
       #plot(mp_yes)
       #mcmc_plot(mp_yes, type = "acf")
@@ -287,8 +301,7 @@
   }
   vv = do.call(rbind,vs)
   wv = do.call(rbind,va)
-  save(vv,wv, file = 'Outputs/temp_resPed_test_mot_40000
-    .Rdata')
+  save(vv,wv, file = paste0('Outputs/resPed_mot'.sample_,'.Rdata')
 
   vcv_ =list()
   for(i in unique(b$part)){
@@ -303,7 +316,8 @@
       prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
       mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
       
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_CV.Rdata'))
+      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_CV_resPed_sin_',sample_,'.Rdata'))
+
       #summary(mp_yes)
       #plot(mp_yes)
       #mcmc_plot(mp_yes, type = "acf")
@@ -323,79 +337,13 @@
   }
  
   wcv = do.call(rbind,vcv_)
-  save(vcw, file = 'Outputs/temp_resPed_test_CV_40000.Rdata')
+  save(wcv, file = paste0('Outputs/resPed_cv'.sample_,'.Rdata')
   
 ###
-warning messages:
-1: There were 103 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-2: There were 244 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
-https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
-3: There were 5 chains where the estimated Bayesian Fraction of Missing Information was low. See
-https://mc-stan.org/misc/warnings.html#bfmi-low
-4: Examine the pairs() plot to diagnose sampling problems
-
-5: Bulk Effective Samples Size (ESS) is too low, indicating posterior means and medians may be unreliable.
-Running the chains for more iterations may help. See
-https://mc-stan.org/misc/warnings.html#bulk-ess
-6: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-Running the chains for more iterations may help. See
-https://mc-stan.org/misc/warnings.html#tail-ess
-7: There were 103 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-8: There were 2 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-9: Examine the pairs() plot to diagnose sampling problems
-
-10: There were 2 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-11: There were 4 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-12: There were 27 transitions after warmup that exceeded the maximum treedepth. Increase max_treedepth above 10. See
-https://mc-stan.org/misc/warnings.html#maximum-treedepth-exceeded
-13: There were 5 chains where the estimated Bayesian Fraction of Missing Information was low. See
-https://mc-stan.org/misc/warnings.html#bfmi-low
-14: Examine the pairs() plot to diagnose sampling problems
-
-15: There were 4 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-16: There were 70 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-17: There were 5 chains where the estimated Bayesian Fraction of Missing Information was low. See
-https://mc-stan.org/misc/warnings.html#bfmi-low
-18: Examine the pairs() plot to diagnose sampling problems
-
-19: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-Running the chains for more iterations may help. See
-https://mc-stan.org/misc/warnings.html#tail-ess
-20: There were 70 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-21: There were 55 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-22: There were 5 chains where the estimated Bayesian Fraction of Missing Information was low. See
-https://mc-stan.org/misc/warnings.html#bfmi-low
-23: Examine the pairs() plot to diagnose sampling problems
-
-24: Tail Effective Samples Size (ESS) is too low, indicating posterior variances and tail quantiles may be unreliable.
-Running the chains for more iterations may help. See
-https://mc-stan.org/misc/warnings.html#tail-ess
-25: There were 55 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-26: There were 8 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-27: Examine the pairs() plot to diagnose sampling problems
-
-28: There were 8 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-29: There were 3 divergent transitions after warmup. See
-https://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
-to find out why this is a problem and how to eliminate them.
-30: Examine the pairs() plot to diagnose sampling problems
-
-31: There were 3 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup
 
  load('Outputs/temp_resPed_test_mot_40000.Rdata')
  load('Outputs/temp_resPed_test_40000.Rdata')
+ load('Outputs/temp_resPed_test_CV_40000.Rdata')
 
 wv[, data := 'June'] 
 wv[, type := 'motility'] 
@@ -404,9 +352,11 @@ w[, type := 'morphology']
 vv[, data := 'all']
 vv[, type := 'motility'] 
 v[, data := 'all']
-v[, type := 'morphology'] 
+v[, type := 'morphology']
+wcv[, data := 'CV']
+wcv[, type := 'morphology'] 
 
-x = rbind(v,vv,w,wv)
+x = rbind(v,vv,w,wv, wcv)
 cols_=c('Rhat_no', 'Rhat_yes')
 x[ , (cols_) := lapply(.SD, function(x){round(x,2)}), .SDcols = cols_]
 x[, prob:=round(prob,3)]
@@ -423,7 +373,7 @@ summary(x[data=='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
 summary(x[data!='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
 
 y = x[,.(type, data, response, est, CI, bf, prob, Rhat_no, Rhat_yes)]
-y[, data := factor(data, levels=c("all","June","means"))] 
+y[, data := factor(data, levels=c("all","June","means", 'CV'))] 
 y[, type := factor(type, levels=c("motility","morphology"))] 
 y[, response := factor(response, levels=c("Curvilinear","Average path",'Straight line',"Acrosome", "Nucleus",  "Midpiece","Tail","Total", "Head","Flagellum"))] 
 
