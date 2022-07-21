@@ -47,6 +47,7 @@
   bb = b[part == 'Midpiece'] 
   mm = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bb)
   bb[, res := resid(mm)]
+  bb[, animal := bird_ID]
 
 # check whether residuals confounded by relatedness   
 
@@ -57,4 +58,39 @@
     n_[!n_%in%colnames(m)]
     colnames(m)[!colnames(m)%in%n_]    
 
+# brms
+  cores_ = 2
+  chains_ = 2
+  iter_ = 5000
+  thin_ = 10
+  
+  mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bb, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))
+    
+  
+  Amat = m0
+  diag(Amat) = diag(Amat)+0.2 # making matrix positive def https://discourse.mc-stan.org/t/positive-definite-vs-positive-semidefinite-required-for-phylogenetic-regression-error-message-in-brms/17049
+
+  mp_m= brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bb,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))
+    
+  # mp_yes +0,1
+  # mp_yes2 +0.00001  
+
+  #mp_m
+  #mp_m0i
+  #mp_m
+
+  Amat = m0i
+  diag(Amat) = diag(Amat)+0.1 
+  mp_m= brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bb,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))
+  
+
+  mdat <- matrix(c(1,0,1, 0,1,0, 1,0,1), nrow = 3, ncol = 3, byrow = TRUE)
+  mdat = jitter(mdat,0.1)
+  diag(mdat) =1
+  mdat[upper.tri(mdat)] <- mdat[upper.tri(mdat)]
+
+  M1<-matrix(1:25,ncol=5)
+  diag(M1) =1
+  M1[upper.tri(M1)]<-t(M1)[upper.tri(M1)]
+  M1
 # END
