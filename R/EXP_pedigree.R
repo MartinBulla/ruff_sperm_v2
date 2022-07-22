@@ -25,6 +25,7 @@
       iter_ = 40000
       thin_ = 20
       adapt_delta_=0.999
+      sample_ = chains_*(iter_/2)/thin_
 
     # quick
       cores_ = 2
@@ -33,7 +34,7 @@
       thin_ = 10
       adapt_delta_=0.999
 
-  sample_ = chains_*(iter_/2)/thin_
+      sample_ = chains_*(iter_/2)/thin_
 # load data
   source(here::here('R/DAT_prepare.R'))      
 
@@ -251,221 +252,225 @@
     summary(mp_2)
     summary(mp_3)
 
-prior_3 = c(
-    prior(student_t(3, 0, 20), "sd"),
-    prior(cauchy(0, 1), "sigma")
-  )
+  prior_3 = c(
+      prior(student_t(3, 0, 20), "sd"),
+      prior(cauchy(0, 1), "sigma")
+    )
 
-prior_3_no = c(
-    prior(cauchy(0, 1), "sigma")
-  )  
-# morpho
-  ls =list()
-  la =list()
-  for(i in unique(b$part)){
-    #i = 'Acrosome'
-    # on single values  
-      bi = b[part == i]
-      m = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bi)
-      bi[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+  prior_3_no = c(
+      prior(cauchy(0, 1), "sigma")
+    )  
+  # morpho
+    ls =list()
+    la =list()
+    for(i in unique(b$part)){
+      #i = 'Acrosome'
+      # on single values  
+        bi = b[part == i]
+        m = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bi)
+        bi[, res := resid(m)]
       
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
-      
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
-      ls[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
-    # on averages values  
-      ai = a[part == i]
-      m = lm(scale(Length_avg) ~ Morph, ai)
-      ai[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      save(mp_no, mp_yes, file =  paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
-
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      la[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+        mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
         
-      print(i)
-  }
-
-  v = do.call(rbind,ls)
-  w = do.call(rbind,la)
-  save(v,w, file = paste0('Outputs/resPed_mor',sample_,'.Rdata'))
-  #load('Outputs/temp_resPed_test.Rdata')
- 
-# motil  
-  vs =list()
-  va =list()
-
-  for(i in unique(ddl$mot)){
-    #i = 'Average path'
-    # on single values  
-      bi = ddl[mot == i]
-      m = lmer(scale(value) ~ scale(log(motileCount)) + Morph + (1|bird_ID), bi)
-      bi[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
-
-      
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
-      vs[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
-
-    # on averages values  
-      ai = ddxl[mot == i]
-      m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
-      ai[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      va[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
         
-      print(i)
-  }
-  vv = do.call(rbind,vs)
-  wv = do.call(rbind,va)
-  save(vv,wv, file = paste0('Outputs/resPed_mot',sample_,'.Rdata'))
-
-# CV
-  vcv_ =list()
-  for(i in unique(b$part)){
-    #i = 'Acrosome'
-      ai = cv_[part == i]
-      m = lm(scale(CV) ~ Morph, ai)
-      ai[, res := resid(m)]
-    
-       
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
-      
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_CV_resPed_sin_',sample_,'.Rdata'))
-
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      vcv_[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
         
-      print(i)
-  }
- 
-  wcv = do.call(rbind,vcv_)
-  save(wcv, file = paste0('Outputs/resPed_cv',sample_,'.Rdata'))
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
+        ls[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
+      # on averages values  
+        ai = a[part == i]
+        m = lm(scale(Length_avg) ~ Morph, ai)
+        ai[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+        save(mp_no, mp_yes, file =  paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
+
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        la[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+
+    v = do.call(rbind,ls)
+    w = do.call(rbind,la)
+    save(v,w, file = paste0('Outputs/resPed_mor',sample_,'.Rdata'))
+    #load('Outputs/temp_resPed_test.Rdata')
+   
+  # motil  
+    vs =list()
+    va =list()
+
+    for(i in unique(ddl$mot)){
+      #i = 'Average path'
+      # on single values  
+        bi = ddl[mot == i]
+        m = lmer(scale(value) ~ scale(log(motileCount)) + Morph + (1|bird_ID), bi)
+        bi[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+        mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
+
+        
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
+        vs[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
+
+      # on averages values  
+        ai = ddxl[mot == i]
+        m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
+        ai[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        va[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+    vv = do.call(rbind,vs)
+    wv = do.call(rbind,va)
+    save(vv,wv, file = paste0('Outputs/resPed_mot',sample_,'.Rdata'))
+
+  # CV
+    vcv_ =list()
+    for(i in unique(b$part)){
+      #i = 'Acrosome'
+        ai = cv_[part == i]
+        m = lm(scale(CV) ~ Morph, ai)
+        ai[, res := resid(m)]
+      
+         
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
+        
+        mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_CV_resPed_sin_',sample_,'.Rdata'))
+
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        vcv_[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+   
+    wcv = do.call(rbind,vcv_)
+    save(wcv, file = paste0('Outputs/resPed_cv',sample_,'.Rdata'))
+
+# export
+  wv[, data := 'June'] 
+  wv[, type := 'motility'] 
+  w[, data := 'means'] 
+  w[, type := 'morphology'] 
+  vv[, data := 'all']
+  vv[, type := 'motility'] 
+  v[, data := 'all']
+  v[, type := 'morphology']
+  wcv[, data := 'CV']
+  wcv[, type := 'morphology'] 
+
+  x = rbind(v,vv,w,wv, wcv)
+  cols_=c('Rhat_no', 'Rhat_yes')
+  x[ , (cols_) := lapply(.SD, function(x){round(x,2)}), .SDcols = cols_]
+  x[, prob:=round(prob,3)]
+  x[, bf:=round(bf)]
+  cols_=c('est', 'lwr','upr')
+  x[ , (cols_) := lapply(.SD, function(x){round(x*100,1)}), .SDcols = cols_]
+  x[substring(upr,1,1) != 0, upr := round(upr)]
+  x[substring(lwr,1,1) != 0, lwr := round(lwr)]
+  x[, est := paste0(est, '%')]
+  x[, CI := paste0(lwr, '-', upr, '%')]
+
+
+  summary(x[data=='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
+  summary(x[data!='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
+
+  y = x[,.(type, data, response, est, CI, bf, prob, Rhat_no, Rhat_yes)]
+  y[, data := factor(data, levels=c("all","June","means", 'CV'))] 
+  y[, type := factor(type, levels=c("motility","morphology"))] 
+  y[, response := factor(response, levels=c("Curvilinear","Average path",'Straight line',"Acrosome", "Nucleus",  "Midpiece","Tail","Total", "Head","Flagellum"))] 
+
+
+  fwrite(y[order(data, type,response)], file = paste0('Outputs/Table_SPhylo_',sample_,'.csv'))
 
 # check warnings
-f = c(list.files(path = here::here('Data/sim/'), pattern = 'resPed', recursive = TRUE, full.names = TRUE))
-for(i in f){
-  #i=f[1]
-  load(i)
-  print(paste('no',i))
-  print(tryCatchWEM(summary(mp_no)))
-  print(paste('yes',i))
-  print(tryCatchWEM(summary(mp_yes)))
-}  
-###
+  f = c(list.files(path = here::here('Data/sim/'), pattern = 'resPed', recursive = TRUE, full.names = TRUE))
+  for(i in f){
+    #i=f[1]
+    load(i)
+    print(paste('no',i))
+    print(tryCatchWEM(summary(mp_no)))
+    print(paste('yes',i))
+    print(tryCatchWEM(summary(mp_yes)))
+  }  
+
+# check outputs
 
  load('Outputs/temp_resPed_test_mot_40000.Rdata')
  load('Outputs/temp_resPed_test_40000.Rdata')
  load('Outputs/temp_resPed_test_CV_40000.Rdata')
 
-wv[, data := 'June'] 
-wv[, type := 'motility'] 
-w[, data := 'means'] 
-w[, type := 'morphology'] 
-vv[, data := 'all']
-vv[, type := 'motility'] 
-v[, data := 'all']
-v[, type := 'morphology']
-wcv[, data := 'CV']
-wcv[, type := 'morphology'] 
 
-x = rbind(v,vv,w,wv, wcv)
-cols_=c('Rhat_no', 'Rhat_yes')
-x[ , (cols_) := lapply(.SD, function(x){round(x,2)}), .SDcols = cols_]
-x[, prob:=round(prob,3)]
-x[, bf:=round(bf)]
-cols_=c('est', 'lwr','upr')
-x[ , (cols_) := lapply(.SD, function(x){round(x*100,1)}), .SDcols = cols_]
-x[substring(upr,1,1) != 0, upr := round(upr)]
-x[substring(lwr,1,1) != 0, lwr := round(lwr)]
-x[, est := paste0(est, '%')]
-x[, CI := paste0(lwr, '-', upr, '%')]
-
-
-summary(x[data=='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
-summary(x[data!='all',.(est, lwr, upr, bf, prob, Rhat_no, Rhat_yes)])
-
-y = x[,.(type, data, response, est, CI, bf, prob, Rhat_no, Rhat_yes)]
-y[, data := factor(data, levels=c("all","June","means", 'CV'))] 
-y[, type := factor(type, levels=c("motility","morphology"))] 
-y[, response := factor(response, levels=c("Curvilinear","Average path",'Straight line',"Acrosome", "Nucleus",  "Midpiece","Tail","Total", "Head","Flagellum"))] 
-
-
-fwrite(y[order(data, type,response)], file = 'Outputs/Table_Phylo.csv')
 
 
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density()
