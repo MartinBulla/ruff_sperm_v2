@@ -2,9 +2,9 @@
   require(here)
   source(here::here('R/tools.R'))
   require('bayesplot')
+  require(admisc)
   require(brms)
   require(gtools)
-  require(kingship2)
   require(MasterBayes)
   require(MCMCglmm)
   require(nadiv)
@@ -13,11 +13,25 @@
   require(visPedigree)
 
   # constants for MCMC
-  cores_ = 4
-  chains_ = 4
-  iter_ = 40000
-  thin_ = 20
-  adapt_delta_=0.999
+    # for server
+      cores_ = 20
+      chains_ = 4
+      iter_ = 400000
+      thin_ = 200
+      adapt_delta_=0.999
+    # comp over night & server
+      cores_ = 4
+      chains_ = 4
+      iter_ = 40000
+      thin_ = 20
+      adapt_delta_=0.999
+
+    # quick
+      cores_ = 2
+      chains_ = 2
+      iter_ = 4000
+      thin_ = 10
+      adapt_delta_=0.999
 
   sample_ = chains_*(iter_/2)/thin_
 # load data
@@ -182,6 +196,70 @@
 
   #mantel.test(Amat, Amat2, graph = TRUE)
 
+  # test 
+    prior = c( #https://cran.r-project.org/web/packages/brms/vignettes/brms_phylogenetics.html#a-simple-phylogenetic-model
+        #prior(normal(0, 50), "Intercept"),
+        prior(student_t(3, 0, 20), "sd"),
+        prior(student_t(3, 0, 20), "sigma")
+      )
+
+    prior_2 = c(
+        prior(student_t(3, 0, 20), "sd"),
+        prior(student_t(3, 0, 20), "sigma")
+      )
+
+    prior_3 = c(
+        prior(student_t(3, 0, 20), "sd"),
+        prior(cauchy(0, 1), "sigma")
+      )
+
+    prior_3 = c(
+
+        prior(student_t(3, 0, 20), class =sd),
+        prior(cauchy(0, 1), class =sigma)
+      )
+
+
+    prior_4 = c(
+        prior(normal(0, 10), "b"),
+        prior(student_t(3, 0, 20), "sd"),
+        prior(cauchy(0, 1),  "sigma")
+      )
+
+
+    prior(cauchy(0, 1), class = sigma
+
+    prior = c(prior(normal(178, 20), class = Intercept),
+                    prior(uniform(0, 50), class = sigma))
+
+    #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+    i = 'Acrosome'      
+    ai = a[part == i]
+    m = lm(scale(Length_avg) ~ Morph, ai)
+    ai[, res := resid(m)]
+
+    mp_1 = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE))
+
+    mp_2 = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior = prior_2)
+
+    mp_3 = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior = prior_3)
+
+    mp_4 = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior = prior_4)
+
+    #check ES, Rha and warnings
+    summary(mp_1)
+    summary(mp_2)
+    summary(mp_3)
+
+prior_3 = c(
+    prior(student_t(3, 0, 20), "sd"),
+    prior(cauchy(0, 1), "sigma")
+  )
+
+prior_3_no = c(
+    prior(cauchy(0, 1), "sigma")
+  )  
+# morpho
   ls =list()
   la =list()
   for(i in unique(b$part)){
@@ -191,14 +269,13 @@
       m = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bi)
       bi[, res := resid(m)]
     
-      prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
-      prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
       save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
-
       
       yy =bayes_factor(mp_no, mp_yes)
       zz = post_prob(mp_no, mp_yes)
@@ -207,17 +284,16 @@
       v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
       xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
       ls[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
-
     # on averages values  
       ai = a[part == i]
       m = lm(scale(Length_avg) ~ Morph, ai)
       ai[, res := resid(m)]
     
-      prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
       
-      prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       save(mp_no, mp_yes, file =  paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
 
       #summary(mp_yes)
@@ -240,9 +316,10 @@
 
   v = do.call(rbind,ls)
   w = do.call(rbind,la)
-  save(v,w, file = paste0('Outputs/resPed_mor'.sample_,'.Rdata')
+  save(v,w, file = paste0('Outputs/resPed_mor',sample_,'.Rdata'))
   #load('Outputs/temp_resPed_test.Rdata')
-  
+ 
+# motil  
   vs =list()
   va =list()
 
@@ -253,11 +330,11 @@
       m = lmer(scale(value) ~ scale(log(motileCount)) + Morph + (1|bird_ID), bi)
       bi[, res := resid(m)]
     
-      prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
-      prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
       save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_sin_',sample_,'.Rdata'))
 
@@ -275,11 +352,11 @@
       m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
       ai[, res := resid(m)]
     
-      prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
       
-      prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
       save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_resPed_avg_',sample_,'.Rdata'))
       #summary(mp_yes)
@@ -301,8 +378,9 @@
   }
   vv = do.call(rbind,vs)
   wv = do.call(rbind,va)
-  save(vv,wv, file = paste0('Outputs/resPed_mot'.sample_,'.Rdata')
+  save(vv,wv, file = paste0('Outputs/resPed_mot',sample_,'.Rdata'))
 
+# CV
   vcv_ =list()
   for(i in unique(b$part)){
     #i = 'Acrosome'
@@ -310,11 +388,10 @@
       m = lm(scale(CV) ~ Morph, ai)
       ai[, res := resid(m)]
     
-      prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_no)
+       
+      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3_no)
       
-      prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_yes)
+      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_delta_), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_3)
       
       save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_CV_resPed_sin_',sample_,'.Rdata'))
 
@@ -337,8 +414,18 @@
   }
  
   wcv = do.call(rbind,vcv_)
-  save(wcv, file = paste0('Outputs/resPed_cv'.sample_,'.Rdata')
-  
+  save(wcv, file = paste0('Outputs/resPed_cv',sample_,'.Rdata'))
+
+# check warnings
+f = c(list.files(path = here::here('Data/sim/'), pattern = 'resPed', recursive = TRUE, full.names = TRUE))
+for(i in f){
+  #i=f[1]
+  load(i)
+  print(paste('no',i))
+  print(tryCatchWEM(summary(mp_no)))
+  print(paste('yes',i))
+  print(tryCatchWEM(summary(mp_yes)))
+}  
 ###
 
  load('Outputs/temp_resPed_test_mot_40000.Rdata')
@@ -385,6 +472,7 @@ ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_histogram()
 ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_density()
 ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_histogram()
+ggplot(cv_, aes(x = log(CV)))+facet_wrap(~part, scales = 'free') + geom_histogram()
 
 load('Data/sim/Acrosome_res_avg.RData')
 model = mp_yes
@@ -437,7 +525,7 @@ mcmc_scatter(posterior_cp, pars = c("sd_animal__Intercept", "sigma"),  size = 1,
   ppc_dens_overlay(y = as.numeric(res), res_rep)     
 
      
-
+#plot(conditional_effects(model), points = TRUE)
 
 
   type: The type of the plot. Supported types are (as names) ‘hist’,
