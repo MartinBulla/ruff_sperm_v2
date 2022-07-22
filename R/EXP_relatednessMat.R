@@ -19,11 +19,11 @@
   require(matrixcalc)
 
   # constants for MCMC
-    cores_ = 4
+    cores_ = 20
     chains_ = 4
     iter_ = 40000
     thin_ = 20
-
+    sample_ = chains_*(iter_/2)/thin_
 # load data
   load(file = 'Data/DAT_rel-mat.RData') # m - created using DAT_pedigree.R
   m0 = pmax(m,0) # in case it is needed, change negative estimates to zero
@@ -58,163 +58,163 @@
       ddxl[, animal := bird_ID]
   
 # brms
-  ls =list()
-  la =list()
-  for(i in unique(b$part)){
-    #i = 'Acrosome'
-    # on single values  
-      bi = b[part == i]
-      m = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bi)
-      bi[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
+  # morpho
+    ls =list()
+    la =list()
+    for(i in unique(b$part)){
+      #i = 'Acrosome'
+      # on single values  
+        bi = b[part == i]
+        m = lmer(scale(Length_µm) ~ Morph + (1|bird_ID), bi)
+        bi[, res := resid(m)]
       
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin_relatedness.Rdata'))
-      
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
-      ls[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
-
-    # on averages values  
-      ai = a[part == i]
-      m = lm(scale(Length_avg) ~ Morph, ai)
-      ai[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes_ped = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.999), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg_relatedness.Rdata'))
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      la[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+        mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
         
-      print(i)
-  }
-
-  v = do.call(rbind,ls)
-  w = do.call(rbind,la)
-  save(v,w, file = 'Outputs/temp_resRel_morpho.Rdata')
-  #load('Outputs/temp_resPed_test.Rdata')
-  
-  vs =list()
-  va =list()
-
-  for(i in unique(ddl$mot)){
-    #i = 'Average path'
-    # on single values  
-      bi = ddl[mot == i]
-      m = lmer(scale(value) ~ scale(log(motileCount)) + Morph + (1|bird_ID), bi)
-      bi[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
-      mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin_relatedness.Rdata'))
-      
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
-      vs[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
-
-    # on averages values  
-      ai = ddxl[mot == i]
-      m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
-      ai[, res := resid(m)]
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg_relatedness.Rdata'))
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      va[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
         
-      print(i)
-  }
-  vv = do.call(rbind,vs)
-  wv = do.call(rbind,va)
-  save(vv,wv, file = 'Outputs/temp_resRel_motil.Rdata
-    .Rdata')
-
-  vcv_ =list()
-  for(i in unique(b$part)){
-    #i = 'Tail'
-      ai = cv_[part == i]
-      m = lm(scale(CV) ~ Morph, ai)
-      ai[, res := resid(m)]
-
-      adapt_d = ifelse(i %in% c('Acrosome','Nucleus','Tail'), 0.999, 0.99)
-    
-      #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
-      mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
-      
-      #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
-      mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
-      
-      save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_CV_relatedness.Rdata'))
-      #summary(mp_yes)
-      #plot(mp_yes)
-      #mcmc_plot(mp_yes, type = "acf")
-
-      #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
-
-      yy =bayes_factor(mp_no, mp_yes)
-      zz = post_prob(mp_no, mp_yes)  
-      v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
-      #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
-      v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
-      xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
-      vcv_[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
-      #bsim = sim(mp, n.sim=nsim) 
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin_relatedness.Rdata'))
         
-      print(i)
-  }
- 
-  wcv = do.call(rbind,vcv_)
-  save(wcv, file = 'Outputs/temp_resRel_CV.Rdata')
-  
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
+        ls[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
+
+      # on averages values  
+        ai = a[part == i]
+        m = lm(scale(Length_avg) ~ Morph, ai)
+        ai[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+        mp_yes_ped = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg_relatedness.Rdata'))
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        la[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+
+    v = do.call(rbind,ls)
+    w = do.call(rbind,la)
+    save(v,w, file = 'Outputs/temp_resRel_morpho.Rdata')
+    #load('Outputs/temp_resPed_test.Rdata')
+  # motil
+    vs =list()
+    va =list()
+
+    for(i in unique(ddl$mot)){
+      #i = 'Average path'
+      # on single values  
+        bi = ddl[mot == i]
+        m = lmer(scale(value) ~ scale(log(motileCount)) + Morph + (1|bird_ID), bi)
+        bi[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept + (1|bird_ID), data=bi)    
+        mp_no = brm(res ~ 0 + Intercept + (1|bird_ID), data = bi, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin_relatedness.Rdata'))
+        
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        v_sp <- (VarCorr(mp_yes, summary = FALSE)$bird_ID$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
+        vs[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
+
+      # on averages values  
+        ai = ddxl[mot == i]
+        m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
+        ai[, res := resid(m)]
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg_relatedness.Rdata'))
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        va[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+    vv = do.call(rbind,vs)
+    wv = do.call(rbind,va)
+    save(vv,wv, file = 'Outputs/temp_resRel_motil.Rdata')
+  # CV
+    vcv_ =list()
+    for(i in unique(b$part)){
+      #i = 'Tail'
+        ai = cv_[part == i]
+        m = lm(scale(CV) ~ Morph, ai)
+        ai[, res := resid(m)]
+
+        adapt_d = ifelse(i %in% c('Acrosome','Nucleus','Tail'), 0.999, 0.99)
+      
+        #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
+        mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
+        
+        #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
+        mp_yes = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
+        
+        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_CV_relatedness.Rdata'))
+        #summary(mp_yes)
+        #plot(mp_yes)
+        #mcmc_plot(mp_yes, type = "acf")
+
+        #hypothesis(mp_yes, "sd_animal__Intercept^2 / (sd_animal__Intercept^2 + sigma^2) = 0", class = NULL)
+
+        yy =bayes_factor(mp_no, mp_yes)
+        zz = post_prob(mp_no, mp_yes)  
+        v_sc <- (VarCorr(mp_yes, summary = FALSE)$animal$sd)^2
+        #v_sp <- (VarCorr(mp2, summary = FALSE)$Species$sd)^2
+        v_r <- (VarCorr(mp_yes, summary = FALSE)$residual$sd)^2
+        xx = summary(as.mcmc(v_sc / (v_sc + v_r)))$quantiles
+        vcv_[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat ) #bf & prob in favor of NO pedigree model
+        #bsim = sim(mp, n.sim=nsim) 
+          
+        print(i)
+    }
+   
+    wcv = do.call(rbind,vcv_)
+    save(wcv, file = 'Outputs/temp_resRel_CV.Rdata')
+    
 # Export summary
  load('Outputs/temp_resRel_morpho.Rdata')
  load('Outputs/temp_resRel_motil.Rdata')
@@ -255,7 +255,52 @@
 
   fwrite(y[order(data, type,response)], file = 'Outputs/Table_Srelate.csv')
 
+# relatedness controlled models for CV
+  cores_ = 2
+  chains_ = 2
+  iter_ = 40000
+  thin_ = 20
+  sample_ = chains_*(iter_/2)/thin_
 
+  adapt_d = 0.999
+
+  prior_x = c(
+    prior(normal(0, 50), "Intercept"),
+    prior(normal(1,2), class = b, coef = MorphFaeder),
+    prior(normal(1,2), class = b, coef = MorphSatellite),
+    prior(student_t(3, 0, 20), "sd"),
+    prior(cauchy(0, 1), "sigma")
+  )
+
+  lmi =list()
+  for(i in unique(b$part)){
+    #i = 'Tail'
+    ai = cv_[part == i]
+    
+    #get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
+
+    mi = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
+
+    mi_d1 = data.table(summary(mi)$fixed)
+    mi_d1[, param:= rownames(summary(mi)$fixed)]
+    mi_d1[,type :='fixed']
+
+    mi_d2 = data.table(summary(mi)$random$animal)
+    mi_d2[, param := 'relatedness_sd']
+    mi_d2[, type :='random']
+
+    mi_d3 = data.table(summary(mi)$spec_pars)
+    mi_d3[, param := 'residual_sd']
+    mi_d3[, type :='random']
+
+    mi_d=rbind(mi_d1,mi_d2,mi_d3)
+    mi_d[,response:=paste('CV', i)]
+    lmi[[i]] = mi_d
+
+    save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control.Rdata'))
+    print(i)
+  }
+mi_ = do.call(rbind,lmi)
 # explore chains
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density()
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_histogram()
@@ -286,6 +331,19 @@ for(i in f){
   print(paste('no',i))
   print(tryCatchWEM(summary(mp_no)))
 }
+
+
+f = c(list.files(path = '/Users/martinbulla/Dropbox/Science/MS/ruff_sperm_v2/Data/sim/', pattern = 'elatedness-control', recursive = TRUE, full.names = TRUE))
+for(i in f){
+  #i=f[1]
+  load(i)
+  print(i)
+  print(tryCatchWEM(summary(mi)))
+}
+
+# 1 flagellum
+# 1 nucleus
+# Increasing adapt_delta above 0.999 & explore whether ok or not - as of now looks okeisch
 
 plot(model, ask = FALSE)
 pp_check(model, ndraws = 100) # same as function ppc_dens_overlay - see below
