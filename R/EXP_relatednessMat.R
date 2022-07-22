@@ -116,7 +116,7 @@
 
     v = do.call(rbind,ls)
     w = do.call(rbind,la)
-    save(v,w, file = 'Outputs/temp_resRel_morpho.Rdata')
+    save(v,w, file = 'Outputs/resRel_morpho.Rdata')
     #load('Outputs/temp_resPed_test.Rdata')
   # motil
     vs =list()
@@ -176,7 +176,7 @@
     }
     vv = do.call(rbind,vs)
     wv = do.call(rbind,va)
-    save(vv,wv, file = 'Outputs/temp_resRel_motil.Rdata')
+    save(vv,wv, file = 'Outputs/resRel_motil.Rdata')
   # CV
     vcv_ =list()
     for(i in unique(b$part)){
@@ -213,12 +213,12 @@
     }
    
     wcv = do.call(rbind,vcv_)
-    save(wcv, file = 'Outputs/temp_resRel_CV.Rdata')
+    save(wcv, file = 'Outputs/resRel_CV.Rdata')
     
 # Export summary
- load('Outputs/temp_resRel_morpho.Rdata')
- load('Outputs/temp_resRel_motil.Rdata')
- load('Outputs/temp_resRel_CV.Rdata')
+ #load('Outputs/temp_resRel_morpho.Rdata')
+ #load('Outputs/temp_resRel_motil.Rdata')
+ #load('Outputs/temp_resRel_CV.Rdata')
 
   wv[, data := 'June'] 
   wv[, type := 'motility'] 
@@ -253,7 +253,7 @@
   y[, response := factor(response, levels=c("Curvilinear","Average path",'Straight line',"Acrosome", "Nucleus",  "Midpiece","Tail","Total", "Head","Flagellum"))] 
 
 
-  fwrite(y[order(data, type,response)], file = 'Outputs/Table_Srelate.csv')
+  fwrite(y[order(data, type,response)], file = paste0('Outputs/Table_Srelate_',sample_,'.csv'))
 
 # relatedness controlled models for CV
   cores_ = 2
@@ -301,6 +301,7 @@
     print(i)
   }
 mi_ = do.call(rbind,lmi)
+save(mi_,file = 'Outputs/CV_rel_control.Rdata')
 # explore chains
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density()
 ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_histogram()
@@ -341,6 +342,7 @@ for(i in f){
   print(tryCatchWEM(summary(mi)))
 }
 
+### START HEREE
 # 1 flagellum
 # 1 nucleus
 # Increasing adapt_delta above 0.999 & explore whether ok or not - as of now looks okeisch
