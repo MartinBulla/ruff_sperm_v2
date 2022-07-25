@@ -255,58 +255,11 @@
 
   fwrite(y[order(data, type,response)], file = paste0('Outputs/Table_Srelate_',sample_,'.csv'))
 
-# relatedness controlled models for CV
-  cores_ = 2
-  chains_ = 2
-  iter_ = 40000
-  thin_ = 20
-  sample_ = chains_*(iter_/2)/thin_
-
-  adapt_d = 0.999
-
-  prior_x = c(
-    prior(normal(0, 50), "Intercept"),
-    prior(normal(1,2), class = b, coef = MorphFaeder),
-    prior(normal(1,2), class = b, coef = MorphSatellite),
-    prior(student_t(3, 0, 20), "sd"),
-    prior(cauchy(0, 1), "sigma")
-  )
-
-  lmi =list()
-  for(i in unique(b$part)){
-    #i = 'Tail'
-    ai = cv_[part == i]
-    
-    #get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
-
-    mi = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
-
-    mi_d1 = data.table(summary(mi)$fixed)
-    mi_d1[, param:= rownames(summary(mi)$fixed)]
-    mi_d1[,type :='fixed']
-
-    mi_d2 = data.table(summary(mi)$random$animal)
-    mi_d2[, param := 'relatedness_sd']
-    mi_d2[, type :='random']
-
-    mi_d3 = data.table(summary(mi)$spec_pars)
-    mi_d3[, param := 'residual_sd']
-    mi_d3[, type :='random']
-
-    mi_d=rbind(mi_d1,mi_d2,mi_d3)
-    mi_d[,response:=paste('CV', i)]
-    lmi[[i]] = mi_d
-
-    save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control.Rdata'))
-    print(i)
-  }
-mi_ = do.call(rbind,lmi)
-save(mi_,file = 'Outputs/CV_rel_control.Rdata')
 # explore chains
-ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density()
-ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_histogram()
-ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_density()
-ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_histogram()
+  ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_density()
+  ggplot(b, aes(x = Length_µm))+facet_wrap(~part, scales = 'free') + geom_histogram()
+  ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_density()
+  ggplot(a, aes(x = Length_avg))+facet_wrap(~part, scales = 'free') + geom_histogram()
 
 # yes CV Acrosome 2 div - is ok
 # yes CV Nucleus 1 div - is ok
@@ -323,24 +276,17 @@ lp_cp <- log_posterior(model)
 np = nuts_params(model) 
 summary(model)
 
-f = c(list.files(path = '/Users/martinbulla/Dropbox/Science/MS/ruff_sperm_v2/Data/sim/', pattern = 'relatedness', recursive = TRUE, full.names = TRUE))
-for(i in f){
-  #i=f[1]
-  load(i)
-  print(paste('yes',i))
-  print(tryCatchWEM(summary(mp_yes)))
-  print(paste('no',i))
-  print(tryCatchWEM(summary(mp_no)))
-}
 
+f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness', recursive = TRUE, full.names = TRUE))
+  for(i in f){
+    #i=f[1]
+    load(i)
+    print(paste('no',i))
+    print(tryCatchWEM(summary(mp_no)))
+    print(paste('yes',i))
+    print(tryCatchWEM(summary(mp_yes)))
+  }  
 
-f = c(list.files(path = '/Users/martinbulla/Dropbox/Science/MS/ruff_sperm_v2/Data/sim/', pattern = 'elatedness-control', recursive = TRUE, full.names = TRUE))
-for(i in f){
-  #i=f[1]
-  load(i)
-  print(i)
-  print(tryCatchWEM(summary(mi)))
-}
 
 ### START HEREE
 # 1 flagellum
