@@ -1,0 +1,28 @@
+type,data,response,est,CI,bf,prob,Rhat_no,Rhat_yes
+motility,all,Curvilinear,1.4%,0-13%,180,0.995,1,1
+motility,all,Average path,1.5%,0-16%,178,0.994,1,1
+motility,all,Straight line,2%,0-19%,122,0.993,1,1
+morphology,all,Acrosome,0.1%,0-0.9%,687,0.998,1,1
+morphology,all,Nucleus,0.1%,0-0.7%,761,0.999,1,1
+morphology,all,Midpiece,0.1%,0-0.6%,1061,0.999,1,1
+morphology,all,Tail,0.1%,0-0.6%,1045,0.999,1,1
+morphology,all,Total,0.1%,0-0.7%,893,0.999,1,1
+morphology,all,Head,0.1%,0-0.7%,712,0.998,1,1
+morphology,all,Flagellum,0.1%,0-0.6%,962,0.999,1,1
+motility,June,Curvilinear,17.8%,0.1-89%,45,0.976,1,1
+motility,June,Average path,4.1%,0-36%,98,0.99,1,1
+motility,June,Straight line,5.6%,0-47%,76,0.987,1,1
+morphology,means,Acrosome,89.9%,27-100%,1,0.371,1,1.01
+morphology,means,Nucleus,45.7%,0.6-98%,12,0.926,1,1
+morphology,means,Midpiece,33.1%,0.2-94%,21,0.955,1,1
+morphology,means,Tail,12.6%,0-73%,42,0.976,1,1
+morphology,means,Total,11.4%,0-75%,45,0.976,1,1
+morphology,means,Head,41.9%,0.3-95%,16,0.935,1,1
+morphology,means,Flagellum,13.3%,0-71%,38,0.974,1,1
+morphology,CV,Acrosome,90.5%,37-100%,0,0.222,1,1.01
+morphology,CV,Nucleus,11.7%,0-67%,41,0.976,1,1
+morphology,CV,Midpiece,10.8%,0-60%,40,0.973,1,1
+morphology,CV,Tail,97%,46-100%,1,0.336,1,1.01
+morphology,CV,Total,83.6%,0.5-100%,8,0.917,1,1.03
+morphology,CV,Head,11%,0-63%,43,0.977,1,1
+morphology,CV,Flagellum,95.9%,25-100%,1,0.474,1,1.02
