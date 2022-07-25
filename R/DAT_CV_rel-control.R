@@ -56,7 +56,7 @@
   # constants for MCMC
     cores_ = 20
     chains_ = 4
-    iter_ = 40000
+    iter_ = 50000
     thin_ = 20
     sample_ = chains_*(iter_/2)/thin_
     adapt_d = 0.999
@@ -69,7 +69,7 @@
     adapt_d = 0.999
   
   prior_x = c(
-    prior(normal(0, 10), "Intercept"),
+    prior(normal(0, 4), "Intercept"),
     prior(normal(1,2), class = b, coef = MorphFaeder),
     prior(normal(1,2), class = b, coef = MorphSatellite),
     prior(student_t(3, 0, 20), "sd"),
@@ -109,6 +109,7 @@
                   hypothesis(mi, "MorphFaeder - MorphSatellite = 0")$hypothesis
                   ))
     mi_co[, effect := effects_]
+     mi_co[,response:=paste('CV', i)]
     lco[[i]] = mi_co
 
     save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control_',sample_,'.Rdata'))
