@@ -42,7 +42,15 @@
       ddxl[, animal := bird_ID]
 
 # load CV estimates from models controlled for relatedness
-    load(file = 'Outputs/CV_rel_control_4000.Rdata') #mi_
+    load(file = 'Outputs/CV_rel_control_4000.Rdata') #mi_, mi_co_
+    s = mi_co_
+    setnames(s, old = c('Estimate','CI.Lower','CI.Upper'), new = c('estimate','lwr','upr'))
+    s[,model:='yes']
+    s[, model := factor(model, levels=rev(c("no", "yes")))] 
+    s[,response:=substring(response,4)]
+    s[, response := factor(response, levels=rev(c("Acrosome", "Nucleus","Midpiece","Tail", "Head", "Flagellum","Total")))] 
+    s[, effect := factor(effect, c("Faeder relative to satellite","Faeder relative to independent","Satellite relative to independent"))] 
+
 # prepare CV estimates from simple models
     lcv = list()
     for(i in unique(cv_$part)){
@@ -66,17 +74,21 @@
     #llcv_ = llcv[response %in%c("Acrosome", "Nucleus","Midpiece","Tail","Total")]
     llcv[,model:='no']
     llcv[, model := factor(model, levels=rev(c("no", "yes")))] 
+# combine
+    cs = rbind(llcv,s[,.(response, effect, estimate, lwr, upr, model)])
+    
+
 # plot
   cols_=pal_jco()(3)  
   gCV = 
-    ggplot(llcv, aes(y = response, x = estimate, col = effect, fill = effect, shape = model)) +
+    ggplot(cs, aes(y = response, x = estimate, col = effect, fill = effect, shape = model)) +
     geom_vline(xintercept = 0, col = "grey60", lty =3)+
     geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
     geom_point(position = position_dodge(width =width_)) +
     scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
     scale_color_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     scale_fill_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
-    scale_shape_manual(name = 'Model & data', values =c(24,23), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'), order = 0,nrow=2,byrow=TRUE))+
+    scale_shape_manual(name = 'Model controlled for relatedness', values =c(23,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'), order = 0,nrow=2,byrow=TRUE))+
     labs(y = NULL, x = "Standardized effect size", subtitle = 'Coefficient of variation')+
     theme_bw() +   
     theme(
@@ -85,7 +97,7 @@
         legend.text=element_text(size=7.5, color = 'grey30'),
         #legend.spacing.y = unit(1, 'mm'),
         legend.key.height= unit(0.5,"line"),
-        legend.margin=margin(0,0,0,-128),
+        legend.margin=margin(0,0,0,-1),
         #legend.position=c(0.45,1.6),
 
         axis.ticks = element_blank(),
@@ -96,3 +108,6 @@
 
         plot.margin = margin(3,3,1,1, "mm")
         )  
+    ggsave('Outputs/Fig_Scv.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
+
+# end    
