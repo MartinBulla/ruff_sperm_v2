@@ -464,6 +464,54 @@
     print(tryCatchWEM(summary(mp_yes)))
   }  
 
+yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Acrosome_CV_resPed_sin_4000.Rdata"
+$warning
+[1] "There were 4 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Acrosome_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 6 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Curvilinear_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 59 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Flagellum_CV_resPed_sin_4000.Rdata"
+$warning
+[1] "There were 20 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Flagellum_CV_resPed_sin_4000.Rdata"
+$warning
+[1] "There were 20 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Head_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 6 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Midpiece_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 8 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Nucleus_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 8 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Tail_CV_resPed_sin_4000.Rdata"
+$warning
+[1] "There were 89 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Tail_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 1 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+$warning
+[1] "There were 5 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+[1] "yes /ds/grpkempenaers/Martin/ruff_sperm_v2_test/Data/sim//Total_resPed_avg_4000.Rdata"
+$warning
+[1] "There were 5 divergent transitions after warmup. Increasing adapt_delta above 0.999 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+
+
 # check outputs
 
  load('Outputs/temp_resPed_test_mot_40000.Rdata')
