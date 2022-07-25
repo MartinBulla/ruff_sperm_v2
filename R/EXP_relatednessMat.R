@@ -21,7 +21,7 @@
   # constants for MCMC
     cores_ = 20
     chains_ = 4
-    iter_ = 40000
+    iter_ = 50000
     thin_ = 20
     sample_ = chains_*(iter_/2)/thin_
 # load data
