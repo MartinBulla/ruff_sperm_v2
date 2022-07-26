@@ -57,6 +57,7 @@
 # DATA
   source(here::here('R/DAT_prepare.R'))       
   dr = d[bird_ID%in%d[duplicated(bird_ID), bird_ID]]
+  drw = reshape(dr[,.(month,bird_ID,VAP,VSL,VCL, motileCount, Morph, age)], idvar = c('bird_ID','Morph','age'), timevar = 'month', direction = "wide") 
 
 # Velocity
   R = rpt(VAP ~ (1 | bird_ID), grname = "bird_ID", data = dr, datatype = "Gaussian")
@@ -153,6 +154,7 @@
 
     ggsave(file ='Outputs/Fig_R.png', g1, units = 'cm', width = 6, height = 6 )
 # Combine
+  r[, motility := factor(motility,levels=rev(c('Curvilinear','Straight line','Average path')))]
   gv = 
   ggplot(r, aes(x = motility, y = pred)) +
     geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25) ) +
@@ -251,7 +253,6 @@
     ggsave(here::here('Outputs/Fig_R_v2.png'),g, width = 6, height =9, units = 'cm', dpi = 600)   
 
 # not used Correlations
-    drw = reshape(dr[,.(month,bird_ID,VAP,VSL,VCL, motileCount, Morph, age)], idvar = c('bird_ID','Morph','age'), timevar = 'month', direction = "wide") 
     summary(factor(drw$Morph))
     g1 = 
     ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
@@ -319,6 +320,7 @@
     gg3 <- ggplotGrob(g3) 
     ggsave(here::here('Outputs/Fig_SC.png'),cbind(gg1,gg2,gg3, size = "first"), width = 7*1.5, height =7*1.5, units = 'cm')  
 # Correlations 2
+  
   g1 = 
     ggplot(drw, aes(x = VCL.May, y = VCL.June)) +
     facet_wrap(~Morph, ncol = 1)  +
@@ -351,16 +353,16 @@
         )
     
   g2 = 
-    ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
+    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
     facet_wrap(~Morph, ncol = 1)  +
     stat_smooth(method = 'lm', aes(col = Morph))+
-    geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
+     geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     geom_abline(slope = 1, col = 'red', lty = 3) + 
-    xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
-    ggtitle('Average path')+
+    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
+    ggtitle('Straight line')+
     xlab('Velocity in May [μm/s]') + 
-     scale_color_manual(values = cols)+
+    scale_color_manual(values = cols)+
     scale_fill_manual(values = fills)+
     theme_bw() + 
     theme(legend.position = "none",
@@ -380,18 +382,18 @@
         )
 
   g3 = 
-    ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
+    ggplot(drw, aes(x = VAP.May, y = VAP.June)) +
     facet_wrap(~Morph, ncol = 1)  +
     stat_smooth(method = 'lm', aes(col = Morph))+
-     geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
+    geom_point(pch = 21, alpha = .75, aes(fill = Morph, col=Morph))+
     stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
     geom_abline(slope = 1, col = 'red', lty = 3) + 
-    xlim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) +  ylim(c(min(c(drw$VSL.May,drw$VSL.June)), max(c(drw$VSL.May,drw$VSL.June)))) + 
-    ggtitle('Straight line')+
-    scale_color_manual(values = cols)+
+    xlim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) +  ylim(c(min(c(drw$VAP.May,drw$VAP.June)), max(c(drw$VAP.May,drw$VAP.June)))) + 
+    ggtitle('Average path')+
+     scale_color_manual(values = cols)+
     scale_fill_manual(values = fills)+
     theme_bw() + 
-      theme(legend.position = "none",
+    theme(legend.position = "none",
         plot.title = element_text(size=7, color="grey20",, hjust = 0.5),
        
         axis.title.x = element_blank(),
@@ -407,6 +409,7 @@
         panel.border = element_rect(color = 'grey70')
         )
 
+  
   dummy = data.table(VSL.May = 5, VSL.June = 15, Morph = unique(drw$Morph), stringsAsFactors = FALSE)  
   gl = 
     ggplot(drw, aes(x = VSL.May, y = VSL.June)) +
@@ -443,7 +446,7 @@
         )   
 
   #ggsave(here::here('Outputs/Fig_SC_v2.png'),g_exp, width = 9/(5/7), height =9, units = 'cm')  
-  ggsave(here::here('Outputs/Fig_SC_v3.png'),cbind(gg1,gg2,gg3,ggl, size = "first"), width = 9/(5/7), height =9, units = 'cm')  
+  ggsave(here::here('Outputs/Fig_SC_v3_90mm.png'),cbind(gg1,gg2,gg3,ggl, size = "first"), width = 9/(5/7), height =9, units = 'cm')  
 
 # Pearson's r summary
   drl = melt(dr[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")

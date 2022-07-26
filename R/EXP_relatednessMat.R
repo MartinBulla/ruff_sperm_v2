@@ -213,7 +213,7 @@
     }
    
     wcv = do.call(rbind,vcv_)
-    save(wcv, file = paste0('Outputs/resRel_CV',sample_,'.Rdata'))
+    save(wcv, file = paste0('Outputs/resRel_CV_',sample_,'.Rdata'))
     
 # Export summary
  #load('Outputs/temp_resRel_morpho.Rdata')

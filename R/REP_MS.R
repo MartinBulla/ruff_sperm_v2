@@ -127,7 +127,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     source(here::here('R/DAT_prepare.R'))       
    # prepare motility for plotting
       am = a[part=='Acrosome']
-      aml = melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount"), variable.name = "Motility")
+      aml = data.table(melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount"), variable.name = "Motility"))
       aml[Motility == 'VAP' ,mot:='Average path']
       aml[Motility == 'VCL' ,mot:='Curvilinear']
       aml[Motility == 'VSL' ,mot:='Straight line']
@@ -461,7 +461,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
   # dummie dataset to create empty panels
     dum = aml[1:4] 
     dum[,mot2 := c('w','x','y','z')]
-    aml[, mot2 := factor(mot,levels=c('Average path','Curvilinear','Straight line','w','x','y','z'))]
+    aml[, mot2 := factor(mot,levels=c('Curvilinear','Straight line','Average path','w','x','y','z'))]
     amld = rbind(aml,dum)
 
   gv =
@@ -587,7 +587,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = 0.5) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = 0.7) 
 
-   ggsave('Outputs/Fig_Shl_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_Shl_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
 
 
 # RESULTS
@@ -597,10 +597,11 @@ nrow(ss[duplicated(bird_ID)]) # for 42 males velocity recorded twice - in May an
 ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
 
 # Fig Sm
-  dl = melt(d[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot")
+  dl = data.table(melt(d[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot"))
   dl[mot =='VAP', mot:='Average path']
   dl[mot =='VSL', mot:='Straight line']
   dl[mot =='VCL', mot:='Curvilinear']
+  dl[, mot := factor(mot,levels=c('Curvilinear','Straight line','Average path'))]
 
   g = ggplot(dl, aes(x = Morph, y = value)) + 
       facet_wrap(~mot, scales = 'free_y', nrow = 3, strip.position="right") +
@@ -631,7 +632,7 @@ ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
         annotation_custom(gs, xmin=0.125+0.2, xmax=0.275+0.2, ymin=0.91) + 
         annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) +
         annotation_custom(gz, xmin=0.125+0.6, xmax=0.275+0.6, ymin=0.88) 
-  ggsave('Outputs/Fig_Sm_zebra_v2.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_Sm_zebra_v2_60mm.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
   set.seed(1)

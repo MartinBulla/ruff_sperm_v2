@@ -11,7 +11,7 @@
   source(here::here('R/DAT_prepare.R'))       
   # prepare motility for plotting
     am = a[part=='Acrosome']
-    aml = melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount"), variable.name = "Motility")
+    aml = data.table(melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount"), variable.name = "Motility"))
     aml[Motility == 'VAP' ,mot:='Average path']
     aml[Motility == 'VCL' ,mot:='Curvilinear']
     aml[Motility == 'VSL' ,mot:='Straight line']
@@ -584,7 +584,7 @@
     )   
   ggsave('Outputs/Fig_ER_130mm.png',ggR, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 # Fig ER v2 - x-axis labels - illustrations
-  aml[, mot2 := factor(mot,levels=c('Curvilinear','Average path','Straight line','w','x'))]
+  aml[, mot2 := factor(mot,levels=c('Curvilinear','Straight line','Average path','w','x'))]
   #aml[,summary(value), by = mot2]
   llvpx[, value:=pred]
   llvpx[, mot2:=motility]
