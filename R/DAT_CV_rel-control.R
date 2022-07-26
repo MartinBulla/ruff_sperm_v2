@@ -17,6 +17,7 @@
   require(related)
   require(reshape2)
   require(matrixcalc)
+  require(standist)
 
 # load data
   load(file = 'Data/DAT_rel-mat.RData') # m - created using DAT_pedigree.R
@@ -61,31 +62,23 @@
     sample_ = chains_*(iter_/2)/thin_
     adapt_d = 0.999
 
-    cores_ = 2#20
-    chains_ = 2
+    cores_ = 1#20
+    chains_ = 1
     iter_ = 4000
     thin_ = 2
     sample_ = chains_*(iter_/2)/thin_
     adapt_d = 0.999
   
   prior_x = c(
-    prior(normal(0, 4), "Intercept"),
-    prior(normal(1,2), class = b, coef = MorphFaeder),
-    prior(normal(1,2), class = b, coef = MorphSatellite),
-    prior(student_t(3, 0, 20), "sd"),
-    prior(cauchy(0, 1), "sigma")
+    prior(normal(0, 5), "Intercept"), #prior(normal(0, 10), class = Intercept),
+    prior(normal(0, 5), class = b, coef = MorphFaeder), #prior(normal(0, 10), class = b, coef = gender),
+    prior(normal(0, 5), class = b, coef = MorphSatellite),
+    prior(cauchy(0, 5), class = sd),
+    prior(cauchy(0, 5), "sigma")
   )
 
-  # TRY
-  prior_x = c(
-    prior(normal(0, 4), "Intercept"), #prior(normal(0, 10), class = Intercept),
-    prior(normal(1,2), class = b, coef = MorphFaeder), #prior(normal(0, 10), class = b, coef = gender),
-
-    prior(normal(1,2), class = b, coef = MorphSatellite),
-    prior(cauchy(0, 10), class = sd),
-    prior(cauchy(0, 10), "sigma")
-  )
-get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
+  #visualize("normal(0, 3)", "normal(0, 5)", "normal(0, 10)",'normal(1,2)','student_t(3, 0, 20)', xlim = c(-20,20))
+  #visualize("cauchy(0, 5)",xlim = c(0,20))
 
 
   lmi =list()
@@ -96,7 +89,7 @@ get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 
     
     #get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
 
-    mi = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
+    mib = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
 
     mi_d1 = data.table(summary(mi)$fixed)
     mi_d1[, param:= rownames(summary(mi)$fixed)]
@@ -132,7 +125,7 @@ get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 
   save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_', sample_,'.Rdata'))
   
 
-  # check for warnings
+  # check for warnings - no divergent transitions
     f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
