@@ -185,7 +185,7 @@
         m = lm(scale(CV) ~ Morph, ai)
         ai[, res := resid(m)]
 
-        adapt_d = ifelse(i %in% c('Acrosome','Nucleus','Tail'), 0.999, 0.99)
+        adapt_d = 0.999
       
         #prior_no <- get_prior(res ~ 0 + Intercept, data=ai)    
         mp_no = brm(res ~ 0 + Intercept, data = ai, cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_no)
@@ -293,6 +293,21 @@ f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness', recurs
 # 1 nucleus
 # Increasing adapt_delta above 0.999 & explore whether ok or not - as of now looks okeisch
 
+"yes /ds/grpkempenaers/Martin/ruff_sperm_v2/Data/sim//Flagellum_res_CV_relatedness5000.Rdata"
+$warning
+[1] "There were 13 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+"yes /ds/grpkempenaers/Martin/ruff_sperm_v2/Data/sim//Midpiece_res_CV_relatedness5000.Rdata"
+$warning
+[1] "There were 4 divergent transitions after warmup. Increasing adapt_delta above 0.99 may help. See http://mc-stan.org/misc/warnings.html#divergent-transitions-after-warmup"
+
+load(here::here('Data/sim/Flagellum_res_CV_relatedness5000.Rdata'))
+
+model = mp_yes
+posterior_cp <-  as.array(model)
+lp_cp <- log_posterior(model)
+np = nuts_params(model) 
+
 plot(model, ask = FALSE)
 pp_check(model, ndraws = 100) # same as function ppc_dens_overlay - see below
 pp_check(model, ndraws = 4, type ='hist') # same as function ppc_hist - see below
@@ -300,9 +315,21 @@ pp_check(model, ndraws = 100, type ='stat') # same as function ppc_hist - see be
 mcmc_plot(model, type = "acf")
 
 
-mcmc_parcoord(posterior_cp, np = np)
+mcmc_trace(posterior_cp, np = 
+  np, pars = c("b_Intercept",'sd_animal__Intercept','sigma')) + xlab("Post-warmup iteration")
+pairs(model, np = np)
+mcmc_scatter(posterior_cp, pars = c("b_Intercept", "sigma"),  size = 1,
+  transform = list(sigma = "log"), 
+  np = np) #mcmc_plot(model, type = 'scatter', pars=c("b_Intercept",'sd_animal__Intercept'))
+mcmc_scatter(posterior_cp, pars = c("sd_animal__Intercept", "sigma"),  size = 1,
+  #transform = list(sigma = "log"), 
+  np = np)
+
+
+
 mcmc_parcoord(lp_cp, np = np)
-mcmc_parcoord(model, np = np)
+mcmc_parcoord(model, np = np) 
+mcmc_parcoord(posterior_cp, np = np)
 mcmc_parcoord(model, transformations = 'log', np = np)
 
 mcmc_plot(model, type = "neff")
@@ -314,26 +341,17 @@ mcmc_plot(model, type = "nuts_acceptance")
 mcmc_plot(model, type = "nuts_divergence")
 
 mcmc_plot(model, type = "nuts_energy")
-mcmc_plot(model, type = "trace_highlight")
+#mcmc_plot(model, type = "trace_highlight")
 
 
 #mcmc_pairs(posterior_cp, np = np)
-mcmc_trace(posterior_cp, np = 
-  np, pars = c("b_Intercept",'sd_animal__Intercept','sigma')) + xlab("Post-warmup iteration")
-pairs(model, np = np)
-mcmc_scatter(posterior_cp, pars = c("b_Intercept", "sigma"),  size = 1,
-  transform = list(sigma = "log"), 
-  np = np) #mcmc_plot(model, type = 'scatter', pars=c("b_Intercept",'sd_animal__Intercept'))
-mcmc_scatter(posterior_cp, pars = c("sd_animal__Intercept", "sigma"),  size = 1,
-  #transform = list(sigma = "log"), 
-  np = np)
 
 # posterior predictive checks - easier to use pp_check 
-  res = ai$res
-  res_rep = posterior_predict(model, draws = 100)
+  #res = ai$res
+  #res_rep = posterior_predict(model, draws = 100)
  
   #ppc_stat() 
-  ppc_dens_overlay(y = as.numeric(res), res_rep)     
+  #ppc_dens_overlay(y = as.numeric(res), res_rep)     
 
      
 
