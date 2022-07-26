@@ -76,6 +76,18 @@
     prior(cauchy(0, 1), "sigma")
   )
 
+  # TRY
+  prior_x = c(
+    prior(normal(0, 4), "Intercept"), #prior(normal(0, 10), class = Intercept),
+    prior(normal(1,2), class = b, coef = MorphFaeder), #prior(normal(0, 10), class = b, coef = gender),
+
+    prior(normal(1,2), class = b, coef = MorphSatellite),
+    prior(cauchy(0, 10), class = sd),
+    prior(cauchy(0, 10), "sigma")
+  )
+get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
+
+
   lmi =list()
   lco =list()
   for(i in unique(b$part)){
