@@ -1,0 +1,28 @@
+mot,part,simple,quadratic,deltaAICc,prob,ER
+Curvilinear,Acrosome,208.44,210.59,2.15,0.03,32.33
+Curvilinear,Nucleus,200.41,202.71,2.3,0.03,32.33
+Curvilinear,Midpiece,209.02,209.89,0.87,0.06,15.67
+Curvilinear,Tail,209.07,211.28,2.21,0.03,32.33
+Curvilinear,Total,208.23,209.84,1.61,0.04,24
+Curvilinear,Head,202.81,205.07,2.26,0.03,32.33
+Curvilinear,Flagellum,209.07,211.33,2.26,0.03,32.33
+Curvilinear,Midpiece_rel,208.41,210.5,2.09,0.03,32.33
+Curvilinear,Flagellum_rel,204.84,206.93,2.09,0.03,32.33
+Straight line,Acrosome,229.05,230.93,1.88,0.04,24
+Straight line,Nucleus,228.75,231.05,2.3,0.03,32.33
+Straight line,Midpiece,229.06,231.05,1.99,0.04,24
+Straight line,Tail,228.3,230.55,2.25,0.03,32.33
+Straight line,Total,228.25,228.88,0.63,0.07,13.29
+Straight line,Head,228.77,231.05,2.28,0.03,32.33
+Straight line,Flagellum,228.47,230.33,1.86,0.04,24
+Straight line,Midpiece_rel,228.67,230.6,1.93,0.04,24
+Straight line,Flagellum_rel,229.05,231.29,2.24,0.03,32.33
+Average path,Acrosome,202.34,204.64,2.3,0.03,32.33
+Average path,Nucleus,198.15,200.49,2.34,0.03,32.33
+Average path,Midpiece,202.38,204.4,2.02,0.04,24
+Average path,Tail,201.8,204.14,2.34,0.03,32.33
+Average path,Total,200.74,201.93,1.19,0.05,19
+Average path,Head,198.34,200.68,2.34,0.03,32.33
+Average path,Flagellum,202.14,204.24,2.1,0.03,32.33
+Average path,Midpiece_rel,200.68,201.97,1.29,0.05,19
+Average path,Flagellum_rel,200.9,203.24,2.34,0.03,32.33
