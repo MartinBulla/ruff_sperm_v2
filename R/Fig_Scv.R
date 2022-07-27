@@ -42,7 +42,7 @@
       ddxl[, animal := bird_ID]
 
 # load CV estimates from models controlled for relatedness
-    load(file = 'Outputs/CV_rel_control_4000.Rdata') #mi_, mi_co_
+    load(file = 'Outputs/CV_rel_control_cauchy_5000.Rdata')#load(file = 'Outputs/CV_rel_control_4000.Rdata') #mi_, mi_co_
     s = mi_co_
     setnames(s, old = c('Estimate','CI.Lower','CI.Upper'), new = c('estimate','lwr','upr'))
     s[,model:='yes']
@@ -77,7 +77,6 @@
 # combine
     cs = rbind(llcv,s[,.(response, effect, estimate, lwr, upr, model)])
     
-
 # plot
   cols_=pal_jco()(3)  
   gCV = 
@@ -108,6 +107,6 @@
 
         plot.margin = margin(3,3,1,1, "mm")
         )  
-    ggsave('Outputs/Fig_Scv.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_Scv_90mm.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
 
 # end    
