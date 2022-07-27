@@ -124,8 +124,9 @@
   mi_co_ = do.call(rbind,lco)
   save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_cauchy_', sample_,'.Rdata'))
   
-
+  
   # check for warnings - no divergent transitions
+    load(file = 'Outputs/CV_rel_control_cauchy_5000.Rdata')
     f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_5000', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
