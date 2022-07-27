@@ -6,7 +6,7 @@
   require(ggsci)
   require(MuMIn)
 
-  width_ = 0.8 # spacing between error bars
+  width_ = 0.6 # spacing between error bars
 
 # DATA
   source(here::here('R/DAT_prepare.R'))       
@@ -39,7 +39,7 @@
       adwl[Motility == 'VAP' ,Motility:='Average path']
       adwl[Motility == 'VCL' ,Motility:='Curvilinear']
       adwl[Motility == 'VSL' ,Motility:='Straight line']
-      adwl[, Motility := factor(Motility, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
+      adwl[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
 
   adw[,motileCount_ln_z := scale(log(motileCount))]
   adwl[,motileCount_ln_z := scale(log(motileCount))]
@@ -134,6 +134,7 @@
    aic_w = reshape(aic, idvar = c('part'), timevar = 'mot', direction = "wide")  
    fwrite(aic, file = 'Outputs/Table_SpolyAIC_l.csv') 
    fwrite(aic_w, file = 'Outputs/Table_SpolyAIC_w.csv')
+
 # prepare estimates and pred for univariate models
   effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
   lvx = list()
@@ -176,21 +177,39 @@
     }
          
   llvx = data.table(do.call(rbind,lvx) ) 
-  llvx[response == 'VAP' ,Motility:='Average path']
-  llvx[response == 'VCL' ,Motility:='Curvilinear']
-  llvx[response == 'VSL' ,Motility:='Straight line']
+  llvx[, Motility:=response]
   llvx[, Motility := factor(Motility, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
   llvx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel'))))] 
 
   llvpx = data.table(do.call(rbind,lvpx) ) 
-  llvpx[response == 'VAP' ,Motility:='Average path']
-  llvpx[response == 'VCL' ,Motility:='Curvilinear']
-  llvpx[response == 'VSL' ,Motility:='Straight line']
+  llvpx[ , Motility:=response]
   llvpx[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
   llvpx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail', 'Total', 'Head','Flagellum', 'Midpiece_rel', 'Flagellum_rel'))))] 
 
+# Table Smm
+  t = copy(llvx)
+  t[effect=='pred', effect := trait]
+  t[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
+  t[, trait := factor(trait, levels=(c('Acrosome', 'Nucleus','Midpiece', 'Tail','Total', 'Head', 'Flagellum', 'Midpiece_rel', 'Flagellum_rel')))] 
+  t = t[order(trait,Motility)]
+
+
+  t[,estimate := format(round(estimate,2), nsmall = 2)]
+  t[,lwr := format(round(lwr,2), nsmall = 2)]
+  t[,upr := format(round(upr,2), nsmall = 2)]
+  #t[,CI := paste0(lwr,' -',upr)]
+  t[, es_ci := paste0(estimate, ' (', lwr,' -',upr,')')]
+  
+
+  t_w = reshape(t[,.(trait, Motility, effect, es_ci)], idvar = c('trait','effect'), timevar = 'Motility', direction = "wide") 
+  fwrite(t_w, file = 'Outputs/Table_Smm.csv')
+
 # plot effect sizes
   llvx_ = llvx[effect == 'pred']
+  llvx_[trait == 'Midpiece_rel', trait:='Midpiece\n(relative)']
+  llvx_[trait == 'Flagellum_rel', trait:='Flagellum\n(relative)']
+  llvx_[, trait := factor(trait, levels=rev(c("Acrosome", "Nucleus", "Midpiece","Tail","Total","Head", "Flagellum","Midpiece\n(relative)","Flagellum\n(relative)")))] 
+  
   gE = 
     ggplot(llvx_, aes(y = trait, x = estimate, shape = Motility, col = Motility)) +
     geom_vline(xintercept = 0, col = "grey60", lty =3)+
@@ -198,52 +217,122 @@
     geom_point(position = position_dodge(width =width_)) +
     scale_x_continuous(limits = c(-.5, .5), expand = c(0, 0))+
     scale_color_jco()+
-    labs(y = NULL, x = "Standardized effect size")+
+    labs(y = NULL, x = "Standardized effect size",  tag = '(a)')+
     guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
     theme_bw() +
     theme(
+        plot.margin = margin(18,3,0,1, "mm"),
         plot.subtitle = element_text(size=9, color = 'grey30'),
+        plot.tag.position = c(0.035, 1.19),
+        plot.tag = element_text(face='bold',size =10),
         #legend.position = "none",
         legend.title = element_text(size=9, color = 'grey30'),
         legend.text=element_text(size=7.5, color = 'grey30'),
         legend.key.height= unit(0.2,"line"),
         legend.margin=margin(0,0,0,0),
-        legend.position=c(0.5,1.1),
+        legend.position=c(0.5,1.125),
         #legend.position=c(0.5,1.6),
 
         axis.title.x = element_text(size = 10, color ='grey10'),
         axis.ticks = element_blank(),
 
         panel.border = element_rect(color = 'grey70'),
-        panel.grid.minor = element_blank(),
+        panel.grid.minor = element_blank()
+        )    
+  ggsave('Outputs/Fig_Ma_width-50mnm.png',gE, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
 
-        plot.margin = margin(18,3,1,1, "mm")
-        )     
-# START HERE AND FIX THE PLOT MARGINS TO MAKE LITTLE GAB BETWEEN PLOTSplot predictions with raw data Fig ER v2 - x-axis labels - illustrations
+  # viridis col
+    col_ = c(viridis(1, alpha = 1, begin = 0.3, end = 0.3, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.6, end = 0.6, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.9, end = 0.9, direction = 1, option = "D")
+         )
+
+    col_ = c(viridis(1, alpha = 1, begin = 0.2, end = 0.2, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.5, end = 0.5, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.9, end = 0.9, direction = 1, option = "D")
+         )
+
+    #show_col(col_) 
+    gEvir =
+    ggplot(llvx_, aes(y = trait, x = estimate, shape = Motility, col = Motility)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width =width_)) +
+    scale_x_continuous(limits = c(-.5, .5), expand = c(0, 0))+
+    scale_color_manual(values = col_)  +
+    scale_fill_manual(values = col_) + 
+ 
+    labs(y = NULL, x = "Standardized effect size",  tag = '(a)')+
+    guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
+    theme_bw() +
+    theme(
+        plot.margin = margin(18,3,0,1, "mm"),
+        plot.subtitle = element_text(size=9, color = 'grey30'),
+        plot.tag.position = c(0.035, 1.19),
+        plot.tag = element_text(face='bold',size =10),
+        #legend.position = "none",
+        legend.title = element_text(size=9, color = 'grey30'),
+        legend.text=element_text(size=7.5, color = 'grey30'),
+        legend.key.height= unit(0.2,"line"),
+        legend.margin=margin(0,0,0,0),
+        legend.position=c(0.5,1.125),
+        #legend.position=c(0.5,1.6),
+
+        axis.title.x = element_text(size = 10, color ='grey10'),
+        axis.ticks = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank()
+        )    
+  ggsave('Outputs/Fig_Ma_width-50mnm_viridis_v2.png',gEvir, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
+
+  
+ 
+# plot predictions with raw data Fig ER v2 - x-axis labels - illustrations
   size_ =1.2
   
   llvpx_a = llvpx[trait == 'Acrosome']
   llvpx_a[,value:=pred]
+  llvpx_n = llvpx[trait == 'Nucleus']
+  llvpx_n[,value:=pred]
+  llvpx_m = llvpx[trait == 'Midpiece']
+  llvpx_m[,value:=pred]
+  llvpx_t = llvpx[trait == 'Tail']
+  llvpx_t[,value:=pred]
+  llvpx_h = llvpx[trait == 'Head']
+  llvpx_h[,value:=pred]
+  llvpx_f = llvpx[trait == 'Flagellum']
+  llvpx_f[,value:=pred]
+  llvpx_o = llvpx[trait == 'Total']
+  llvpx_o[,value:=pred]
+  llvpx_mr = llvpx[trait == 'Midpiece_rel']
+  llvpx_mr[,value:=pred]
+  llvpx_fr = llvpx[trait == 'Flagellum_rel']
+  llvpx_fr[,value:=pred]
+
   gA =
   ggplot(adwl, aes(x = Acrosome, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_a, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_a, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(limits = c(3,5), breaks = c(3,4,5))+
+    #coord_cartesian(clip = 'off')+ 
     labs(subtitle = 'Length [μm]')+#, tag = "(b)")+
     #xlab('Acrosome') +
     labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
-      plot.tag.position = c(0.005, 1),
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.07, 0.97),
       plot.tag = element_text(face='bold',size =10),
 
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       #axis.title.x = element_blank(), 
@@ -255,26 +344,27 @@
   
       panel.border = element_rect(color = 'grey70')
       )  
-  llvpx_n = llvpx[trait == 'Nucleus']
-  llvpx_n[,value:=pred]
+
   gN =
   ggplot(adwl, aes(x = Nucleus, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_n, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_n, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(26,28,30))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
       
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -286,26 +376,27 @@
   
       panel.border = element_rect(color = 'grey70')
       )    
-  llvpx_m = llvpx[trait == 'Midpiece']
-  llvpx_m[,value:=pred]
+  
   gM =
   ggplot(adwl, aes(x = Midpiece, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_m, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_m, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(21,24,27))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -317,26 +408,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_t = llvpx[trait == 'Tail']
-  llvpx_t[,value:=pred]
+  
   gT =
   ggplot(adwl, aes(x = Tail, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_t, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_t, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(72, 82, 92))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -348,26 +440,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_h = llvpx[trait == 'Head']
-  llvpx_h[,value:=pred]
+  
   gH =
   ggplot(adwl, aes(x = Head, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_h, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_h, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(29, 32, 35))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -379,26 +472,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_f = llvpx[trait == 'Flagellum']
-  llvpx_f[,value:=pred]
+  
   gF =
   ggplot(adwl, aes(x = Flagellum, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_f, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_f, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(95,105, 115))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -410,26 +504,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_o = llvpx[trait == 'Total']
-  llvpx_o[,value:=pred]
+  
   gO =
   ggplot(adwl, aes(x = Total, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_o, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_o, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(138, 148))+
     labs(subtitle = '')+
     #labs(tag = '(b)')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -441,27 +536,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_mr = llvpx[trait == 'Midpiece_rel']
-  llvpx_mr[,value:=pred]
+  
   gMR =
   ggplot(adwl, aes(x = Midpiece_rel, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+   stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_mr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_mr, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(0.15, 0.17, 0.19), labels = c(15,17,19))+
     xlab('Midpiece') +
-    labs(subtitle = 'Relative to total length')+
+    labs(subtitle = 'Total length %')+
     theme_bw() +
     theme(
       legend.position = "none",
-      #plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -473,26 +568,27 @@
   
       panel.border = element_rect(color = 'grey70')
       ) 
-  llvpx_fr = llvpx[trait == 'Flagellum_rel']
-  llvpx_fr[,value:=pred]
+  
   gFR =
   ggplot(adwl, aes(x = Flagellum_rel, y = value)) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
-    stat_cor(method="pearson",size = 2, cor.coef.name = 'r',aes(label = ..r.label..)) +
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_fr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
     geom_line(data = llvpx_fr, aes(x = Length_avg, y =pred), col ='grey30')+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1, strip.position="right") +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(0.73, 0.76, 0.79), labels = c(73,73,79))+
     xlab('Flagellum') +
     labs(subtitle = '')+
     theme_bw() +
     theme(
       legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
       plot.tag.position = c(0.005, 1),
       plot.tag = element_text(face='bold',size =10),
-      plot.subtitle = element_text(size=9, color = 'grey30'),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
 
       axis.title = element_text(size = 10, , colour="grey10"),
       axis.title.y = element_blank(), 
@@ -506,368 +602,73 @@
       panel.border = element_rect(color = 'grey70')
       ) 
 
-    grid.draw(cbind(
-    ggplotGrob(gA), ggplotGrob(gN), ggplotGrob(gM),ggplotGrob(gT), ggplotGrob(gO), 
-    ggplotGrob(gH),ggplotGrob(gF), ggplotGrob(gMR), ggplotGrob(gFR),
-    size = "first")
-    )
 
-   ggR = ggarrange(
+  ggR = ggarrange(
     gA, gN, gM, gT, gO, gH, gF, gMR, gFR,
-    ncol=9,  widths=c(1.195,1,1,1,1,1,1,1,1.13)
+    ncol=9,  widths=c(1.34,1,1,1,1,1,1,1,1.225)
     ) 
-
-   ggsave('Outputs/Fig_M_v1.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_M_v2.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
    
-  right = 0.38
-  right2 = 0.01
-  ymin_ = -0.92
-    
-  ggExp =  
-  ggR + 
-    annotation_custom(gi, xmin=0.064, xmax=0.116, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05, xmax=0.116+0.05, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1, xmax=0.116+0.1, ymin=ymin_)+
+# mix the two & export
+  blank = ggplot() + theme_void() 
+  gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
+  gAll = ggarrange(gE, gB, ncol=2, widths=c(4,15))  
 
-    annotation_custom(gi, xmin=0.064+right, xmax=0.116+right, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05+right, xmax=0.116+0.05+right, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1+right, xmax=0.116+0.1+right, ymin=ymin_) +
+  ggsave('Outputs/Fig_4_width-190mm.png',gAll, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
 
-    annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
-  #ggExp   
-  ggsave('Outputs/Fig_ER_130mm_v2.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+  # add legend
+   gp_ind = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[1], fill =ind) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm"))
+    gp_sat = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[2], fill =sat) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm"))
+    gp_fae = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[3], fill =fae) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm")) 
+    gp_ind_grob = ggplotGrob(gp_ind)
+    gp_sat_grob = ggplotGrob(gp_sat)
+    gp_fae_grob = ggplotGrob(gp_fae)
 
-
-
-
-# START HERE
-
-  setnames(bw,old = c('Length_µm.Acrosome', 'Length_µm.Nucleus','Length_µm.Head','Length_µm.Midpiece','Length_µm.Tail','Length_µm.Flagellum', 'Length_µm.Total'), new = c('Acrosome', 'Nucleus', 'Head','Midpiece', 'Tail','Flagellum','Total'))
-
-
-   cbind(aic[mot == 'Curvilinear'], aic[mot == 'Straight line',.('part', 'simple', 'quadratic', 'deltaAICc', 'prob', 'ER')],  aic[mot == 'Average path',.('part','simple', 'quadratic', 'deltaAICc', 'prob', 'ER')], by = c('part'))
-    
-    aic[mot == 'Average path'],
-
-    m = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Head) + scale(Midpiece)+scale(Tail), adw)
-    mp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Head,2) + poly(Midpiece,2)+poly(Tail,2), adw)
-    mi = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Head)*scale(Midpiece)+
-            scale(Head)*scale(Tail) +
-            scale(Midpiece)*scale(Tail), adw)
-    mpi = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Head,2)*poly(Midpiece,2)+
-            poly(Head,2)*poly(Tail,2) +
-            poly(Midpiece,2)*poly(Tail,2), adw)
-       
-
-
-  }
-
-   lz = list()
-  lpz =list()
-  lprz =list()
-
-  # VAP
-     for(i in unique(a$part)){
-        #i ='Tail'
-        ai = a[part == i]
-        m = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Length_avg), ai)
-        mp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(scale(Length_avg),2), ai)
-        mp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Length_avg,2), ai)
-        
-
-        ma = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Acrosome), adw)
-        map = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Acrosome,2), adw)
-
-        mn = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Nucleus), adw)
-        mnp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Nucleus,2), adw)
-        
-        mo = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Total), adw)
-        mop = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Total,2), adw)
-
-        mf = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Flagellum_rel), adw)
-        mfp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Flagellum_rel,2), adw)
-
-        mh = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Head), adw)
-        mhp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Head,2), adw)
-        mm = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Midpiece), adw)
-        mmp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Midpiece,2), adw)
-        mt = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Tail), adw)
-        mtp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Tail,2), adw)
-        m = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Head) + scale(Midpiece)+scale(Tail), adw)
-        mp = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Head,2) + poly(Midpiece,2)+poly(Tail,2), adw)
-        mi = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Head)*scale(Midpiece)+
-                scale(Head)*scale(Tail) +
-                scale(Midpiece)*scale(Tail), adw)
-        mpi = lm(scale(VAP) ~ motileCount_ln_z+ Morph+poly(Head,2)*poly(Midpiece,2)+
-                poly(Head,2)*poly(Tail,2) +
-                poly(Midpiece,2)*poly(Tail,2), adw)
-       
-        aic = data.table(AICc(mo, mop, mf, mfp, mh, mhp, mm, mmp, mt, mtp, m, mp, mi,mpi))
-        aic[,model := c('Total', 'Total_poly', 'Flagellum_rel', 'Flagellum_rel_poly','Head', 'Head_poly', 'Midpiece','Midpiece_poly','Tail', 'Tail_poly', 'Head_Mid_Tail', 'Head_Mid_Tail_poly','Head_Mid_Tail_2way', 'Head_Mid_Tail_poly_2way' )]
-        aic = aic[order(AICc)]
-        aic[, deltaAICc:=AICc-min(AICc)]
-        aic[, prob := round(exp(-0.5*deltaAICc)/sum(exp(-0.5*deltaAICc)),2)]
-        aic[, ER := round(max(prob)/prob, 2)]
-        aic
-
-        aic = data.table(AICc(ma, mn, mo, mf, mh, mm, mt, m, mi, m2))
-        aic[,model := c('Acrosome','Nucleus','Total',  'Flagellum_rel', 'Head', 'Midpiece','Tail',  'Head_Mid_Tail','Head_Mid_Tail_2way','Head_Mid_Tail_Tot' )]
-        aic = aic[order(AICc)]
-        aic[, deltaAICc:=AICc-min(AICc)]
-        aic[, prob := round(exp(-0.5*deltaAICc)/sum(exp(-0.5*deltaAICc)),2)]
-        aic[, ER := round(max(prob)/prob, 2)]
-        aic
-        require(car)
-        vif(mi)
-        vif(mi, terms = 'marginal')
-        vif(mi, terms = 'high-order')
-
-
-
-        plot(allEffects(mi))
-        plot(allEffects(mo))
-        #summary(mp)
-        #plot(allEffects(mp))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VAP',i)]]=data.frame(mot = 'VAP', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VAP ~ motileCount_ln_z + Morph+Length_avg, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-
-        # values to predict for
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
-        newD$VAP <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=i
-        newD$mot = 'VAP'
-        setnames(newD, old = 'VAP', new = 'motility')
-        lpz[[paste(i,newD$mot[1])]] = data.table(newD)
-
-        print(paste(i,newD$mot[1]))     
-        }          
-     for(i in unique(ar$part)){
-        #i ='Nucleus'
-        if(i == 'Midpiece'){ii = 'Midpiece_rel'}
-        if(i == 'Flagellum'){ii = 'Flagellum_rel'}
-        ai = ar[part == i]
-        m = lm(scale(VAP) ~ motileCount_ln_z+ Morph+scale(Length_rel), ai)
-        #summary(m)
-        #plot(allEffects(m))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VAP',ii)]]=data.frame(mot = 'VAP', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VAP ~ motileCount_ln_z + Morph+Length_rel, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-
-        # values to predict for
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
-        newD$VAP <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=ii
-        newD$mot = 'VAP'
-        setnames(newD, old = 'VAP', new = 'motility')
-        lpz[[paste(ii,newD$mot[1])]] = data.table(newD)
-
-        print(paste(ii,newD$mot[1]))     
-        }            
-  # VSL
-     for(i in unique(a$part)){
-        #i ='Nucleus'
-        ai = a[part == i]
-        m = lm(scale(VSL) ~ motileCount_ln_z + Morph+scale(Length_avg), ai)
-        #summary(m)
-        #plot(allEffects(m))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VSL',i)]]=data.frame(mot = 'VSL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VSL ~ motileCount_ln_z + Morph+Length_avg, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
-        newD$VSL <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=i
-        newD$mot = 'VSL'
-        setnames(newD, old = 'VSL', new = 'motility')
-        lpz[[paste(i,newD$mot[1])]] = data.table(newD)
-
-        print(paste(i,newD$mot[1]))     
-        }          
-     for(i in unique(ar$part)){
-        #i ='Nucleus'
-        if(i == 'Midpiece'){ii = 'Midpiece_rel'}
-        if(i == 'Flagellum'){ii = 'Flagellum_rel'}
-        ai = ar[part == i]
-        m = lm(scale(VSL) ~ motileCount_ln_z+ Morph+scale(Length_rel), ai)
-        #summary(m)
-        #plot(allEffects(m))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VSL',ii)]]=data.frame(mot = 'VSL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VSL ~ motileCount_ln_z + Morph+Length_rel, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-
-        # values to predict for
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
-        newD$VSL <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=ii
-        newD$mot = 'VSL'
-        setnames(newD, old = 'VSL', new = 'motility')
-        lpz[[paste(ii,newD$mot[1])]] = data.table(newD)
-
-        print(paste(ii,newD$mot[1]))     
-        }            
-  # VCL
-     for(i in unique(a$part)){
-        #i ='Nucleus'
-        ai = a[part == i]
-        m = lm(scale(VCL) ~ motileCount_ln_z + Morph+scale(Length_avg), ai)
-        #summary(m)
-        #plot(allEffects(m))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VCL',i)]]=data.frame(mot = 'VCL', part=i,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VCL ~ motileCount_ln_z + Morph+Length_avg, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z), Morph = j, Length_avg = seq(min(ai$Length_avg), max(ai$Length_avg), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_avg,data=newD) # exactly the model which was used has to be specified here 
-        newD$VCL <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=i
-        newD$mot = 'VCL'
-        setnames(newD, old = 'VCL', new = 'motility')
-        lpz[[paste(i,newD$mot[1])]] = data.table(newD)
-
-        print(paste(i,newD$mot[1]))     
-        }          
-     for(i in unique(ar$part)){
-        #i ='Nucleus'
-        if(i == 'Midpiece'){ii = 'Midpiece_rel'}
-        if(i == 'Flagellum'){ii = 'Flagellum_rel'}
-        ai = ar[part == i]
-        m = lm(scale(VCL) ~ motileCount_ln_z+ Morph+scale(Length_rel), ai)
-        #summary(m)
-        #plot(allEffects(m))
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        ci = apply(bsim@coef, 2, quantile, prob=c(0.025,0.975)) 
-        lz[[paste('VCL',ii)]]=data.frame(mot = 'VCL', part=ii,effect=rownames(coef(summary(m))),estimate=v, lwr=ci[1,], upr=ci[2,])
-
-        # get predictions
-        m = lm(VCL ~ motileCount_ln_z + Morph+Length_rel, ai)
-        bsim = sim(m, n.sim=nsim) 
-        v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-        nd = list()
-        for(j in unique(ai$Morph)){
-          #j=1
-          nd[[j]] = data.frame(motileCount_ln_z = mean(ai$motileCount_ln_z),Morph = j, Length_rel = seq(min(ai$Length_rel), max(ai$Length_rel), length.out = 200)) 
-          }
-        newD=do.call(rbind,nd)
-
-        # values to predict for
-        X <- model.matrix(~ motileCount_ln_z + Morph+Length_rel,data=newD) # exactly the model which was used has to be specified here 
-        newD$VCL <-(X%*%v) 
-        predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-        for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                        predmatrix[predmatrix < 0] <- 0
-                        newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                        newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                        #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-        newD$part=ii
-        newD$mot = 'VCL'
-        setnames(newD, old = 'VCL', new = 'motility')
-        lpz[[paste(ii,newD$mot[1])]] = data.table(newD)
-
-        print(paste(ii,newD$mot[1]))     
-        }          
-           
-  llz = data.table(do.call(rbind,lz) ) 
-  llz[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
-  llz[effect == '(Intercept)', effect:='Independent\n(Intercept)']
-  llz[effect == 'MorphSatellite', effect := 'Satellite\n(relative to Independent)']
-  llz[effect == 'MorphFaeder', effect := 'Faeder\n(relative to Independent)']
-  llz[effect == 'scale(Length_avg)', effect := 'Length_µm']
-  llz[effect == 'scale(Length_rel)', effect := 'Length_µm'] # dummy variable
+  ymin_ = 0.525 # 0.55, 0.6
+  g_anot =   
+    gAll + 
+    annotation_custom(gp_ind_grob, xmin=.47, xmax=.52, ymin =ymin_)+
+    annotation_custom(gi, xmin=.47, xmax=.52, ymin = ymin_+0.2) +
+    annotation_custom(gp_sat_grob, xmin=.47+.06, xmax=.52+.06, ymin = ymin_) +
+    annotation_custom(gs, xmin=.47+.06, xmax=.52+.06, ymin = ymin_+0.2) +
+    annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
+    annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
+  ggsave('Outputs/Fig_4_width-190mm_illust_v3.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+# mix virids the two & export
+  blank = ggplot() + theme_void() 
+  gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
+  gAll = ggarrange(gEvir, gB, ncol=2, widths=c(4,15))  
   
-  llz[, effect := factor(effect, levels=c('Length_µm','motileCount_ln_z',"Faeder\n(relative to Independent)","Satellite\n(relative to Independent)","Independent\n(Intercept)"))] 
+  # add legend
+   gp_ind = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[1], fill =ind) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm"))
+    gp_sat = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[2], fill =sat) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm"))
+    gp_fae = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[3], fill =fae) +
+      theme_transparent()+
+      theme(plot.margin = unit(c(0,0,0,0), "mm")) 
+    gp_ind_grob = ggplotGrob(gp_ind)
+    gp_sat_grob = ggplotGrob(gp_sat)
+    gp_fae_grob = ggplotGrob(gp_fae)
 
-  llz[mot=='VCL', mot:='Curvilinear (VCL)']
-  llz[mot=='VSL', mot:='Straight-line (VSL)']
-  llz[mot=='VAP', mot:='Average-path (VAP)']
-  llz[, mot := factor(mot, levels=rev(c("Curvilinear (VCL)", "Straight-line (VSL)", "Average-path (VAP)")))] 
+  ymin_ = 0.525 # 0.55, 0.6
+  g_anot =   
+    gAll + 
+    annotation_custom(gp_ind_grob, xmin=.47, xmax=.52, ymin =ymin_)+
+    annotation_custom(gi, xmin=.47, xmax=.52, ymin = ymin_+0.2) +
+    annotation_custom(gp_sat_grob, xmin=.47+.06, xmax=.52+.06, ymin = ymin_) +
+    annotation_custom(gs, xmin=.47+.06, xmax=.52+.06, ymin = ymin_+0.2) +
+    annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
+    annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
+  ggsave('Outputs/Fig_4_width-190mm_illust_viridis.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+ 
+
+# END
