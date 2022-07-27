@@ -45,7 +45,7 @@
   adwl[,motileCount_ln_z := scale(log(motileCount))]
   ar[,motileCount_ln_z := scale(log(motileCount))]
  
-# compare AIC
+# compare AIC for simple and quadratic
    l = list()
    for(i in unique(adwl$mot)){
         #i ='Straight line'
@@ -135,6 +135,148 @@
    fwrite(aic, file = 'Outputs/Table_SpolyAIC_l.csv') 
    fwrite(aic_w, file = 'Outputs/Table_SpolyAIC_w.csv')
 
+# compare AIC for simple and interactions
+  l = list()
+  for(i in unique(adwl$mot)){
+    #i ='Curvilinear'
+    ai = adwl[mot == i]
+    ms = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head)+scale(Midpiece)+scale(Tail), ai)
+    mi = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head)*scale(Midpiece)+scale(Head)*scale(Tail) + scale(Midpiece)*scale(Tail), ai)
+    aic = data.table(AICc(ms,mi))
+    aic[, mot:=i]
+    l[[i]] = aic
+  }
+  aic = do.call(rbind, l)
+  aic[, mot := factor(mot, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
+  aic = merge(aic[df==8], aic[df==11], by = c('mot'))
+  setnames(aic, old = c('AICc.x', 'AICc.y'), new = c('simple', 'interactions'))
+  aic$df.x = aic$df.y = NULL
+  aic[,simple:=round(simple,2)]
+  aic[,interactions:=round(interactions,2)]
+  aic[, deltaAICc:=round(interactions-simple,2)]
+  aic[, prob := round(exp(-0.5*deltaAICc)/sum(exp(-0.5*deltaAICc)),2)]
+  aic[, ER := round((1-prob)/prob, 2)]    
+  aic = aic[order(mot, decreasing = TRUE)]   
+  fwrite(aic, file = 'Outputs/Table_SintAIC.csv') 
+    
+# Table Sxx
+  effects_xx = c('Head', 'Midpiece', 'Tail')
+  l = list()
+  for(i in unique(adwl$mot)){
+    #i ='Curvilinear'
+    ai = adwl[mot == i]
+    ms = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head)+scale(Midpiece)+scale(Tail), ai)
+    bsim = sim(ms, n.sim=nsim) 
+    v = format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5:7],2), nsmall = 2)
+    lwr = format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5:7],2), nsmall = 2)
+    upr = format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5:7],2), nsmall = 2)
+    ii = data.table(motility=i, effect=effects_xx,estimate=v, lwr=lwr, upr=upr)
+
+    mh = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head), ai)
+    bsim = sim(mh, n.sim=nsim) 
+    ii[effect == 'Head', estimate_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5],2), nsmall=2)]
+    ii[effect == 'Head', lwr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5],2), nsmall=2)]
+    ii[effect == 'Head', upr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5],2), nsmall=2)]
+    
+    mm = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Midpiece), ai)
+    bsim = sim(mm, n.sim=nsim) 
+    ii[effect == 'Midpiece', estimate_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5],2), nsmall=2)]
+    ii[effect == 'Midpiece', lwr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5],2), nsmall=2)]
+    ii[effect == 'Midpiece', upr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5],2), nsmall=2)]
+    
+    mt = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Tail), ai)
+    bsim = sim(mt, n.sim=nsim) 
+    ii[effect == 'Tail', estimate_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5],2), nsmall=2)]
+    ii[effect == 'Tail', lwr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5],2), nsmall=2)]
+    ii[effect == 'Tail', upr_s := format(round(c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5],2), nsmall=2)]
+    
+    l[[i]]=ii
+  }
+  x = do.call(rbind, l)
+  x[, motility := factor(motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
+  x = x[order(motility)]
+  x[, es_ci_i := paste0(estimate, ' (', lwr,' -',upr,')')]
+  x[, es_ci_s := paste0(estimate_s, ' (', lwr_s,' -',upr_s,')')]
+  fwrite(x[,.(motility, es_ci_i, es_ci_s, file = 'Outputs/Table_Sxx.csv')
+
+# Figure Sxx
+  effects_xx = c('Head', 'Midpiece', 'Tail')
+  l = list()
+  for(i in unique(adwl$mot)){
+    #i ='Curvilinear'
+    ai = adwl[mot == i]
+    ms = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head)+scale(Midpiece)+scale(Tail), ai)
+    bsim = sim(ms, n.sim=nsim) 
+    v = c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5:7]
+    lwr = c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5:7]
+    upr = c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5:7]
+    ii = data.table(motility=i, effect=effects_xx,estimate=v, lwr=lwr, upr=upr)
+
+    mh = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Head), ai)
+    bsim = sim(mh, n.sim=nsim) 
+    ii[effect == 'Head', estimate_s := c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5]]
+    ii[effect == 'Head', lwr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5]]
+    ii[effect == 'Head', upr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5]]
+    
+    mm = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Midpiece), ai)
+    bsim = sim(mm, n.sim=nsim) 
+    ii[effect == 'Midpiece', estimate_s := c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5]]
+    ii[effect == 'Midpiece', lwr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5]]
+    ii[effect == 'Midpiece', upr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5]]
+    
+    mt = lm(scale(value) ~ motileCount_ln_z+ Morph+scale(Tail), ai)
+    bsim = sim(mt, n.sim=nsim) 
+    ii[effect == 'Tail', estimate_s := c(apply(bsim@coef, 2, quantile, prob=c(0.5)))[5]]
+    ii[effect == 'Tail', lwr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.025)))[5]]
+    ii[effect == 'Tail', upr_s := c(apply(bsim@coef, 2, quantile, prob=c(0.975)))[5]]
+    
+    l[[i]]=ii
+  }
+  x = do.call(rbind, l)
+  x[, motility := factor(motility, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
+  x = x[order(motility)]
+  y = x  
+  y1 = y[,c('motility', 'effect', 'estimate', 'lwr', 'upr')]  
+  y2 = y[,c('motility', 'effect', 'estimate_s', 'lwr_s', 'upr_s')] 
+  setnames(y2, old = c('motility', 'effect', 'estimate_s', 'lwr_s', 'upr_s'), new = c('motility', 'effect', 'estimate', 'lwr', 'upr')) 
+  y1[, Model:='Head + Midpiece + Tail']
+  y2[, Model:='simple, single term']
+  y = rbind(y1,y2)
+
+  width__ = 0.4 
+  cols_=pal_jco()(3)
+  g = 
+  ggplot(y, aes(y = effect, x = estimate, fill = motility, col = motility, shape = Model)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    
+    scale_x_continuous(limits = c(-0.25, 0.35), expand = c(0, 0))+
+    #scale_color_jco(name = 'Motility', guide = guide_legend(reverse = TRUE))+
+    #scale_fill_jco(name = 'Motility', guide = guide_legend(reverse = TRUE))+
+    scale_color_jco(name = 'Motility', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
+    scale_fill_jco(name = 'Motility', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
+    scale_shape_manual(name = 'Model', values =c(23,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'),order = 0, nrow=2,byrow=TRUE))+
+    labs(y = NULL, x = "Standardized effect size")+
+
+    theme_bw() +
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.title=element_text(size=8, color = 'grey30'),
+        legend.text=element_text(size=7.5, color = 'grey30'),
+        #legend.spacing.y = unit(1, 'mm'),
+        legend.key.height= unit(0.5,"line"),
+        legend.margin=margin(0,0,0,0),
+        #legend.position=c(0.45,1.6),
+
+        axis.ticks = element_blank(),
+        axis.title.x = element_text(size = 10, color ='grey10'),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )  
+    ggsave('Outputs/Fig_Sxx.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
 # prepare estimates and pred for univariate models
   effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
   lvx = list()
@@ -286,11 +428,9 @@
         )    
   ggsave('Outputs/Fig_Ma_width-50mnm_viridis_v2.png',gEvir, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
 
-  
- 
 # plot predictions with raw data Fig ER v2 - x-axis labels - illustrations
   size_ =1.2
-  
+  line_col = 'red' #grey30
   llvpx_a = llvpx[trait == 'Acrosome']
   llvpx_a[,value:=pred]
   llvpx_n = llvpx[trait == 'Nucleus']
@@ -315,7 +455,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_a, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_a, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_a, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -350,7 +490,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_n, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_n, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_n, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -382,7 +522,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_m, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_m, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_m, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -414,7 +554,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_t, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_t, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_t, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -446,7 +586,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_h, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_h, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_h, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -478,7 +618,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_f, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_f, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_f, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -510,7 +650,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_o, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_o, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_o, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -542,7 +682,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_mr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_mr, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_mr, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -574,7 +714,7 @@
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
     geom_ribbon(data = llvpx_fr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_fr, aes(x = Length_avg, y =pred), col ='grey30')+
+    geom_line(data = llvpx_fr, aes(x = Length_avg, y =pred), col =line_col)+
     facet_wrap(~Motility, scales = 'free_y', ncol = 1, strip.position="right") +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
@@ -607,14 +747,14 @@
     gA, gN, gM, gT, gO, gH, gF, gMR, gFR,
     ncol=9,  widths=c(1.34,1,1,1,1,1,1,1,1.225)
     ) 
-  ggsave('Outputs/Fig_M_v2.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_M_v3.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
    
 # mix the two & export
   blank = ggplot() + theme_void() 
   gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
   gAll = ggarrange(gE, gB, ncol=2, widths=c(4,15))  
 
-  ggsave('Outputs/Fig_4_width-190mm.png',gAll, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+  #ggsave('Outputs/Fig_4_width-190mm.png',gAll, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
 
   # add legend
    gp_ind = ggscatter(data.frame(x =1, y =1), x = 'x', y = 'y', shape = 21, color =cols[1], fill =ind) +
@@ -639,7 +779,7 @@
     annotation_custom(gs, xmin=.47+.06, xmax=.52+.06, ymin = ymin_+0.2) +
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
-  ggsave('Outputs/Fig_4_width-190mm_illust_v3.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_4_width-190mm_illust_v3_red.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
 # mix virids the two & export
   blank = ggplot() + theme_void() 
   gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
@@ -668,7 +808,7 @@
     annotation_custom(gs, xmin=.47+.06, xmax=.52+.06, ymin = ymin_+0.2) +
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
-  ggsave('Outputs/Fig_4_width-190mm_illust_viridis.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
- 
+  ggsave('Outputs/Fig_4_width-190mm_illust_viridis_red.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+
 
 # END
