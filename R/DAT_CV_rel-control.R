@@ -55,7 +55,7 @@
 # relatedness controlled models for CV
   effects_ = c('Satellite relative to independent','Faeder relative to independent', 'Faeder relative to satellite')
   # constants for MCMC
-    cores_ = 20
+    cores_ = 60
     chains_ = 4
     iter_ = 50000
     thin_ = 20
@@ -89,7 +89,7 @@
     
     #get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
 
-    mib = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
+    mib = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE), prior   = prior_x)
 
     mi_d1 = data.table(summary(mi)$fixed)
     mi_d1[, param:= rownames(summary(mi)$fixed)]
@@ -122,11 +122,11 @@
   }
   mi_ = do.call(rbind,lmi)
   mi_co_ = do.call(rbind,lco)
-  save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_', sample_,'.Rdata'))
+  save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_cauchy_', sample_,'.Rdata'))
   
 
   # check for warnings - no divergent transitions
-    f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control', recursive = TRUE, full.names = TRUE))
+    f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_5000', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
       load(i)
