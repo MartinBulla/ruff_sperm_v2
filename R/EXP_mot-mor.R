@@ -277,6 +277,7 @@
         plot.margin = margin(3,3,1,1, "mm")
         )  
     ggsave('Outputs/Fig_Sxx.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
+
 # prepare estimates and pred for univariate models
   effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
   lvx = list()
@@ -327,7 +328,6 @@
   llvpx[ , Motility:=response]
   llvpx[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
   llvpx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail', 'Total', 'Head','Flagellum', 'Midpiece_rel', 'Flagellum_rel'))))] 
-
 # Table Smm
   t = copy(llvx)
   t[effect=='pred', effect := trait]
