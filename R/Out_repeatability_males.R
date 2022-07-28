@@ -53,7 +53,6 @@
          
          return(ri)
          }
-
 # DATA
   source(here::here('R/DAT_prepare.R'))       
   dr = d[bird_ID%in%d[duplicated(bird_ID), bird_ID]]
@@ -174,7 +173,8 @@
           plot.margin = margin(3,3,1,1, "mm"),
           legend.position = "none"
           )  
-
+  
+  y[, part := factor(part,levels=rev(c('Acrosome','Nucleus','Midpiece','Tail','Total','Head','Flagellum')))]
   gm = 
   ggplot(y, aes(x = part, y = pred)) +
     geom_errorbar(aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25) ) +
