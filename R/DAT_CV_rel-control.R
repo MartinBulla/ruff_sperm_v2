@@ -52,7 +52,7 @@
       ddxl[Motility == 'VSL' ,mot:='Straight line']
       ddxl[, animal := bird_ID]
   
-# relatedness controlled models for CV
+# relatedness controlled models for CV - cauchy
   effects_ = c('Satellite relative to independent','Faeder relative to independent', 'Faeder relative to satellite')
   # constants for MCMC
     cores_ = 60
@@ -124,10 +124,83 @@
   mi_co_ = do.call(rbind,lco)
   save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_cauchy_', sample_,'.Rdata'))
   
-  
+
   # check for warnings - no divergent transitions
     load(file = 'Outputs/CV_rel_control_cauchy_5000.Rdata')
     f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_5000', recursive = TRUE, full.names = TRUE))
+    for(i in f){
+      #i=f[1]
+      load(i)
+      print(paste('no',i))
+      print(tryCatchWEM(summary(mp_no)))
+      print(paste('yes',i))
+      print(tryCatchWEM(summary(mp_yes)))
+    }  
+# relatedness controlled models for CV - default
+  effects_ = c('Satellite relative to independent','Faeder relative to independent', 'Faeder relative to satellite')
+  # constants for MCMC
+    cores_ = 60
+    chains_ = 4
+    iter_ = 50000
+    thin_ = 20
+    sample_ = chains_*(iter_/2)/thin_
+    adapt_d = 0.999
+
+    cores_ = 1#20
+    chains_ = 1
+    iter_ = 4000
+    thin_ = 2
+    sample_ = chains_*(iter_/2)/thin_
+    adapt_d = 0.999
+  
+
+  lmi =list()
+  lco =list()
+  for(i in unique(b$part)){
+    #i = 'Tail'
+    ai = cv_[part == i]
+    
+    #get_prior(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat))
+
+    mib = brm(scale(CV)  ~ Morph  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = adapt_d, max_treedepth = 15), sample_prior="yes",save_pars = save_pars(all = TRUE))
+
+    mi_d1 = data.table(summary(mi)$fixed)
+    mi_d1[, param:= rownames(summary(mi)$fixed)]
+    mi_d1[,type :='fixed']
+
+    mi_d2 = data.table(summary(mi)$random$animal)
+    mi_d2[, param := 'relatedness_sd']
+    mi_d2[, type :='random']
+
+    mi_d3 = data.table(summary(mi)$spec_pars)
+    mi_d3[, param := 'residual_sd']
+    mi_d3[, type :='random']
+
+    mi_d=rbind(mi_d1,mi_d2,mi_d3)
+    mi_d[,response:=paste('CV', i)]
+    lmi[[i]] = mi_d
+
+
+    mi_co = data.table(
+            rbind(hypothesis(mi, "MorphSatellite = 0")$hypothesis,
+                  hypothesis(mi, "MorphFaeder = 0")$hypothesis,
+                  hypothesis(mi, "MorphFaeder - MorphSatellite = 0")$hypothesis
+                  ))
+    mi_co[, effect := effects_]
+     mi_co[,response:=paste('CV', i)]
+    lco[[i]] = mi_co
+
+    save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control_default_',sample_,'.Rdata'))
+    print(i)
+  }
+  mi_ = do.call(rbind,lmi)
+  mi_co_ = do.call(rbind,lco)
+  save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_default_', sample_,'.Rdata'))
+  
+
+  # check for warnings - no divergent transitions
+    load(file = 'Outputs/CV_rel_control_default_5000.Rdata')
+    f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_default_5000', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
       load(i)
