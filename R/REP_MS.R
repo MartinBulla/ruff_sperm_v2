@@ -596,6 +596,9 @@ bw[!duplicated(bird_ID),summary(Morph)] # N sampled males
 nrow(ss[duplicated(bird_ID)]) # for 42 males velocity recorded twice - in May and June 
 ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
 
+# cor among motility estimates
+  
+
 # Fig Sm
   dl = data.table(melt(d[,.(bird_ID,month,Morph,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph"), variable.name = "mot"))
   dl[mot =='VAP', mot:='Average path']
@@ -633,6 +636,64 @@ ss[bird_ID%in%ss[duplicated(bird_ID), bird_ID], summary(as.factor(month))]
         annotation_custom(gf, xmin=0.125+0.4, xmax=0.275+0.4, ymin=0.906) +
         annotation_custom(gz, xmin=0.125+0.6, xmax=0.275+0.6, ymin=0.88) 
   ggsave('Outputs/Fig_Sm_zebra_v2_60mm.png',ggExp, width = 6/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+
+
+# discriminant analyses
+  m =  lda(Morph~scale(Nucleus)+scale(Midpiece)+scale(Tail) + scale(VSL), data = aw)    
+  m =  lda(Morph~scale(Nucleus)+scale(Midpiece)+scale(Tail), data = aw)    
+  m =  lda(Morph~scale(Nucleus)+scale(Midpiece), data = aw)    
+  m =  lda(Morph~scale(Midpiece), data = aw)    
+  m
+  plot(m)
+  predictions <- m %>% predict(aw)
+  mean(predictions$class==aw$Morp)
+  
+  names(predictions)
+  head(predictions$class, 6)
+  head(predictions$posterior, 6) 
+  head(predictions$x, 3) 
+
+  lda.data <- cbind(aw, predict(m)$x)
+  ggplot(lda.data, aes(LD1, LD2)) +
+  geom_point(aes(color = Morph))
+
+  mean(predictions$class==aw$Morp)
+
+  ggplot(aw,aes(x = Midpiece, y = Tail, col = Morph)) + geom_point()
+
+  as = a[, mean(Length_avg), by = list(part,Morph)]
+    names(as)[3] = 'median'
+    as$lwr = a[, mean(Length_avg)-sd(Length_avg), by = list(part,Morph)]$V1
+    as$upr = a[, mean(Length_avg)+sd(Length_avg), by = list(part,Morph)]$V1
+
+    as_n = as[part == 'Nucleus']
+    as_n[,Midpiece_µm:= as[part == 'Midpiece',.(median)]]
+
+    as_nm = as[part == 'Midpiece']
+    as_nm[,Nucleus_µm:= as[part == 'Nucleus',.(median)]]
+
+  g0a =
+    ggplot(ha, aes(x = Nucleus_µm, y = Midpiece_µm, col = Morph, fill = Morph)) +
+      geom_point(pch = 21)+
+      geom_point(data = as_n, aes(x = median, y = Midpiece_µm), col = 'black', size = 2) +
+      geom_segment(data = as_n, aes(x = lwr, xend = upr, y =Midpiece_µm, yend =Midpiece_µm), col = "black" ) +
+      geom_segment(data = as_nm, aes(x = Nucleus_µm, xend = Nucleus_µm, y =lwr, yend =upr), col = "black" )+
+      geom_point(data = as_n, aes(x = median, y = Midpiece_µm, col = Morph), size = 1) +
+      scale_colour_manual(values = colors)+
+      scale_fill_manual(values = alpha(colors, 0.4))+
+      #geom_point(data = aas_f, aes(x = median, y = Midpiece_µm),position = position_dodge(width = 0.25), col = 'black', size = 2) +
+      #ylim(c(20,28)) +
+      #xlim(c(24,36)) +
+     #scale_colour_viridis(discrete=TRUE)+
+      ggtitle('Male means') +
+      theme_bw() +
+      theme(
+        #legend.position=c(.9,.9),  
+        legend.position = "none",
+        #axis.title.x = element_blank(), 
+        #axis.text.x = element_blank(),
+        plot.title = element_text(size=9)
+        ) 
 
 ```{r Predictions,  warning = FALSE, message = FALSE, fig.align="center", fig.width=3, fig.height=3}
   set.seed(1)
