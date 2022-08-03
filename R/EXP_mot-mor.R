@@ -2,6 +2,7 @@
   require(here)
   source(here::here('R/tools.R'))
   require(arm)
+  require(ggnewscale)
   require(ggpubr) 
   require(ggsci)
   require(MuMIn)
@@ -245,6 +246,7 @@
 
   width__ = 0.4 
   cols_=pal_jco()(3)
+  
   g = 
   ggplot(y, aes(y = effect, x = estimate, fill = motility, col = motility, shape = Model)) +
     geom_vline(xintercept = 0, col = "grey60", lty =3)+
@@ -277,6 +279,43 @@
         plot.margin = margin(3,3,1,1, "mm")
         )  
     ggsave('Outputs/Fig_Sxx.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
+  
+  col_ = c(viridis(1, alpha = 1, begin = 0.2, end = 0.2, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.5, end = 0.5, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.9, end = 0.9, direction = 1, option = "D")
+         )
+  g = 
+  ggplot(y, aes(y = effect, x = estimate, fill = motility, col = motility, shape = Model)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    
+    scale_x_continuous(limits = c(-0.25, 0.35), expand = c(0, 0))+
+    #scale_color_jco(name = 'Motility', guide = guide_legend(reverse = TRUE))+
+    #scale_fill_jco(name = 'Motility', guide = guide_legend(reverse = TRUE))+
+    scale_color_manual(name = 'Motility', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE), values = col_)+
+    scale_fill_manual(name = 'Motility', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE), values = col_)+
+    scale_shape_manual(name = 'Model', values =c(23,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'),order = 0, nrow=2,byrow=TRUE))+
+    labs(y = NULL, x = "Standardized effect size")+
+
+    theme_bw() +
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.title=element_text(size=8, color = 'grey30'),
+        legend.text=element_text(size=7.5, color = 'grey30'),
+        #legend.spacing.y = unit(1, 'mm'),
+        legend.key.height= unit(0.5,"line"),
+        legend.margin=margin(0,0,0,0),
+        #legend.position=c(0.45,1.6),
+
+        axis.ticks = element_blank(),
+        axis.title.x = element_text(size = 10, color ='grey10'),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )  
+    ggsave('Outputs/Fig_Sxx_viridis.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
 
 # prepare estimates and pred for univariate models
   effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
@@ -287,7 +326,7 @@
     xi = adwl[, i, with = FALSE] 
     adwl[, Length_avg := xi] 
     for(k in unique(adwl$Motility)){
-      #k = 'VCL'
+      #k = 'Average path'
       adwlk = adwl[Motility == k]
       # get estimates
       m = lm(scale(value) ~ scale(log(motileCount)) + Morph + scale(Length_avg), adwlk)
@@ -328,6 +367,7 @@
   llvpx[ , Motility:=response]
   llvpx[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
   llvpx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail', 'Total', 'Head','Flagellum', 'Midpiece_rel', 'Flagellum_rel'))))] 
+
 # Table Smm
   t = copy(llvx)
   t[effect=='pred', effect := trait]
@@ -381,6 +421,7 @@
         panel.border = element_rect(color = 'grey70'),
         panel.grid.minor = element_blank()
         )    
+  
   ggsave('Outputs/Fig_Ma_width-50mnm.png',gE, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
 
   # viridis col
@@ -428,7 +469,7 @@
         )    
   ggsave('Outputs/Fig_Ma_width-50mnm_viridis_v2.png',gEvir, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
 
-# plot predictions with raw data Fig ER v2 - x-axis labels - illustrations
+# plot predictions with raw data Fig ER v2 - x-axis labels - illustrations - RED
   size_ =1.2
   line_col = 'red' #grey30
   llvpx_a = llvpx[trait == 'Acrosome']
@@ -452,13 +493,15 @@
 
   gA =
   ggplot(adwl, aes(x = Acrosome, y = value)) +
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
     stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
-    geom_ribbon(data = llvpx_a, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
-    geom_line(data = llvpx_a, aes(x = Length_avg, y =pred), col =line_col)+
-    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
     scale_color_manual(values=cols)+ 
     scale_fill_manual(values=fills)+
+    
+    geom_ribbon(data = llvpx_a, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    geom_line(data = llvpx_a, aes(x = Length_avg, y =pred), col = 'red')+
+    
     scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
     scale_x_continuous(limits = c(3,5), breaks = c(3,4,5))+
     #coord_cartesian(clip = 'off')+ 
@@ -748,7 +791,377 @@
     ncol=9,  widths=c(1.34,1,1,1,1,1,1,1,1.225)
     ) 
   ggsave('Outputs/Fig_M_v3.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
-   
+# plot predictions with raw data Fig ER v2 - x-axis labels - illustrations - MOTIL-COL
+  col_ = c(viridis(1, alpha = 1, begin = 0.2, end = 0.2, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.5, end = 0.5, direction = 1, option = "D"),
+         viridis(1, alpha = 1, begin = 0.9, end = 0.9, direction = 1, option = "D")
+         )
+  col_2 = rev(col_)
+
+  size_ =1.2
+  line_col = 'red' #grey30
+  llvpx_a = llvpx[trait == 'Acrosome']
+  llvpx_a[,value:=pred]
+  llvpx_n = llvpx[trait == 'Nucleus']
+  llvpx_n[,value:=pred]
+  llvpx_m = llvpx[trait == 'Midpiece']
+  llvpx_m[,value:=pred]
+  llvpx_t = llvpx[trait == 'Tail']
+  llvpx_t[,value:=pred]
+  llvpx_h = llvpx[trait == 'Head']
+  llvpx_h[,value:=pred]
+  llvpx_f = llvpx[trait == 'Flagellum']
+  llvpx_f[,value:=pred]
+  llvpx_o = llvpx[trait == 'Total']
+  llvpx_o[,value:=pred]
+  llvpx_mr = llvpx[trait == 'Midpiece_rel']
+  llvpx_mr[,value:=pred]
+  llvpx_fr = llvpx[trait == 'Flagellum_rel']
+  llvpx_fr[,value:=pred]
+
+  gA =
+  ggplot(adwl, aes(x = Acrosome, y = value)) +
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    
+    geom_ribbon(data = llvpx_a, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    new_scale_color() +
+    geom_line(data = llvpx_a, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+    
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(limits = c(3,5), breaks = c(3,4,5))+
+    #coord_cartesian(clip = 'off')+ 
+    labs(subtitle = 'Length [μm]')+#, tag = "(b)")+
+    #xlab('Acrosome') +
+    labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.07, 0.97),
+      plot.tag = element_text(face='bold',size =10),
+
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      #axis.title.x = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(margin = margin(r = -1)),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      )  
+
+  gN =
+  ggplot(adwl, aes(x = Nucleus, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_n, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_n, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+
+    new_scale_color() +
+    geom_line(data = llvpx_n, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(26,28,30))+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+      
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      )    
+  
+  gM =
+  ggplot(adwl, aes(x = Midpiece, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_m, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_m, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(21,24,27))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_m, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gT =
+  ggplot(adwl, aes(x = Tail, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_t, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_t, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(72, 82, 92))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_t, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gH =
+  ggplot(adwl, aes(x = Head, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_h, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_h, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(29, 32, 35))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_h, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gF =
+  ggplot(adwl, aes(x = Flagellum, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_f, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_f, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(95,105, 115))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_f, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gO =
+  ggplot(adwl, aes(x = Total, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_o, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_o, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(138, 148))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_o, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    labs(subtitle = '')+
+    #labs(tag = '(b)')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gMR =
+  ggplot(adwl, aes(x = Midpiece_rel, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+   stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_mr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_mr, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1) +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(0.15, 0.17, 0.19), labels = c(15,17,19))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_mr, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    xlab('Midpiece') +
+    labs(subtitle = 'Total length %')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_blank(),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+  
+  gFR =
+  ggplot(adwl, aes(x = Flagellum_rel, y = value)) +
+    geom_point(aes(col = Morph, fill =Morph), pch =21, alpha = 0.8)+
+    stat_cor(method="pearson",size = 2.75, cor.coef.name = 'r',aes(label = ..r.label..), label.x.npc = 'left', label.y.npc = 'bottom') +
+    geom_ribbon(data = llvpx_fr, aes(x=Length_avg, ymin=lwr, ymax=upr), fill = 'grey30', alpha = 0.2, show.legend = NA)+
+    #geom_line(data = llvpx_fr, aes(x = Length_avg, y =pred), col =line_col)+
+    facet_wrap(~Motility, scales = 'free_y', ncol = 1, strip.position="right") +
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
+    scale_x_continuous(breaks = c(0.73, 0.76, 0.79), labels = c(73,73,79))+
+
+    new_scale_color() +
+    geom_line(data = llvpx_fr, aes(x = Length_avg, y =pred, col=Motility))+
+    scale_color_manual(NULL, values = col_2)+
+
+    xlab('Flagellum') +
+    labs(subtitle = '')+
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.margin = margin(c(l = 0, r = 0), unit = "mm"),
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+      plot.subtitle = element_text(size=9, color = 'grey30', vjust = -1),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.y = element_blank(), 
+      #axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_blank(),
+
+      strip.text.y.right = element_text(color="grey20",  margin=margin(1,1,1,1,"mm"), angle=90), #size = 7.5
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+  
+      panel.border = element_rect(color = 'grey70')
+      ) 
+
+
+  ggR = ggarrange(
+    gA, gN, gM, gT, gO, gH, gF, gMR, gFR,
+    ncol=9,  widths=c(1.34,1,1,1,1,1,1,1,1.225)
+    ) 
+  ggsave('Outputs/Fig_M_v4.png',ggR, width = 15/(5/7), height = 8, units = 'cm', bg="white", dpi = 600)
+     
 # mix the two & export
   blank = ggplot() + theme_void() 
   gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
@@ -780,6 +1193,7 @@
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
   ggsave('Outputs/Fig_4_width-190mm_illust_v3_red.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+
 # mix virids the two & export
   blank = ggplot() + theme_void() 
   gB = ggarrange(blank, ggR, nrow=2, heights=c(7.16-5.7,5.7))
@@ -808,7 +1222,20 @@
     annotation_custom(gs, xmin=.47+.06, xmax=.52+.06, ymin = ymin_+0.2) +
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = ymin_) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = ymin_+0.2) 
-  ggsave('Outputs/Fig_4_width-190mm_illust_viridis_red.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_4_width-190mm_illust_viridis_virids.png',g_anot, width = 19/(5/7), height =10, units = 'cm', bg="white", dpi = 600)
+
+
+# TEMP test like in Knief et al
+    i = 'Nucleus'
+    xi = adwl[, i, with = FALSE] 
+    adwl[, Length_avg := xi] 
+    k = 'Average path'
+    adwlk = adwl[Motility == k]
+    m = lm(scale(value) ~ scale(log(motileCount)) + Morph + scale(Length_avg), adwlk)
+    adwlk[,predictions:=predict(m)]
+
+    ggplot(adwlk, aes(y=value, x = predictions, col = Morph)) + geom_point(alpha=0.5)
+    ggplot(adwlk, aes(y=value, x = predictions, col = Morph)) + geom_point(pch = 1)
 
 
 # END
