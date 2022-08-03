@@ -352,14 +352,7 @@
       ddxl[Motility == 'VCL' ,mot:='Curvilinear']
       ddxl[Motility == 'VSL' ,mot:='Straight line']
       ddxl[, animal := bird_ID]
-  
-  # pedigree
-    p = fread('Data/Dat_parentage.txt',na.strings = c(NA_character_, ""))
-    setnames(p, old = c('bird_ID', 'Mother', 'Father'), new = c('id', 'dam', 'sire'))
-    p = p[!is.na(id),.(id,sire,dam)]
-    pc = tidyped(p)
-    #visped(pc) 
-    p2 <- with(data.frame(pc), pedigreemm::pedigree(sire=Sire, dam=Dam, label=Ind))
+
 
 # pairs.panels - single data
   bw_ = bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')]
@@ -422,6 +415,73 @@
   addImg(img_i, x = 0.11, y = y_, width = 0.075)
   addImg(img_s, x = 0.11+0.23, y = y_, width = 0.075)
   addImg(img_fc, x = 0.11+0.45, y = y_, width = 0.075)
+  dev.off()
+
+# pairs.panels - motility all
+  aw_ = d[, c('VCL','VSL','VAP')]
+  setnames(aw_, old = c('VCL','VSL','VAP'), new = c('Curvilinear', 'Straight line', 'Average path')) 
+
+  png("Outputs/Fig_S2b.png", width = 8, height = 8, units = "cm", res = 600)
+  pairs.panels_MB(aw_,
+             #oma=c(0,0,0,0),
+             gap = 0,
+             smooth = TRUE,      # If TRUE, draws loess smooths
+             scale = TRUE,      # If TRUE, scales the correlation text font
+             density = TRUE,     # If TRUE, adds density plots and histograms
+             ellipses = FALSE,    # If TRUE, draws ellipses
+             method = "pearson", # Correlation method (also "spearman" or "kendall")
+             rug = FALSE,
+             pch = 21,           # pch symbol
+             bg = fills[aw$Morph],  # Background color of the symbol (pch 21 to 25)
+             col = cols[aw$Morph],
+             lm = FALSE,         # If TRUE, plots linear fit rather than the LOESS (smoothed) fit
+             cor = TRUE,         # If TRUE, reports correlations
+             jiggle = FALSE,     # If TRUE, data points are jittered
+             factor = 2,         # Jittering factor
+             #hist.col = 3,       # Histograms color
+             stars = FALSE,       # If TRUE, adds significance level with stars
+             ci = FALSE)          # If TRUE, adds confidence intervals   
+  mtext("All motility observations (two for 42 males)", side=3, line=3, cex = 0.75)
+  par(xpd=TRUE)
+  y_ = -0.18-0.45
+  c_ = 0.06
+  points(c(0.17, 0.17+0.23, 0.17+0.45)+c_, c(y_,y_,y_), pch = 21, bg = fills, col = cols, cex = 0.75)
+  addImg(img_i, x = c_+ 0.09, y = y_, width = 0.11)
+  addImg(img_s, x = c_+ 0.09+0.23, y = y_, width = 0.11)
+  addImg(img_fc,x = c_+ 0.09+0.45, y = y_, width = 0.11)
+  dev.off()
+# pairs.panels - motility June
+  aw_ = ddx[, c('VCL','VSL','VAP')]
+  setnames(aw_, old = c('VCL','VSL','VAP'), new = c('Curvilinear', 'Straight line', 'Average path')) 
+
+  png("Outputs/Fig_S2a.png", width = 8, height = 8, units = "cm", res = 600)
+  pairs.panels_MB(aw_,
+             #oma=c(0,0,0,0),
+             gap = 0,
+             smooth = TRUE,      # If TRUE, draws loess smooths
+             scale = TRUE,      # If TRUE, scales the correlation text font
+             density = TRUE,     # If TRUE, adds density plots and histograms
+             ellipses = FALSE,    # If TRUE, draws ellipses
+             method = "pearson", # Correlation method (also "spearman" or "kendall")
+             rug = FALSE,
+             pch = 21,           # pch symbol
+             bg = fills[aw$Morph],  # Background color of the symbol (pch 21 to 25)
+             col = cols[aw$Morph],
+             lm = FALSE,         # If TRUE, plots linear fit rather than the LOESS (smoothed) fit
+             cor = TRUE,         # If TRUE, reports correlations
+             jiggle = FALSE,     # If TRUE, data points are jittered
+             factor = 2,         # Jittering factor
+             #hist.col = 3,       # Histograms color
+             stars = FALSE,       # If TRUE, adds significance level with stars
+             ci = FALSE)          # If TRUE, adds confidence intervals   
+  mtext("June motility values", side=3, line=3, cex = 0.75, adj = 0.35)
+  par(xpd=TRUE)
+  y_ = -0.18-0.45
+  c_ = 0.06
+  points(c(0.17, 0.17+0.23, 0.17+0.45)+c_, c(y_,y_,y_), pch = 21, bg = fills, col = cols, cex = 0.75)
+  addImg(img_i, x = c_+ 0.09, y = y_, width = 0.11)
+  addImg(img_s, x = c_+ 0.09+0.23, y = y_, width = 0.11)
+  addImg(img_fc,x = c_+ 0.09+0.45, y = y_, width = 0.11)
   dev.off()
 
 # not used - pair plot v2
