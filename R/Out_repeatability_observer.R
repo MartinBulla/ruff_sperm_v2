@@ -239,17 +239,218 @@
     d$pk = d$'File Name' = NULL
     # add composite measures
        d[, id_who_pic := paste(id, who, pic)]
+       
        dt = data.table(ddply(d,.(who, id, pic, id_who_pic), summarise, part = 'Total', Pixels = sum(Pixels)))
        dt[,id_part := paste(id, part)]
        dt = dt[Pixels>1000] # excludes one trial with one sperm measured once
        
        dh = data.table(ddply(d[part %in% c('Acrosome','Nucleus')],.(who, id, pic, id_who_pic), summarise, part = 'Head', Pixels = sum(Pixels)))
+       dh[,id_part := paste(id, part)]
+
        df = data.table(ddply(d[part %in% c('Midpiece','Tail')],.(who, id, pic, id_who_pic), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
        df = df[Pixels>1000]
+       df[,id_part := paste(id, part)]
 
        d = rbind(d,dh,df,dt)
+       d = d[order(id_who_pic, id_part)]
 
-# within observer
+# prepare repeatability estimates
+  # within observer
+    b = d[who=='MC']
+    lw = list()
+    for(i in unique(b$part)){
+      part_ = i
+      # part_ = "Acrosome"
+      dd = b[part == part_ & pic %in% c('inv','des')]
+      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+      RR = data.table(merge(data.frame(compar = 'MC inv-des', name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('compar','part', 'Repeatability'))
+      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+      RR[, pred := 100*R$R]
+      RR[, lwr := 100*R$CI_emp[1]]
+      RR[, upr := 100*R$CI_emp[2]]
+      lw[[i]] =  RR
+      print(i)
+    } 
+
+    yw = do.call(rbind,lw)
+  # between observers
+      b = d[pic %in% c('inv')]
+      lb = list()
+      for(i in unique(b$part)){
+        part_ = i
+        # part_ = "Acrosome"
+        dd = b[part == part_]
+        R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+        RR = data.table(merge(data.frame(compar = 'MC-MB inv', name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('compar','part', 'Repeatability'))
+        RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+        RR[, pred := 100*R$R]
+        RR[, lwr := 100*R$CI_emp[1]]
+        RR[, upr := 100*R$CI_emp[2]]
+        lb[[i]] =  RR
+        print(i)
+      } 
+      yb = do.call(rbind,lb)
+  # combine
+    yw[,type:='within observer']
+    yb[,type:='between observer']
+    y = rbind(yw,yb) 
+    
+# Figure SRo plot
+  y[, part := factor(part,levels=rev(c('Acrosome','Nucleus','Midpiece','Tail','Total','Head','Flagellum')))]
+  col_ = c(viridis(1, alpha = 1, begin = 0.2, end = 0.2, direction = 1, option = "D"), 
+           viridis(1, alpha = 1, begin = 0.9, end = 0.9, direction = 1, option = "D")
+         )
+  tx = 0.15
+  #show_col(col_)
+  gm = 
+  ggplot(y, aes(y = part, x = pred, shape = type, col = type)) +
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = 0.6) ) +
+    #ggtitle ("Sim based")+
+    geom_point(position = position_dodge(width = 0.6), bg = 'white', size = 1.1) +
+    #scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
+    #scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
+    scale_x_continuous(limits = c(80, 100), expand = c(0, 0))+
+    scale_shape_manual(guide = guide_legend(reverse = TRUE), values =c(23,21))+
+    scale_color_manual(guide = guide_legend(reverse = TRUE), values = col_)+
+    labs(y = NULL, x = "Repeatability [%]")+
+    geom_text(x=93, y=4+tx, label="within observer", col = col_[2], size = 2.2, adj = 1) +
+    geom_text(x=93, y=4-tx, label="between observer", col = col_[1], size = 2.2, adj = 1) +
+    #coord_flip()+
+    theme_bw() +
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+          plot.margin = margin(3,3,1,1, "mm"),
+          panel.border = element_rect(color = 'grey70'),
+          
+          legend.position = "none",
+          #legend.title = element_blank(),
+          #legend.text=element_text(size=7.5, color = 'grey30'),
+          #legend.key.height= unit(0.2,"line"),
+          #legend.margin=margin(0,0,0,0),
+          #legend.position=c(0.5,1.6),
+          
+          axis.ticks = element_blank(),
+          axis.title = element_text(size = 10, color ='grey10')
+          )  
+
+  ggsave(here::here('Outputs/Fig_Ro_width-43mm.png'),gm, width = 4.3/(5/7), height = 6, units = 'cm', dpi = 600)
+# Figure SRo table
+  y[, Repeatability := format(round(pred), nsmall = 0)]
+  y[,lwr_f := format(round(lwr,1), nsmall = 1)]
+  y[,upr_f := format(round(upr,1), nsmall = 1)]
+  y[r, es_ci := paste0(Repeatability, '% (', lwr_f,' - ',upr_f,')')]
+  y_w = reshape(y[,.(part, type, es_ci)], idvar = c('part'), timevar = 'type', direction = "wide") 
+  fwrite(y_w, file = 'Outputs/Table_SRo.csv')
+
+# NOT USED
+  # KIM (from all) vs Maggie
+  # 40 tryout
+    f = data.table(
+      f = c(list.files(path = here::here('Data/'), pattern = 'test40', recursive = TRUE, full.names = TRUE)),
+      f2 = c(list.files(path = here::here('Data/'), pattern = 'test40', recursive = TRUE, full.names = FALSE))
+      )   
+
+    ff = f[substr(f2,8,9) == 'MB']
+    d2 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #j = 1
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 11, 13)]
+      #x[, manip := substr(x$'File Name', 4, nchar(x$'File Name')-7-(nchar(pk)))]
+      
+      #table(x$id)
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '01'
+        xi = x[id == i]
+        xi[, part := c('Acrosome','Nucleus','Midpiece','Tail')]
+        return(xi)
+        }    
+      return(xx)
+      }
+      
+    ff = f[substr(f2,8,9) == 'MC']
+    d3 = foreach(j = 1:nrow(ff), .combine = rbind) %do% {
+      #k = ff[5,]
+      k = ff[j,]
+      x = fread(file = k[,f])
+      x[, who := substr(k[,f2], 8, 9)]
+      #x[, datetime_ := substr(j, 27, 45)]
+      x[, id := substr(x$'File Name', 1, 2)]
+      x[, pk := 1:nrow(x)]
+      x[, pic := substr(k[,f2], 13, 15)]
+      xx = foreach(i = unique(x$id), .combine = rbind) %do% {
+        #i = '02'
+        xi = x[id == i]
+        if(nrow(xi)==4){
+         xi[Pixels == max(Pixels), part := 'Tail']
+         xi[Pixels != max(Pixels), part := c('Acrosome','Nucleus','Midpiece')]
+         } else{xi[, part := c('Acrosome','Nucleus','Midpiece')]}
+         return(xi)
+        }    
+      return(xx)
+      }
+        
+    d = rbind(d2,d3)  
+    d[, id_part := paste(id, part)]
+    d[, id_who_pic := paste(id, who, pic)]
+
+  # select KIMs
+    r = fread(here::here('Data/test_40_randomized.csv')) 
+    r[ ,mer:=sub('.*Snap-', '', f2)]
+    r[, mer:=substring(mer,1,nchar(mer)-4)]
+    r[, bird_ID:=sub("\\-.*", "", f2)]
+    r[, bird_ID:=substring(bird_ID,6, nchar(bird_ID)-5)]
+
+    k = fread(here::here('Data/DAT_morphometrics.csv')) 
+    setnames(k,old = 'pic', new = 'sperm_ID')
+    k[, sample_ID:=as.character(sample_ID)]
+    k[ ,mer:=sub('.*Snap-', '', file_name)]
+    k[, mer:=substring(mer,1,nchar(mer)-8)]
+
+    kr = k[paste(mer, bird_ID)%in%paste(r$mer, r$bird_ID)]
+    kr[,who:='KT']
+
+  # select 40test
+    rk = r[paste(mer, bird_ID)%in%paste(kr$mer, kr$bird_ID)]
+
+    d[, id := as.numeric(id)]
+    #dk = d[id%in%rk$id]
+    dk=merge(d, rk, by = 'id')
+    b = dk[who == 'MC' & pic == 'inv']
+
+    bk = rbind(
+      b[,.(who, bird_ID, mer, part, Pixels)],
+      kr[,.(who, bird_ID, mer, part, Pixels)]
+      )
+    bk[,id:=paste(bird_ID,mer)]
+    
+    lb = list()
+    for(i in unique(b$part)){
+        part_ = i
+        # part_ = "Acrosome"
+        dd = bk[part == part_]
+        R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
+        RR = data.table(merge(data.frame(compar = 'MC-KT inv', name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('compar','part', 'Repeatability'))
+        RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
+        RR[, pred := 100*R$R]
+        RR[, lwr := 100*R$CI_emp[1]]
+        RR[, upr := 100*R$CI_emp[2]]
+        lb[[i]] =  RR
+        print(i)
+      } 
+    yk = do.call(rbind,lb)
+  
+
+    length(unique(paste(kr$mer, kr$bird_ID)))
+
+  xk = kr[!paste(mer,part,bird_ID)%in%kr[duplicated(paste(mer,part,bird_ID)),paste(mer, part,bird_ID)] ] 
+  
+  xk[order(part,mer)]
+    
+      # within observer
   b = d[who=='MC']
   # estimate gre - des 
     lfrpt = list()
@@ -377,417 +578,3 @@ y = rbind(y1,y2,y3,y4)
     } 
     yd = do.call(rbind,l)
   
-#### from ruff_sperm
-
-    # inverted only
-      b = d[pic == "inv" & id_part %in% d[duplicated(id_part), id_part]] # only sperm ids and parts measured 
-      
-      # composite parts
-           b[, id_who := paste(id, who)]
-           bt = data.table(ddply(b,.(who, id, id_who), summarise, part = 'Total', Pixels = sum(Pixels)))
-           bt = bt[Pixels>1000]
-           bh = data.table(ddply(b[part %in% c('Acrosome','Nucleus')],.(who, id, id_who), summarise, part = 'Head', Pixels = sum(Pixels)))
-           bf = data.table(ddply(b[part %in% c('Midpiece','Tail')],.(who, id, id_who), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
-           bf = bf[Pixels>1000]
-           bc = rbind(bh,bf,bt)
-
-      # wide format
-           bw = reshape(b[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")
-
-           bcw = reshape(bc[,.(who,id,part,Pixels)], idvar = c('id','part'), timevar = 'who', direction = "wide")    
-    # Maggie inverted vs desaturated vs gray scale
-      # composite parts
-           mm = d[who == 'MC']
-           mm[, id_pic := paste(id, pic)]
-           mt = data.table(ddply(mm,.(pic, id, id_pic), summarise, part = 'Total', Pixels = sum(Pixels)))
-           mt = mt[Pixels>1000]
-           mh = data.table(ddply(mm[part %in% c('Acrosome','Nucleus')],.(pic, id, id_pic), summarise, part = 'Head', Pixels = sum(Pixels)))
-           mf = data.table(ddply(mm[part %in% c('Midpiece','Tail')],.(pic, id, id_pic), summarise, part = 'Flagellum', Pixels = sum(Pixels)))
-           mf = mf[Pixels>1000]
-           mc = rbind(mh,mf,mt)
-
-      # wide format
-           mw = reshape(mm[,.(pic,id,part,Pixels)], idvar = c('id','part'), timevar = 'pic', direction = "wide")
-
-           mcw = reshape(mc[,.(pic,id,part,Pixels)], idvar = c('id','part'), timevar = 'pic', direction = "wide")    
-
-  # Repeatability prep inv
-    # all  
-      # estimate BASIC 
-              lfsim = list()
-              lfrpt = list()
-              for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
-                part_ = i
-                # part_ = "Acrosome"
-                dd = b[part == part_]
-                m = lmer(Pixels ~ 1+(1|id), dd)
-                Rf = R_out(part_)
-                lfsim[[i]] = Rf[, method_CI:='arm package']
-
-                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-                #print(i)
-              } 
-              x = do.call(rbind,lfsim)
-              names(x)[1] = "part"
-              y = do.call(rbind,lfrpt)
-
-              x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-              x[, lwr:= as.numeric(substr(CI,1,2))]
-              x[, upr:= as.numeric(substr(CI,4,5))]
-
-              y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-              y[nchar(CI) == 5, CI := paste0(0,CI) ]
-              y[, lwr:= as.numeric(substr(CI,1,2))]
-              y[, upr:= as.numeric(substr(CI,4,5))]
-              names(y)[2] = tolower( names(y)[2])
-              xy = rbind(x,y)
-              xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-              xy[nchar(CI) == 7 & upr == 10, upr := 100]
-      # estimate COMPOSITE
-              lfsim = list()
-              lfrpt = list()
-              for(i in c("Head", "Flagellum","Total")){
-                part_ = i
-                # part_ = "Flagellum"
-                dd = bc[part == part_]
-                m = lmer(Pixels ~ 1+(1|id), dd)
-                Rf = R_out(part_)
-                lfsim[[i]] = Rf[, method_CI:='arm package']
-
-                R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-                RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-                RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-                lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-                #print(i)
-              }
-              
-              x = do.call(rbind,lfsim)
-              names(x)[1] = "part"
-              y = do.call(rbind,lfrpt)
-
-              x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-              x[, lwr:= as.numeric(substr(CI,1,2))]
-              x[, upr:= as.numeric(substr(CI,4,5))]
-
-              y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-              y[nchar(CI) == 5, CI := paste0(0,CI) ]
-              y[, lwr:= as.numeric(substr(CI,1,2))]
-              y[, upr:= as.numeric(substr(CI,4,5))]
-              names(y)[2] = tolower( names(y)[2])
-              xy2 = rbind(x,y)
-              xy2[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
-              xy2[nchar(CI) == 7 & upr == 10, upr := 100]
-    # KT, MB
-      # estimate BASIC 
-          lfsim = list()
-          lfrpt = list()
-          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
-            part_ = i
-            # part_ = "Acrosome"
-            dd = b[part == part_ & who %in% c('KT','MB')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          } 
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xyKTMB = rbind(x,y)
-          xyKTMB[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-          xyKTMB[nchar(CI) == 7 & upr == 10, upr := 100]
-      # estimate COMPOSITE
-          lfsim = list()
-          lfrpt = list()
-          for(i in c("Head", "Flagellum","Total")){
-            part_ = i
-            # part_ = "Flagellum"
-            dd = bc[part == part_ & who %in% c('KT','MB')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          }
-          
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xy2KTMB = rbind(x,y)
-          xy2KTMB[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
-          xy2KTMB[nchar(CI) == 7 & upr == 10, upr := 100]
-    # MB, MC
-      # estimate BASIC 
-          lfsim = list()
-          lfrpt = list()
-          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
-            part_ = i
-            # part_ = "Acrosome"
-            dd = b[part == part_ & who %in% c('MC','MB')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          } 
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xyMBMC = rbind(x,y)
-          xyMBMC[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-          xyMBMC[nchar(CI) == 7 & upr == 10, upr := 100]
-      # estimate COMPOSITE
-          lfsim = list()
-          lfrpt = list()
-          for(i in c("Head", "Flagellum","Total")){
-            part_ = i
-            # part_ = "Flagellum"
-            dd = bc[part == part_ & who %in% c('MC','MB')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          }
-          
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xy2MBMC = rbind(x,y)
-          xy2MBMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
-          xy2MBMC[nchar(CI) == 7 & upr == 10, upr := 100]
-    # KT, MC
-      # estimate BASIC 
-          lfsim = list()
-          lfrpt = list()
-          for(i in c('Acrosome','Nucleus','Midpiece','Tail')){
-            part_ = i
-            # part_ = "Acrosome"
-            dd = b[part == part_ & who %in% c('MC','KT')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          } 
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xyKTMC = rbind(x,y)
-          xyKTMC[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-          xyKTMC[nchar(CI) == 7 & upr == 10, upr := 100]
-      # estimate COMPOSITE
-          lfsim = list()
-          lfrpt = list()
-          for(i in c("Head", "Flagellum","Total")){
-            part_ = i
-            # part_ = "Flagellum"
-            dd = bc[part == part_ & who %in% c('MC','KT')]
-            m = lmer(Pixels ~ 1+(1|id), dd)
-            Rf = R_out(part_)
-            lfsim[[i]] = Rf[, method_CI:='arm package']
-
-            R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-            RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-            RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-            lfrpt[[i]] =  RR[, method_CI := 'rpt package']
-            print(i)
-          }
-          
-          x = do.call(rbind,lfsim)
-          names(x)[1] = "part"
-          y = do.call(rbind,lfrpt)
-
-          x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-          x[, lwr:= as.numeric(substr(CI,1,2))]
-          x[, upr:= as.numeric(substr(CI,4,5))]
-
-          y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-          y[nchar(CI) == 5, CI := paste0(0,CI) ]
-          y[, lwr:= as.numeric(substr(CI,1,2))]
-          y[, upr:= as.numeric(substr(CI,4,5))]
-          names(y)[2] = tolower( names(y)[2])
-          xy2KTMC = rbind(x,y)
-          xy2KTMC[, part := factor(part, levels=c("Head","Flagellum","Total"))] 
-          xy2KTMC[nchar(CI) == 7 & upr == 10, upr := 100]              
-
-  # Repeatability prep MC acrosome
-    ma = mm[part == 'Acrosome'] 
-    # all  
-      part_ = 'Acrosome'
-      dd = ma[part == part_]
-      m = lmer(Pixels ~ 1+(1|id), dd)
-      Rf = R_out(part_)
-      x = Rf[, method_CI:='arm package']
-      names(x)[1] = "part"
-
-      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-      y=  RR[, method_CI := 'rpt package']
-      #print(i)
-
-      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-      x[, lwr:= as.numeric(substr(CI,1,2))]
-      x[, upr:= as.numeric(substr(CI,4,5))]
-
-      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-      y[nchar(CI) == 5, CI := paste0(0,CI) ]
-      y[, lwr:= as.numeric(substr(CI,1,2))]
-      y[, upr:= as.numeric(substr(CI,4,5))]
-      names(y)[2] = tolower( names(y)[2])
-      xy_ma = rbind(x,y)
-      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-      xy_ma[nchar(CI) == 7 & upr == 10, upr := 100]     
-    # inv, des
-      part_ = 'Acrosome'
-      dd = ma[part == part_ & pic %in%c('inv','des')]
-      m = lmer(Pixels ~ 1+(1|id), dd)
-      Rf = R_out(part_)
-      x = Rf[, method_CI:='arm package']
-      names(x)[1] = "part"
-
-      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-      y=  RR[, method_CI := 'rpt package']
-      #print(i)
-       
-      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-      x[, lwr:= as.numeric(substr(CI,1,2))]
-      x[, upr:= as.numeric(substr(CI,4,5))]
-
-      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-      y[nchar(CI) == 5, CI := paste0(0,CI) ]
-      y[, lwr:= as.numeric(substr(CI,1,2))]
-      y[, upr:= as.numeric(substr(CI,4,5))]
-      names(y)[2] = tolower( names(y)[2])
-      xy_ma_id = rbind(x,y)
-      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-      xy_ma_id[nchar(CI) == 7 & upr == 10, upr := 100]
-    # inv, gre
-      part_ = 'Acrosome'
-      dd = ma[part == part_ & pic %in%c('inv','gre')]
-      m = lmer(Pixels ~ 1+(1|id), dd)
-      Rf = R_out(part_)
-      x = Rf[, method_CI:='arm package']
-      names(x)[1] = "part"
-
-      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-      y=  RR[, method_CI := 'rpt package']
-      #print(i)
-       
-      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-      x[, lwr:= as.numeric(substr(CI,1,2))]
-      x[, upr:= as.numeric(substr(CI,4,5))]
-
-      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-      y[nchar(CI) == 5, CI := paste0(0,CI) ]
-      y[, lwr:= as.numeric(substr(CI,1,2))]
-      y[, upr:= as.numeric(substr(CI,4,5))]
-      names(y)[2] = tolower( names(y)[2])
-      xy_ma_ig = rbind(x,y)
-      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-      xy_ma_ig[nchar(CI) == 7 & upr == 10, upr := 100]
-    # des, gre
-      part_ = 'Acrosome'
-      dd = ma[part == part_ & pic %in%c('des','gre')]
-      m = lmer(Pixels ~ 1+(1|id), dd)
-      Rf = R_out(part_)
-      x = Rf[, method_CI:='arm package']
-      names(x)[1] = "part"
-
-      R = rpt(Pixels ~ (1 | id), grname = "id", data = dd, datatype = "Gaussian")#, nboot = 0, npermut = 0)
-      RR = data.table(merge(data.frame(name =part_), paste0(round(R$R*100),'%'))) %>% setnames(new = c('part', 'Repeatability'))
-      RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
-      y=  RR[, method_CI := 'rpt package']
-      #print(i)
-       
-      x[, pred:= as.numeric(substr(repeatability,1,nchar(repeatability)-1))]
-      x[, lwr:= as.numeric(substr(CI,1,2))]
-      x[, upr:= as.numeric(substr(CI,4,5))]
-
-      y[, pred:= as.numeric(substr(Repeatability,1,nchar(Repeatability)-1))]
-      y[nchar(CI) == 5, CI := paste0(0,CI) ]
-      y[, lwr:= as.numeric(substr(CI,1,2))]
-      y[, upr:= as.numeric(substr(CI,4,5))]
-      names(y)[2] = tolower( names(y)[2])
-      xy_ma_dg = rbind(x,y)
-      #xy[, part := factor(part, levels=c("Acrosome", "Nucleus", "Midpiece","Tail"))] 
-      xy_ma_dg[nchar(CI) == 7 & upr == 10, upr := 100]
