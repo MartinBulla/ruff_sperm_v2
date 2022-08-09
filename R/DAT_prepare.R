@@ -1,5 +1,5 @@
 # load data 
-  x = fread(here::here('Data/morphometrics.csv')) 
+  x = fread(here::here('Data/DAT_morphometrics.csv')) 
   setnames(x,old = 'pic', new = 'sperm_ID')
   x[, sample_ID:=as.character(sample_ID)]
 
