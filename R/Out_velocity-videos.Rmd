@@ -1,0 +1,35 @@
+---
+title: "Example recordings of ruff and zebra finch sperm motility"  
+author: "Martin Bulla"  
+date: "`r Sys.time()`"
+output:
+   html_document: 
+        toc: true
+        toc_float: true
+        toc_depth: 5
+        code_folding: hide
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+***
+
+### Ruff sperm ### 
+<video autosize: true controls>
+  <source src="ruff_1307-diluted-0001.m4v" type="video/mp4">
+</video>
+
+
+### Zebra finch sperm ### 
+<video autosize: true controls>
+  <source src="zebra-finch_K19180-0001.m4v" type="video/mp4">
+</video>
+
+***
+
+#### Notes on the method #### 
+Sperm was collected in May/June 2021 from captive ruffs by abdominal massage (for a detailed protocol of sperm collection – including video - and sample preparation see [here]shorturl.at/ijnp9). Sperm (~0.5–3μl) was pipetted from the cloaca and immediately diluted and gently mixed in 50μl of preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen™). An aliquot of 2.5μl was pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at 40 °C. The slide was inspected and either recorded (if sperm densities were fine) or a new aliquot was taken and further diluted. 
+
+Sperm was recorded immediately after sample collection at 25 frames per second in eight different fields of the Leja slide under a 100x magnification using phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at a constant temperature of 40°C.
