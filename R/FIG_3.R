@@ -253,7 +253,558 @@
     llpcv[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total")))] 
     llpcv[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
 
-# not used - Fig E v1
+# (a) - legend top
+  cols_=pal_jco()(3)
+  
+  gV = 
+    ggplot(llvx, aes(y = response, x = estimate, shape = effect, col = effect)) +  
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco()+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Velocity', tag = "(a)")+
+    guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
+    #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
+    #annotate(geom="text", x=0.65, y=2, label="Faeder\nrelative to\nindependent", color=cols_[2],hjust = 0, size = 3.25) +
+    #annotate(geom="text", x=0.65, y=.87, label="Faeder\nrelative to\nsatellite", color=cols_[1],hjust = 0, size = 3.25) +
+    theme_bw() +
+    theme(
+        plot.tag.position = c(0.027, 0.98),
+        plot.tag = element_text(face='bold', size = 10),
+        plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.title = element_blank(),
+        legend.text=element_text(size=7.5, color = 'grey30'),
+        legend.key.height= unit(0.2,"line"),
+        legend.margin=margin(0,0,0,0),
+        legend.position=c(0.5,1.6),
+
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(15.5,3,1,1, "mm")
+        )    
+  gM = 
+    ggplot(ll_, aes(y = response, x = estimate, shape = effect, col = effect)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco(guide = guide_legend(reverse = TRUE))+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - length')+
+    theme_bw() +
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )  
+  gCV = 
+    ggplot(llcv_, aes(y = response, x = estimate, shape = effect, col = effect)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width =width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco(guide = guide_legend(reverse = TRUE))+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - coefficient of var.')+
+    theme_bw() +
+    theme(
+        plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.position = "none",
+        axis.title.x = element_text(size = 10, color ='grey10'),
+        axis.ticks = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )    
+  
+  ggA = ggarrange(
+    gV,gM,gCV, 
+    nrow=3, heights=c(3.5,3.78,4.22), align = 'v'
+    )
+  #ggsave('Outputs/Fig_3a_width-50mnm.png',ggA, width = 5/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+# (b) - x-axis labels - illustrations
+  aml[, mot2 := factor(mot,levels=c('Curvilinear','Straight line','Average path','w','x'))]
+  #aml[,summary(value), by = mot2]
+  llvpx[, value:=pred]
+  llvpx[, mot2:=motility]
+
+  a_m = a[!part%in%c('Head','Flagellum')]
+  a_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  llp_m = llp[!part%in%c('Head','Flagellum')]
+  llp_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+
+  cv_m =cv_[!part%in%c('Head','Flagellum')]
+  cv_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  # for visualization purpose one extreme tail CV (and hence also Total CV) value brought down and labeled
+    cv_m[part== 'Tail' & CV>15, CV:=8] 
+    cv_m[part == 'Total' & CV>7.5, CV:=6] 
+    #cv_m[,summary(CV), by = part]
+  llpcv_ = llpcv[!part%in%c('Head','Flagellum')]
+  llpcv_[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  llpcv_[,CV:=Length_avg]
+  size_ =1.2
+  gv =
+  ggplot(aml, aes(x = Morph, y = value)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llvpx, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Velocity [μm/s]', expand = c(0, 0))+
+    xlab('Morph') +
+    labs(tag = '(b)')+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.tag.position = c(0.006, 1),
+      plot.tag = element_text(face='bold',size =10),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(margin = margin(r = -1)),
+      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      panel.border = element_rect(color = 'grey70')
+      )  
+
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds_v = data.frame(
+      mot2 = c('Curvilinear','Average path', 'Straight line','w','x'),
+      ymin = c(25, 10, 5,1,1), 
+      ymax = c(80, 50, 35,5,5), 
+      breaks = c(10,10,10,1,1), stringsAsFactors=FALSE)
+
+    ff_v <- with(facet_bounds_v,
+           data.frame(value=c(ymin,ymax),
+                      mot2=c(mot2,mot2)))
+    ff_v$mot2 = factor(ff_v$mot2, levels=(c("Curvilinear", "Average path", "Straight line",'w','x'))) 
+    gv = gv + geom_point(data=ff_v,x=NA)
+   # remove panels  
+    ggv = ggplotGrob(gv)
+    rm_grobs <- ggv$layout$name %in% c("panel-4-1", "panel-5-1","strip-t-4-1", "strip-t-5-1","axis-l-1-4", "axis-l-1-5")
+    ggv$grobs[rm_grobs] <- NULL
+    ggv$layout <- ggv$layout[!rm_grobs, ]
+  gm=
+  ggplot(a_m, aes(x = Morph, y = Length_avg)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llp_m, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    xlab('Morph') +
+    scale_y_continuous('Length [µm]', expand = c(0, 0))+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(margin = margin(r = -1)),
+      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      panel.border = element_rect(color = 'grey70')
+      ) 
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds <- read.table(header=TRUE,
+        text=                           
+        "part ymin ymax breaks
+        Acrosome     3     5    .5
+        Nucleus     24     32    2
+        Midpiece     20     28    2
+        Tail     70     95    5
+        Total     125    150    5",
+        stringsAsFactors=FALSE)
+
+    ff <- with(facet_bounds,
+           data.frame(Length_avg=c(ymin,ymax),
+                      part=c(part,part)))
+    ff$part = factor(ff$part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total"))) 
+    gm = gm + geom_point(data=ff,x=NA)
+  gcv= 
+  ggplot(cv_m, aes(x = Morph, y = CV)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llpcv_, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    xlab('Morph') +
+    scale_y_continuous('Coefficient of variation', expand = c(0, 0))+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), 
+      axis.text.x = element_blank(), 
+      axis.text.y = element_text(margin = margin(r = -1)),
+      axis.ticks = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      plot.margin = margin(b=10.4,1,1,1, "mm"),
+      panel.border = element_rect(color = 'grey70')
+      ) 
+
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds_cv <- read.table(header=TRUE,
+        text=                           
+        "part ymin ymax breaks
+        Acrosome     0     30    10
+        Nucleus     2     12    2
+        Midpiece     1     7    1
+        Tail     0     8    2
+        Total     1    6    1",
+        stringsAsFactors=FALSE)
+
+    ff_cv <- with(facet_bounds_cv,
+           data.frame(CV=c(ymin,ymax),
+                      part=c(part,part)))
+
+    gcv = gcv + geom_point(data=ff_cv,x=NA) 
+
+  ggR = ggarrange(
+    ggv,
+    gm,
+    gcv,  
+    nrow=3, align = 'v', heights=c(3,3,3.2)  
+    ) 
+  right = 0.38
+  right2 = 0.01
+  ymin_ = -0.92
+    
+  ggExp =  
+  ggR + 
+    annotation_custom(gi, xmin=0.064, xmax=0.116, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05, xmax=0.116+0.05, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1, xmax=0.116+0.1, ymin=ymin_)+
+
+    annotation_custom(gi, xmin=0.064+right, xmax=0.116+right, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05+right, xmax=0.116+0.05+right, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1+right, xmax=0.116+0.1+right, ymin=ymin_) +
+
+    annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
+  #ggExp   
+  #ggsave('Outputs/Fig_3b_130mm_v1.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+# mix (a) & (b) and export
+  blank = ggplot() + theme_void() 
+  ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(10,92.9, 7.1+4.3))
+  ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
+  ggsave('Outputs/Fig_3_width-180mm_a-lower.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+
+# not used different (a), (b) placement
+# (a) - legend top
+  cols_=pal_jco()(3)
+  
+  gV = 
+    ggplot(llvx, aes(y = response, x = estimate, shape = effect, col = effect)) +  
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco()+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Velocity', tag = "(a)")+
+    guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
+    #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
+    #annotate(geom="text", x=0.65, y=2, label="Faeder\nrelative to\nindependent", color=cols_[2],hjust = 0, size = 3.25) +
+    #annotate(geom="text", x=0.65, y=.87, label="Faeder\nrelative to\nsatellite", color=cols_[1],hjust = 0, size = 3.25) +
+    theme_bw() +
+    theme(
+        plot.tag.position = c(0.025, 1.42),
+        plot.tag = element_text(face='bold', size = 10),
+        plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.title = element_blank(),
+        legend.text=element_text(size=7.5, color = 'grey30'),
+        legend.key.height= unit(0.2,"line"),
+        legend.margin=margin(0,0,0,0),
+        legend.position=c(0.5,1.6),
+
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(15.5,3,1,1, "mm")
+        )    
+  gM = 
+    ggplot(ll_, aes(y = response, x = estimate, shape = effect, col = effect)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width = width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco(guide = guide_legend(reverse = TRUE))+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - length')+
+    theme_bw() +
+    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.position = "none",
+        axis.ticks = element_blank(),
+        axis.title.x = element_blank(),
+        axis.text.x = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )  
+  gCV = 
+    ggplot(llcv_, aes(y = response, x = estimate, shape = effect, col = effect)) +
+    geom_vline(xintercept = 0, col = "grey60", lty =3)+
+    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
+    geom_point(position = position_dodge(width =width_)) +
+    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
+    scale_color_jco(guide = guide_legend(reverse = TRUE))+
+    scale_shape(guide = guide_legend(reverse = TRUE))+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - Coefficient of var.')+
+    theme_bw() +
+    theme(
+        plot.subtitle = element_text(size=9, color = 'grey30'),
+        legend.position = "none",
+        axis.title.x = element_text(size = 10, color ='grey10'),
+        axis.ticks = element_blank(),
+
+        panel.border = element_rect(color = 'grey70'),
+        panel.grid.minor = element_blank(),
+
+        plot.margin = margin(3,3,1,1, "mm")
+        )    
+  
+  ggA = ggarrange(
+    gV,gM,gCV, 
+    nrow=3, heights=c(3.5,3.78,4.22), align = 'v'
+    )
+  #ggsave('Outputs/Fig_3a_width-50mnm.png',ggA, width = 5/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+# (b) - x-axis labels - illustrations
+  aml[, mot2 := factor(mot,levels=c('Curvilinear','Straight line','Average path','w','x'))]
+  #aml[,summary(value), by = mot2]
+  llvpx[, value:=pred]
+  llvpx[, mot2:=motility]
+
+  a_m = a[!part%in%c('Head','Flagellum')]
+  a_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  llp_m = llp[!part%in%c('Head','Flagellum')]
+  llp_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+
+  cv_m =cv_[!part%in%c('Head','Flagellum')]
+  cv_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  # for visualization purpose one extreme tail CV (and hence also Total CV) value brought down and labeled
+    cv_m[part== 'Tail' & CV>15, CV:=8] 
+    cv_m[part == 'Total' & CV>7.5, CV:=6] 
+    #cv_m[,summary(CV), by = part]
+  llpcv_ = llpcv[!part%in%c('Head','Flagellum')]
+  llpcv_[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
+  llpcv_[,CV:=Length_avg]
+  size_ =1.2
+  gv =
+  ggplot(aml, aes(x = Morph, y = value)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llvpx, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    scale_y_continuous('Velocity [μm/s]', expand = c(0, 0))+
+    xlab('Morph') +
+    labs(tag = '(b)')+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      plot.tag.position = c(0.005, 1),
+      plot.tag = element_text(face='bold',size =10),
+
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(margin = margin(r = -1)),
+      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      panel.border = element_rect(color = 'grey70')
+      )  
+
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds_v = data.frame(
+      mot2 = c('Curvilinear','Average path', 'Straight line','w','x'),
+      ymin = c(25, 10, 5,1,1), 
+      ymax = c(80, 50, 35,5,5), 
+      breaks = c(10,10,10,1,1), stringsAsFactors=FALSE)
+
+    ff_v <- with(facet_bounds_v,
+           data.frame(value=c(ymin,ymax),
+                      mot2=c(mot2,mot2)))
+    ff_v$mot2 = factor(ff_v$mot2, levels=(c("Curvilinear", "Average path", "Straight line",'w','x'))) 
+    gv = gv + geom_point(data=ff_v,x=NA)
+   # remove panels  
+    ggv = ggplotGrob(gv)
+    rm_grobs <- ggv$layout$name %in% c("panel-4-1", "panel-5-1","strip-t-4-1", "strip-t-5-1","axis-l-1-4", "axis-l-1-5")
+    ggv$grobs[rm_grobs] <- NULL
+    ggv$layout <- ggv$layout[!rm_grobs, ]
+  gm=
+  ggplot(a_m, aes(x = Morph, y = Length_avg)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llp_m, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    xlab('Morph') +
+    scale_y_continuous('Length [µm]', expand = c(0, 0))+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), axis.text.x = element_blank(), 
+      axis.ticks = element_blank(),
+      axis.text.y = element_text(margin = margin(r = -1)),
+      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      panel.border = element_rect(color = 'grey70')
+      ) 
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds <- read.table(header=TRUE,
+        text=                           
+        "part ymin ymax breaks
+        Acrosome     3     5    .5
+        Nucleus     24     32    2
+        Midpiece     20     28    2
+        Tail     70     95    5
+        Total     125    150    5",
+        stringsAsFactors=FALSE)
+
+    ff <- with(facet_bounds,
+           data.frame(Length_avg=c(ymin,ymax),
+                      part=c(part,part)))
+    ff$part = factor(ff$part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total"))) 
+    gm = gm + geom_point(data=ff,x=NA)
+  gcv= 
+  ggplot(cv_m, aes(x = Morph, y = CV)) +
+    geom_dotplot(binaxis = 'y', stackdir = 'center',
+                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
+    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    geom_errorbar(data = llpcv_, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
+    geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = size_) +
+    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    xlab('Morph') +
+    scale_y_continuous('Coefficient of variation', expand = c(0, 0))+
+    guides(x =  guide_axis(angle = -15)) +
+    theme_bw() +
+    theme(
+      legend.position = "none",
+      axis.title = element_text(size = 10, , colour="grey10"),
+      axis.title.x = element_blank(), 
+      axis.text.x = element_blank(), 
+      axis.text.y = element_text(margin = margin(r = -1)),
+      axis.ticks = element_blank(),
+      strip.text = element_blank(),
+      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
+      
+      plot.margin = margin(b=10.4,1,1,1, "mm"),
+      panel.border = element_rect(color = 'grey70')
+      ) 
+
+    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
+    facet_bounds_cv <- read.table(header=TRUE,
+        text=                           
+        "part ymin ymax breaks
+        Acrosome     0     30    10
+        Nucleus     2     12    2
+        Midpiece     1     7    1
+        Tail     0     8    2
+        Total     1    6    1",
+        stringsAsFactors=FALSE)
+
+    ff_cv <- with(facet_bounds_cv,
+           data.frame(CV=c(ymin,ymax),
+                      part=c(part,part)))
+
+    gcv = gcv + geom_point(data=ff_cv,x=NA) 
+
+  ggR = ggarrange(
+    ggv,
+    gm,
+    gcv,  
+    nrow=3, align = 'v', heights=c(3,3,3.2)  
+    ) 
+  right = 0.38
+  right2 = 0.01
+  ymin_ = -0.92
+    
+  ggExp =  
+  ggR + 
+    annotation_custom(gi, xmin=0.064, xmax=0.116, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05, xmax=0.116+0.05, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1, xmax=0.116+0.1, ymin=ymin_)+
+
+    annotation_custom(gi, xmin=0.064+right, xmax=0.116+right, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05+right, xmax=0.116+0.05+right, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1+right, xmax=0.116+0.1+right, ymin=ymin_) +
+
+    annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
+    annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
+    annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
+  #ggExp   
+  #ggsave('Outputs/Fig_3b_130mm_v1.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
+# mix (a) & (b) and export
+  blank = ggplot() + theme_void() 
+  #ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(14.3,92.9, 7.1))
+  ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(14.8,92.9, 6.6))
+  ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
+  ggsave('Outputs/Fig_3_width-180mm.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+
+  ggB = ggarrange(blank, ggExp, nrow=2, heights=c(13.8+6.6,92.9))
+  ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
+  ggsave('Outputs/Fig_3_width-180mm_v2.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+
+
+  ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(10,92.9, 7.1+4.3))
+  ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
+  ggsave('Outputs/Fig_3_width-180mm_v3.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+
+# ALTERNATIVE
+
+# not used - (a)
   gV = 
     ggplot(llvx, aes(y = response, x = estimate, shape = effect, col = effect)) +  
     geom_vline(xintercept = 0, col = "grey60", lty =3)+
@@ -344,92 +895,7 @@
   g_exp = ggA + annotation_custom(blank_grob, xmin=.55, xmax=1.1, ymin = 0, ymax = 0.7)
 
   ggsave('Outputs/Fig_E.png',g_exp, width = 8/(5/7), height =15, units = 'cm', bg="white", dpi = 600)
-# Fig E - legend top
-  cols_=pal_jco()(3)
-  
-  gV = 
-    ggplot(llvx, aes(y = response, x = estimate, shape = effect, col = effect)) +  
-    geom_vline(xintercept = 0, col = "grey60", lty =3)+
-    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
-    geom_point(position = position_dodge(width = width_)) +
-    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
-    scale_color_jco()+
-    scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Motility', tag = "(a)")+
-    guides(col=guide_legend(nrow=3,byrow=TRUE,reverse = TRUE),shape = guide_legend(nrow=3,byrow=TRUE,reverse = TRUE))+
-    #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
-    #annotate(geom="text", x=0.65, y=2, label="Faeder\nrelative to\nindependent", color=cols_[2],hjust = 0, size = 3.25) +
-    #annotate(geom="text", x=0.65, y=.87, label="Faeder\nrelative to\nsatellite", color=cols_[1],hjust = 0, size = 3.25) +
-    theme_bw() +
-    theme(
-        plot.tag.position = c(0.025, 1.42),
-        plot.tag = element_text(face='bold', size = 10),
-        plot.subtitle = element_text(size=9, color = 'grey30'),
-        legend.title = element_blank(),
-        legend.text=element_text(size=7.5, color = 'grey30'),
-        legend.key.height= unit(0.2,"line"),
-        legend.margin=margin(0,0,0,0),
-        legend.position=c(0.5,1.6),
-
-        axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-
-        panel.border = element_rect(color = 'grey70'),
-        panel.grid.minor = element_blank(),
-
-        plot.margin = margin(15.5,3,1,1, "mm")
-        )    
-  gM = 
-    ggplot(ll_, aes(y = response, x = estimate, shape = effect, col = effect)) +
-    geom_vline(xintercept = 0, col = "grey60", lty =3)+
-    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
-    geom_point(position = position_dodge(width = width_)) +
-    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
-    scale_color_jco(guide = guide_legend(reverse = TRUE))+
-    scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology')+
-    theme_bw() +
-    theme(plot.subtitle = element_text(size=9, color = 'grey30'),
-        legend.position = "none",
-        axis.ticks = element_blank(),
-        axis.title.x = element_blank(),
-        axis.text.x = element_blank(),
-
-        panel.border = element_rect(color = 'grey70'),
-        panel.grid.minor = element_blank(),
-
-        plot.margin = margin(3,3,1,1, "mm")
-        )  
-  gCV = 
-    ggplot(llcv_, aes(y = response, x = estimate, shape = effect, col = effect)) +
-    geom_vline(xintercept = 0, col = "grey60", lty =3)+
-    geom_errorbar(aes(xmin = lwr, xmax = upr), width = 0, position = position_dodge(width = width_) ) +
-    geom_point(position = position_dodge(width =width_)) +
-    scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
-    scale_color_jco(guide = guide_legend(reverse = TRUE))+
-    scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Coefficient of variation')+
-    theme_bw() +
-    theme(
-        plot.subtitle = element_text(size=9, color = 'grey30'),
-        legend.position = "none",
-        axis.title.x = element_text(size = 10, color ='grey10'),
-        axis.ticks = element_blank(),
-
-        panel.border = element_rect(color = 'grey70'),
-        panel.grid.minor = element_blank(),
-
-        plot.margin = margin(3,3,1,1, "mm")
-        )    
-  
-  ggA = ggarrange(
-    gV,gM,gCV, 
-    nrow=3, heights=c(3.5,3.78,4.22), align = 'v'
-    )
-  ggsave('Outputs/Fig_E_width-50mnm.png',ggA, width = 5/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
-
-# Fig ER v1 - x-axis labels - written
+# not used - (b) v2 - x-axis labels - written
   aml[, mot2 := factor(mot,levels=c('Curvilinear','Average path','Straight line','w','x'))]
   #aml[,summary(value), by = mot2]
   llvpx[, value:=pred]
@@ -582,193 +1048,6 @@
     gcv,  
     nrow=3, align = 'v', heights=c(3,3,3.3)  
     )   
-  ggsave('Outputs/Fig_ER_130mm.png',ggR, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
-# Fig ER v2 - x-axis labels - illustrations
-  aml[, mot2 := factor(mot,levels=c('Curvilinear','Straight line','Average path','w','x'))]
-  #aml[,summary(value), by = mot2]
-  llvpx[, value:=pred]
-  llvpx[, mot2:=motility]
-
-  a_m = a[!part%in%c('Head','Flagellum')]
-  a_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
-  llp_m = llp[!part%in%c('Head','Flagellum')]
-  llp_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
-
-  cv_m =cv_[!part%in%c('Head','Flagellum')]
-  cv_m[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
-  # for visualization purpose one extreme tail CV (and hence also Total CV) value brought down and labeled
-    cv_m[part== 'Tail' & CV>15, CV:=8] 
-    cv_m[part == 'Total' & CV>7.5, CV:=6] 
-    #cv_m[,summary(CV), by = part]
-  llpcv_ = llpcv[!part%in%c('Head','Flagellum')]
-  llpcv_[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
-  llpcv_[,CV:=Length_avg]
-  size_ =1.2
-  gv =
-  ggplot(aml, aes(x = Morph, y = value)) +
-    geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
-    geom_errorbar(data = llvpx, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = size_) +
-    facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
-    scale_y_continuous('Motility [μm/s]', expand = c(0, 0))+
-    xlab('Morph') +
-    labs(tag = '(b)')+
-    guides(x =  guide_axis(angle = -15)) +
-    theme_bw() +
-    theme(
-      legend.position = "none",
-      plot.tag.position = c(0.005, 1),
-      plot.tag = element_text(face='bold',size =10),
-
-      axis.title = element_text(size = 10, , colour="grey10"),
-      axis.title.x = element_blank(), axis.text.x = element_blank(), 
-      axis.ticks = element_blank(),
-      axis.text.y = element_text(margin = margin(r = -1)),
-      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
-      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
-      
-      panel.border = element_rect(color = 'grey70')
-      )  
-
-    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
-    facet_bounds_v = data.frame(
-      mot2 = c('Curvilinear','Average path', 'Straight line','w','x'),
-      ymin = c(25, 10, 5,1,1), 
-      ymax = c(80, 50, 35,5,5), 
-      breaks = c(10,10,10,1,1), stringsAsFactors=FALSE)
-
-    ff_v <- with(facet_bounds_v,
-           data.frame(value=c(ymin,ymax),
-                      mot2=c(mot2,mot2)))
-    ff_v$mot2 = factor(ff_v$mot2, levels=(c("Curvilinear", "Average path", "Straight line",'w','x'))) 
-    gv = gv + geom_point(data=ff_v,x=NA)
-   # remove panels  
-    ggv = ggplotGrob(gv)
-    rm_grobs <- ggv$layout$name %in% c("panel-4-1", "panel-5-1","strip-t-4-1", "strip-t-5-1","axis-l-1-4", "axis-l-1-5")
-    ggv$grobs[rm_grobs] <- NULL
-    ggv$layout <- ggv$layout[!rm_grobs, ]
-  gm=
-  ggplot(a_m, aes(x = Morph, y = Length_avg)) +
-    geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
-    geom_errorbar(data = llp_m, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = size_) +
-    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
-    xlab('Morph') +
-    scale_y_continuous('Length [µm]', expand = c(0, 0))+
-    guides(x =  guide_axis(angle = -15)) +
-    theme_bw() +
-    theme(
-      legend.position = "none",
-      axis.title = element_text(size = 10, , colour="grey10"),
-      axis.title.x = element_blank(), axis.text.x = element_blank(), 
-      axis.ticks = element_blank(),
-      axis.text.y = element_text(margin = margin(r = -1)),
-      strip.text = element_text(size = 7.5, color="grey20",  margin=margin(1,1,1,1,"mm")),
-      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
-      
-      panel.border = element_rect(color = 'grey70')
-      ) 
-    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
-    facet_bounds <- read.table(header=TRUE,
-        text=                           
-        "part ymin ymax breaks
-        Acrosome     3     5    .5
-        Nucleus     24     32    2
-        Midpiece     20     28    2
-        Tail     70     95    5
-        Total     125    150    5",
-        stringsAsFactors=FALSE)
-
-    ff <- with(facet_bounds,
-           data.frame(Length_avg=c(ymin,ymax),
-                      part=c(part,part)))
-    ff$part = factor(ff$part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total"))) 
-    gm = gm + geom_point(data=ff,x=NA)
-  gcv= 
-  ggplot(cv_m, aes(x = Morph, y = CV)) +
-    geom_dotplot(binaxis = 'y', stackdir = 'center',
-                 position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
-    geom_errorbar(data = llpcv_, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
-    geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = size_) +
-    facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
-    xlab('Morph') +
-    scale_y_continuous('Coefficient of variation', expand = c(0, 0))+
-    guides(x =  guide_axis(angle = -15)) +
-    theme_bw() +
-    theme(
-      legend.position = "none",
-      axis.title = element_text(size = 10, , colour="grey10"),
-      axis.title.x = element_blank(), 
-      axis.text.x = element_blank(), 
-      axis.text.y = element_text(margin = margin(r = -1)),
-      axis.ticks = element_blank(),
-      strip.text = element_blank(),
-      strip.background = element_rect(fill=NA,colour=NA, size=0.25),
-      
-      plot.margin = margin(b=10.4,1,1,1, "mm"),
-      panel.border = element_rect(color = 'grey70')
-      ) 
-
-    # adjust scales for morpho - https://stackoverflow.com/questions/51735481/ggplot2-change-axis-limits-for-each-individual-facet-panel
-    facet_bounds_cv <- read.table(header=TRUE,
-        text=                           
-        "part ymin ymax breaks
-        Acrosome     0     30    10
-        Nucleus     2     12    2
-        Midpiece     1     7    1
-        Tail     0     8    2
-        Total     1    6    1",
-        stringsAsFactors=FALSE)
-
-    ff_cv <- with(facet_bounds_cv,
-           data.frame(CV=c(ymin,ymax),
-                      part=c(part,part)))
-
-    gcv = gcv + geom_point(data=ff_cv,x=NA) 
-
-  ggR = ggarrange(
-    ggv,
-    gm,
-    gcv,  
-    nrow=3, align = 'v', heights=c(3,3,3.2)  
-    ) 
-  right = 0.38
-  right2 = 0.01
-  ymin_ = -0.92
-    
-  ggExp =  
-  ggR + 
-    annotation_custom(gi, xmin=0.064, xmax=0.116, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05, xmax=0.116+0.05, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1, xmax=0.116+0.1, ymin=ymin_)+
-
-    annotation_custom(gi, xmin=0.064+right, xmax=0.116+right, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05+right, xmax=0.116+0.05+right, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1+right, xmax=0.116+0.1+right, ymin=ymin_) +
-
-    annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
-    annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
-    annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
-  #ggExp   
-  ggsave('Outputs/Fig_ER_130mm_v2.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
-
-# mix the two & export
-  blank = ggplot() + theme_void() 
-  ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(14.3,92.9, 7.1))
-  ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
-
-  ggsave('Outputs/Fig_3_width-180mm.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
-
+  ggsave('Outputs/Fig_3b_130mm_v2.png',ggR, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
 
 # END
