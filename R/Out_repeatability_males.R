@@ -55,10 +55,10 @@
          }
 # DATA
   source(here::here('R/DAT_prepare.R'))       
+
+# estimate Velocity
   dr = d[bird_ID%in%d[duplicated(bird_ID), bird_ID]]
   drw = reshape(dr[,.(month,bird_ID,VAP,VSL,VCL, motileCount, Morph, age)], idvar = c('bird_ID','Morph','age'), timevar = 'month', direction = "wide") 
-
-# Velocity
   R = rpt(VAP ~ (1 | bird_ID), grname = "bird_ID", data = dr, datatype = "Gaussian")
   RR = data.table(merge(data.frame(velocity ='VAP'), paste0(round(R$R*100),'%'))) %>% setnames(new = c('velocity', 'repeatability'))
   RR[, CI := paste0(paste(round(R$CI_emp*100)[1], round(R$CI_emp*100)[2], sep = "-"), '%')] 
@@ -103,7 +103,7 @@
         theme_bw() +
         theme(plot.subtitle = element_text(size=9),
           legend.position = "none")
-# Morphology
+# estimate Morphology
     lfrpt = list()
     for(i in c('Total','Flagellum','Head','Tail','Midpiece','Nucleus','Acrosome')){
       part_ = i
@@ -151,8 +151,9 @@
         coord_flip()+
         theme_MB
 
-    ggsave(file ='Outputs/Fig_R.png', g1, units = 'cm', width = 6, height = 6 )
-# Combine
+    #ggsave(file ='Outputs/Fig_R.png', g1, units = 'cm', width = 6, height = 6 )
+
+# Combine and plot
   r[, motility := factor(motility,levels=rev(c('Curvilinear','Straight line','Average path')))]
   gv = 
   ggplot(r, aes(x = motility, y = pred)) +
@@ -161,8 +162,8 @@
     geom_point(position = position_dodge(width = 0.25)) +
     #scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
     #scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-    scale_y_continuous(limits = c(0, 100), expand = c(0, 0))+
-    labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Motility')+
+    scale_y_continuous(limits = c(0, 100), breaks = seq(0,100, by = 20), expand = c(0, 0))+
+    labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Velocity')+
     coord_flip()+
     theme_bw() +
     theme(plot.subtitle = element_text(size=9, color = 'grey30'),
@@ -182,8 +183,10 @@
     geom_point(position = position_dodge(width = 0.25)) +
     #scale_color_viridis(discrete=TRUE, begin=0, end = 0.5)  +
     #scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
-    scale_y_continuous(limits = c(0, 100), expand = c(0, 0))+
+    scale_y_continuous(limits = c(0, 100), breaks = seq(0,100, by = 20),expand = c(0, 0))+
     labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Morphology')+
+    annotate(geom = "text", y = 85, x = 2, label = "Composite\ntraits", color = "grey50",
+             angle = 90, size  = 3)+
     coord_flip()+
     theme_bw() +
     theme(plot.subtitle = element_text(size=9, color = 'grey30'),
