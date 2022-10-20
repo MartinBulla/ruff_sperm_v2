@@ -1,5 +1,6 @@
 require(rmarkdown)
 
+rmarkdown::render('R/Out_velocity-videos.Rmd', output_dir = 'Outputs',  output_file = 'Velocity_video_examples.html')
 rmarkdown::render('R/EXP_morpho_mot.R', output_dir = 'Output',  output_file = 'morpho_mot.html')
 rmarkdown::render('R/EXP_morpho.R', output_dir = 'Output',  output_file = 'morpho.html')
 
