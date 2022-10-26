@@ -416,7 +416,4 @@
     )
   ggsave('Outputs/Fig_E_width-50mnm.png',ggA, width = 5/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
 
-# Fig ER
-
-  
 # END

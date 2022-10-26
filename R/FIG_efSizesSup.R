@@ -1,4 +1,4 @@
-# TOOLS
+# TOOLS & DATA
   require(here)
   source(here::here('R/tools.R'))
   require(arm)
@@ -7,7 +7,6 @@
 
   width_ = 0.8 # spacing between error bars
 
-# DATA
   source(here::here('R/DAT_prepare.R'))       
 
 # Prepare estimates
@@ -644,7 +643,7 @@
     scale_color_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     scale_fill_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     scale_shape_manual(name = 'Model & data', values =c(24,23,22,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'), order = 0,nrow=4,byrow=TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Motility')+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Velocity')+
     #guides(col=, shape = )+#,shape = guide_legend(nrow=4,byrow=TRUE,reverse = TRUE))+
     #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
     #annotate(geom="text", x=0.65, y=2, label="Faeder\nrelative to\nindependent", color=cols_[2],hjust = 0, size = 3.25) +
@@ -680,7 +679,7 @@
     #scale_color_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     #scale_fill_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     scale_shape_manual(name = 'Data', values =c(23,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'),order = 0, nrow=2,byrow=TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology')+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - length')+
 
     theme_bw() +
     theme(plot.subtitle = element_text(size=9, color = 'grey30'),
@@ -704,7 +703,6 @@
     gV,gM,
     nrow=2, heights=c(4, 6), align = 'v'
     )
-  ggsave('Outputs/Fig_SE.png',ggA, width = 11/(5/7), height =16/(5/7), units = 'cm', bg="white", dpi = 600)
-
+  ggsave('Outputs/Fig_SE_110.png',ggA, width = 11/(5/7), height =16/(5/7), units = 'cm', bg="white", dpi = 600)
 
 # END

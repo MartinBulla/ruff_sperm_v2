@@ -476,7 +476,7 @@ knitr::opts_chunk$set(message = FALSE, warning = FALSE, cache = TRUE)
     scale_fill_manual(values = fills)+
     
     xlab('Homozygousity by locus') +
-    ylab('Motility [μm/s]') +
+    ylab('Velocity [μm/s]') +
     theme_bw() +
     theme(
       legend.position = "none",
