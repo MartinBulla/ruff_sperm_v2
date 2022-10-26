@@ -353,7 +353,6 @@
       ddxl[Motility == 'VSL' ,mot:='Straight line']
       ddxl[, animal := bird_ID]
 
-
 # pairs.panels - single data
   bw_ = bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')]
 
@@ -441,7 +440,7 @@
              #hist.col = 3,       # Histograms color
              stars = FALSE,       # If TRUE, adds significance level with stars
              ci = FALSE)          # If TRUE, adds confidence intervals   
-  mtext("All motility observations (two for 42 males)", side=3, line=3, cex = 0.75)
+  mtext("All velocity observations\n(one for 50 & two for 42 males)", side=3, line=2.3, cex = 0.75, adj = 0)
   par(xpd=TRUE)
   y_ = -0.18-0.45
   c_ = 0.06
@@ -474,7 +473,7 @@
              #hist.col = 3,       # Histograms color
              stars = FALSE,       # If TRUE, adds significance level with stars
              ci = FALSE)          # If TRUE, adds confidence intervals   
-  mtext("June motility values", side=3, line=3, cex = 0.75, adj = 0.35)
+  mtext("June velocity observations\n(except for 4 males with May only)", side=3, line=2.3, cex = 0.75, adj = 0)
   par(xpd=TRUE)
   y_ = -0.18-0.45
   c_ = 0.06
