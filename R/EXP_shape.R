@@ -17,4 +17,10 @@
   ggplot(bw, aes(x=h_rel_tail, y = h_rel_flag)) + geom_point()
   ggplot(bw, aes(x=h_rel_tail, y = Flagellum_rel)) + geom_point()
  
+ # correlations
+    cor((bw$Flagellum), (bw$Midpiece))
+    cor(log(bw$Flagellum), log(bw$Midpiece))
+    cor(log(bw$Tail), log(bw$Midpiece))
+    cor(log(bw$Tail), log(bw$Head))
+    cor((bw$Tail), (bw$Head))
  # END
