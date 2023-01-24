@@ -185,8 +185,8 @@
     #scale_fill_viridis(discrete=TRUE, begin=0, end = 0.5) + 
     scale_y_continuous(limits = c(0, 100), breaks = seq(0,100, by = 20),expand = c(0, 0))+
     labs(x = NULL, y = "Repeatability [%]\n(within male)", subtitle = 'Morphology')+
-    annotate(geom = "text", y = 85, x = 2, label = "Composite\ntraits", color = "grey50",
-             angle = 90, size  = 3)+
+    #annotate(geom = "text", y = 85, x = 2, label = "Composite\ntraits", color = "grey50",
+    #         angle = 90, size  = 3)+
     coord_flip()+
     theme_bw() +
     theme(plot.subtitle = element_text(size=9, color = 'grey30'),
@@ -204,7 +204,8 @@
   
   ggA
   
-  ggsave(here::here('Outputs/Fig_R_width-43mm.png'),ggA, width = 4.3/(5/7), height =9, units = 'cm', dpi = 600)
+  ggsave(here::here('Outputs/Fig_R_width-43mm_v3.png'),ggA, width = 4.3/(5/7), height =9, units = 'cm', dpi = 600)
+
 # not used Combine 2
     r[, part:=motility]
     r[, what := 'Motility']
