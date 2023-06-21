@@ -201,5 +201,13 @@
 
   ggsave('Outputs/Fig_Shl_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
 
+# effect on head (Bonferroni for Wolfi)
+  ah = a[part=='Head']
+  m = rlm(Length_avg~HL, ah)
+  m_lm = lm(Length_avg~HL, ah)
 
-# END      
+  require(multcomp)   
+  summary(glht(m)) # p = .00364
+  summary(glht(m_lm)) # p = 0.0115
+
+ # END      
