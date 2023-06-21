@@ -95,7 +95,7 @@ save(m, file = 'DATA/DAT_rel-mat.RData')
 #read(file = 'DATA/DAT_rel-mat.RData')
 
 
-# TESTNING
+# TESTING
  input <- readgenotypedata('Data/GenotypeData.txt')
         compareestimators(input, 100)
 
