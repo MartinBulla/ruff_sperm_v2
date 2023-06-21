@@ -17,6 +17,10 @@
   ggplot(bw, aes(x=h_rel_tail, y = h_rel_flag)) + geom_point()
   ggplot(bw, aes(x=h_rel_tail, y = Flagellum_rel)) + geom_point()
  
+ # absolute values
+  bs = b[,.(part, Length_µm)]
+  bs[, as.list(summary(Length_µm)), by = part]
+
  # correlations
     cor((bw$Flagellum), (bw$Midpiece))
     cor(log(bw$Flagellum), log(bw$Midpiece))
