@@ -55,57 +55,6 @@
   adw[,motileCount_ln_z := scale(log(motileCount))]
   adwl[,motileCount_ln_z := scale(log(motileCount))]
   ar[,motileCount_ln_z := scale(log(motileCount))]
- 
-# prepare estimates and pred for univariate models
-  effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
-  lvx = list()
-  lvpx =list()
-  for(i in c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')){
-    #i = 'Acrosome'
-    xi = adwl[, i, with = FALSE] 
-    adwl[, Length_avg := xi] 
-    for(k in unique(adwl$Motility)){
-      #k = 'Average path'
-      adwlk = adwl[Motility == k]
-      # get estimates
-      m = lm(scale(value) ~ scale(log(motileCount)) + Morph + scale(Length_avg), adwlk)
-
-      bsim = sim(m, n.sim=nsim) 
-      v = c(apply(bsim@coef, 2, quantile, prob=c(0.5)))
-      lwr = c(apply(bsim@coef, 2, quantile, prob=c(0.025)))
-      upr = c(apply(bsim@coef, 2, quantile, prob=c(0.975)))
-      
-      lvx[[paste(k,i)]]=data.frame(response=k, trait = i, effect=effects_,estimate=v, lwr=lwr, upr=upr)
-      
-      # get predictions
-      m = lm(value ~ motileCount_ln_z + Morph + Length_avg, adwlk)
-      bsim = sim(m, n.sim=nsim) 
-      v = apply(bsim@coef, 2, quantile, prob=c(0.5))
-      newD=data.frame(motileCount_ln_z = mean(adwlk$motileCount_ln_z), Morph = unique(b$Morph)[2], Length_avg = seq(min(adwlk$Length_avg), max(adwlk$Length_avg), length.out = 100)) # values to predict for
-      X <- model.matrix(~ motileCount_ln_z + Morph + Length_avg,data=newD) # exactly the model which was used has to be specified here 
-      newD$pred <-(X%*%v) 
-      predmatrix <- matrix(nrow=nrow(newD), ncol=nsim)
-      for(j in 1:nsim) {predmatrix[,j] <- (X%*%bsim@coef[j,])}
-                  predmatrix[predmatrix < 0] <- 0
-                  newD$lwr <- apply(predmatrix, 1, quantile, prob=0.025)
-                  newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
-                  #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
-      newD$response = k
-      newD$trait = i
-      lvpx[[paste(k,i)]] = data.table(newD)
-      print(paste(k,i))   
-      }
-    }
-         
-  llvx = data.table(do.call(rbind,lvx) ) 
-  llvx[, Motility:=response]
-  llvx[, Motility := factor(Motility, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
-  llvx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel'))))] 
-
-  llvpx = data.table(do.call(rbind,lvpx) ) 
-  llvpx[ , Motility:=response]
-  llvpx[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
-  llvpx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail', 'Total', 'Head','Flagellum', 'Midpiece_rel', 'Flagellum_rel'))))] 
 
 # (a) & (b) labels top
 # (a) - effect sizes
@@ -146,7 +95,7 @@
         panel.border = element_rect(color = 'grey70'),
         panel.grid.minor = element_blank()
         )    
-  #ggsave('Outputs/Fig_4a_width-50mnm_viridis_v2.png',gEvir, width = 4/(5/7), height =10, units = 'cm', bg="white", dpi = 600)     
+  ggsave("Outputs/Fig_4a_width-40mnm_viridis_v2.png", gEvir + theme(plot.tag = element_blank()), width = 4 / (5 / 7), height = 10, units = "cm", bg = "white", dpi = 600)
 # (b) - predictions with raw data Fig ER v2 - x-axis labels - illustrations - MOTIL-COL
   size_ =1.2
   line_col = 'red' #grey30
