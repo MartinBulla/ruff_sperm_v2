@@ -297,7 +297,7 @@
     scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
     scale_color_jco(guide = guide_legend(reverse = TRUE))+
     scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - length')+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology\n(length)')+
     theme_bw() +
     theme(plot.subtitle = element_text(size=9, color = 'grey30'),
         legend.position = "none",
@@ -318,7 +318,7 @@
     scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
     scale_color_jco(guide = guide_legend(reverse = TRUE))+
     scale_shape(guide = guide_legend(reverse = TRUE))+
-    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - coefficient of var.')+
+    labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology\n(coefficient of variation)')+
     theme_bw() +
     theme(
         plot.subtitle = element_text(size=9, color = 'grey30'),
@@ -520,7 +520,7 @@
   blank = ggplot() + theme_void() 
   ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(10,92.9, 7.1+4.3))
   ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
-  ggsave('Outputs/Fig_3_width-180mm_a-lower.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_3_width-180mm_a-lower_v3.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
 
 # not used different (a), (b) placement
 # (a) - legend top
