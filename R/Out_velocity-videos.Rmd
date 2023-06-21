@@ -17,19 +17,27 @@ knitr::opts_chunk$set(echo = TRUE)
 ***
 
 ### Ruff sperm ### 
-<video autosize: true controls>
+<video width="400" controls>
   <source src="ruff_1307-diluted-0001.m4v" type="video/mp4">
 </video>
 
 
 ### Zebra finch sperm ### 
-<video autosize: true controls>
+<video width = "400" controls>
   <source src="zebra-finch_K19180-0001.m4v" type="video/mp4">
 </video>
 
 ***
 
-#### Notes on the method #### 
+### Comparison of velocities
+
+```{r Pic1, echo=FALSE, fig.cap="**Comparison of sperm swimming speed between ruff morphs and zebra finch** | Dots represent velocity values for 4 ruff and 4 zebra finch males recorded in May, 46 ruff males recorded in June, and two values for 42 ruff males recorded in May and June. Boxplots depict median (horizontal line inside the box), the 25th and 75th percentiles (box) and the 25th and 75th percentiles ±1.5 times the interquartile range or the minimum/maximum value, whichever is smaller (bars). Five zebra finch males from a Max Planck population were sampled in May along with the ruffs to ensure that the ruff motilities and velocities are not an artifact of the sampling method. The zebra finch sperm swam normally (see example), with velocity values well within the norm (Opatova et al. 2016, Knief et al. 2017). Created with ‘ggplot’ function and dots stacked using ‘geom_dotplot’ function, both from the ‘ggplo2’ R-package (Wickham 2016). Illustrations by Yifan Pei under Creative Commons Attribution (CC BY 4.0).", echo=FALSE, out.width = "300px"}
+knitr::include_graphics(here::here("Outputs/Fig_Sm_zebra_v2_60mm.png"))
+```
+
+***
+
+### Notes on the method #### 
 Sperm was collected in May/June 2021 from captive ruffs by abdominal massage (for a detailed protocol of sperm collection – including video - and sample preparation see [here]shorturl.at/ijnp9). Sperm (~0.5–3μl) was pipetted from the cloaca and immediately diluted and gently mixed in 50μl of preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen™). An aliquot of 2.5μl was pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at 40 °C. The slide was inspected and either recorded (if sperm densities were fine) or a new aliquot was taken and further diluted. 
 
 Sperm was recorded immediately after sample collection at 25 frames per second in eight different fields of the Leja slide under a 100x magnification using phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at a constant temperature of 40°C.
