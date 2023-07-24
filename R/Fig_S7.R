@@ -199,9 +199,9 @@
     annotation_custom(gp_fae_grob, xmin=.47+.12, xmax=.52+.12, ymin = 0.5) +
     annotation_custom(gf, xmin=.47+.12, xmax=.52+.12, ymin = 0.7) 
 
-  ggsave('Outputs/Fig_Shl_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_S7_140mm.png',g_exp, width = 14/(5/7), height =9, units = 'cm', bg="white", dpi = 600)
 
-# effect on head (Bonferroni for Wolfi)
+# effect on head remain even after Bonferroni correction
   ah = a[part=='Head']
   m = rlm(Length_avg~HL, ah)
   m_lm = lm(Length_avg~HL, ah)

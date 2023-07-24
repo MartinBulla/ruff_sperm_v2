@@ -128,6 +128,6 @@
 
         plot.margin = margin(3,3,1,1, "mm")
         )  
-  ggsave('Outputs/Fig_Sxx_viridis.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
+  ggsave('Outputs/Fig_S9.png',g, width = 7/(5/7), height =4/(5/7), units = 'cm', bg="transparent", dpi = 600)
 
 # END

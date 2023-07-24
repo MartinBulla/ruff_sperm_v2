@@ -356,7 +356,7 @@
 # pairs.panels - single data
   bw_ = bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')]
 
-  png("Outputs/Fig_S1.png", width = 8*2, height = 8*2, units = "cm", res = 600)
+  png("Outputs/Fig_S5a_width_80mm.png", width = 8*2, height = 8*2, units = "cm", res = 600)
   pairs.panels_MB(bw_,
              #oma=c(0,0,0,0),
              gap = 0,
@@ -387,7 +387,7 @@
 # pairs.panels - averages data
   aw_ = aw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')]
 
-  png("Outputs/Fig_S1b.png", width = 8*2, height = 8*2, units = "cm", res = 600)
+  png("Outputs/Fig_S5b_widht-80mm.png", width = 8*2, height = 8*2, units = "cm", res = 600)
   pairs.panels_MB(aw_,
              #oma=c(0,0,0,0),
              gap = 0,
@@ -420,7 +420,7 @@
   aw_ = d[, c('VCL','VSL','VAP')]
   setnames(aw_, old = c('VCL','VSL','VAP'), new = c('Curvilinear', 'Straight line', 'Average path')) 
 
-  png("Outputs/Fig_S2b.png", width = 8, height = 8, units = "cm", res = 600)
+  png("Outputs/Fig_S2b_width-50mm.png", width = 8, height = 8, units = "cm", res = 600)
   pairs.panels_MB(aw_,
              #oma=c(0,0,0,0),
              gap = 0,
@@ -453,7 +453,7 @@
   aw_ = ddx[, c('VCL','VSL','VAP')]
   setnames(aw_, old = c('VCL','VSL','VAP'), new = c('Curvilinear', 'Straight line', 'Average path')) 
 
-  png("Outputs/Fig_S2a.png", width = 8, height = 8, units = "cm", res = 600)
+  png("Outputs/Fig_S2a_width-50mm.png", width = 8, height = 8, units = "cm", res = 600)
   pairs.panels_MB(aw_,
              #oma=c(0,0,0,0),
              gap = 0,
@@ -482,12 +482,4 @@
   addImg(img_s, x = c_+ 0.09+0.23, y = y_, width = 0.11)
   addImg(img_fc,x = c_+ 0.09+0.45, y = y_, width = 0.11)
   dev.off()
-
-# not used - pair plot v2
- chart.Correlation.nostars(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')], histogram=TRUE, pch =20)    
-  mtext("Single sperm", side=3, line=3)
-
-# not used - ggpairs
-  ggpairs(bw[, c('Acrosome', 'Nucleus','Head', 'Midpiece', 'Tail', 'Flagellum','Total', 'Midpiece_rel', 'Flagellum_rel')])
-
 # END

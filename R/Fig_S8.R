@@ -107,7 +107,7 @@
 
         plot.margin = margin(3,3,1,1, "mm")
         )  
-  ggsave('Outputs/Fig_Scv_90mm.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_S8_90mm.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
   #ggsave('Outputs/Fig_Scv_default_90mm.png',gCV, width = 9/(5/7), height =8/(5/7), units = 'cm', bg="white", dpi = 600)
 
 # end    
