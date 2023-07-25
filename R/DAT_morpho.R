@@ -1,13 +1,23 @@
+# =============================================================
+# ❗ The script runs relative to the project's root directory,
+# links the randomized and blinded sperm measurements with 
+# the individual males, and exports the dataset to ./DATA/
+# =============================================================
+
 # TOOLS & DATA
   require(here)
+  require(data.table)
   source(here::here('R/tools.R'))
+
+      packages = c("data.table", "ggplot2", "ggthemes", "glue", "grid", "gridExtra", "htmlTable", "lattice", "lubridate", "magrittr", "maptools", "plyr", "png", "raster", "RColorBrewer", "readxl", "scales", "scatterplot3d", "stringr", "zoo", "viridis", "writexl")
+      sapply(packages, function(x) suppressPackageStartupMessages(using(x)))
 
   # CHECK WHICH package has %do%
   packages = c('anytime','data.table', 'DataEntry.validation', 'DT', 'foreach', 'ggplot2', 'ggthemes', 'glue','googledrive', 'googlesheets4', 'grid', 'htmlTable', 'lattice', 'lubridate', 'magrittr', 'maptools', 'openxlsx','plyr','raster','readxl','stringr','zoo')
 > sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
    
 # DATA 
-  p = fread('Data/all_randomized_2022-03-21.csv') #p = fread(here::here('R/all_randomized_2022-03-21.csv')) # reads id as integer, instead of character
+  p = fread('Data/randomised_pics.csv') #p = fread(here::here('R/all_randomized_2022-03-21.csv')) # reads id as integer, instead of character
   p[, pic :=as.character(id)]
   p[nchar(pic)==1, pic := paste0('00',pic)]
   p[nchar(pic)==2, pic := paste0('0',pic)]
@@ -65,4 +75,4 @@
 
   bp =  merge(b,p, all.x = TRUE)
 
-  fwrite(bp, file = 'R/DAT_morphometrics.csv')
+  fwrite(bp, file = 'Data/DAT_morphometrics.csv')
