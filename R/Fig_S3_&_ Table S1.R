@@ -102,7 +102,7 @@
     y[, upr := as.numeric(substr(CI, 4, 5))]
 
 # Table S1
-  fwrite(rbind(r, y[order(nrow(y):1)])[, 1:4], file = "Outputs/Table_S1_v2.csv")
+  fwrite(rbind(r, y[order(nrow(y):1)])[, 1:4], file = "Outputs/Table_S1.csv")
 
 # Figure S3
   r[, specification := factor(specification, levels = rev(c("Curvilinear", "Straight line", "Average path")))]
