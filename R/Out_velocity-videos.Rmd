@@ -14,17 +14,24 @@ link-citations: yes
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+```{r}
+require(here)
+path_r <- here::here("Illustrations/ruff_1307-diluted-0001.m4v")
+path_z <- here::here("Illustrations/zebra-finch_K19180-0001.m4v")
+```
+
 ***
 
 ### Ruff sperm ### 
+
 <video width="400" controls>
-  <source src="ruff_1307-diluted-0001.m4v" type="video/mp4">
+  <source src="`r path_r`"  type="video/mp4">
 </video>
 
 
 ### Zebra finch sperm ### 
 <video width = "400" controls>
-  <source src="zebra-finch_K19180-0001.m4v" type="video/mp4">
+  <source src="`r path_z`" type="video/mp4">
 </video>
 
 ***

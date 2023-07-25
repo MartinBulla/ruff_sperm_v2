@@ -1,0 +1,148 @@
+---
+title: "Sperm sampling and sample preparation protocol"  
+author: "Martin Bulla, Hanna Vitnerova, Kim Teltscher"  
+date: "`r Sys.time()`"
+output:
+   html_document: 
+        toc: true
+        toc_float: true
+        toc_depth: 5
+        code_folding: hide
+bibliography: ruff_sperm.xml
+link-citations: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Equipment ###  
+- phosphate buffered saline solution (PBS): mix one PBS tablet (Sigma; product number P-4417) with 200ml water (use gloves, if you touch the tablet)
+- eppies with 100µl of 5% formalin 
+- pipette tips (use a new pipet tip for each bird/wash) - **KIM WILL ADD SIZE**
+- microscope slides
+- dissecting tools (forceps, scalpel, dissecting microscope)
+- microscope and camera set up for sample inspection and photographing (see [Microscope, camera, software specifications])
+- to distinguish sperm parts, fluorescent stains may be useful
+    - Mitotracker Green FM (Invitrogen Corporation, Carlsbad, California) identifies mitochondria, i.e. midpiece
+    - Hoechst 33342 (Molecular Probes) identifies the sperm nucleus.
+
+### Sperm collection ###
+#### Abdominal massage #### 
+1.  pipette 10-20 µl (bird size dependent) of PBS into the lid of an eppi with formalin 
+2.  massage the cloaca 
+<video autosize: true controls>
+  <source src="sperm_sampling_shorebirds.mp4" type="video/mp4">
+</video>
+3.  collect the sperm or all the wet-liquid part of the fecal sample with a pipette
+4.  mix by gently pipetting the sample up and down 2-3 times - ❗very important to prevent clumping of the sperm
+5.  pipette all the PBS-sperm mixture into the formalin, mix gently by pipetting up and down or flicking the tube
+6.  if the feces is too solid, wash the surface by pipetting the PBS onto the feces (do not mix) and then pipette into the formalin
+7. ❗use a new tip for each bird/wash
+
+#### Cloaca lavage ####
+1.  pipette 10 microl of PBS
+2.  insert the pipette tip gently into the cloaca
+3.  wash the cloaca with PBS by pipetting up and down, 
+4.  empty the lavage into the eppi with 5% formalin, mix gently by pipetting up and down
+5.  ❗use a new tip for each bird/wash
+
+#### Electro stimulation ###
+See @Lierz2013
+
+#### Vas deferens #### 
+1. extract vas deferens, e.g. according to [pictures in Anex](https://www.dropbox.com/s/ntbem4qdm0ltk9g/vas_deferens_extraction.pdf?dl=0) of [@Villaverde-Morcillo2017] 
+2. further processing methods:
+    - **Store** in 5% formalin for later use  
+    - **Flushing** (useful, if the vas deferens is large enough for cannulation) adopted from @Villaverde-Morcillo2016;:  
+        i. place vas deferens into a Petri dish (Sterilin; Sterilin Ltd., Newport, UK)
+        ii. inject 1.5 ml of PBS into the proximal extreme of the vas deferens using a 27G needle attached to a 2 ml syringe 
+        iii. prepare a slide as indicated in [Preparing slides] and store the rest in 5% formalin  
+    - **Float-out** adopted from @Villaverde-Morcillo2016;:  
+        i. cut vas deferens into 5mm-long pieces
+        ii. submerge in PBS (might be helpful tease apart the tissue with foceps as much as possible )
+        iii. prepare a slide as indicated in [Preparing slides] and store the rest in 5% formalin 
+
+#### Testes #### 
+0. ❗not the best method as immature sperm might be present because the sperm matures in epididymis -  a cordlike structure along the top of each testicle (see [here](https://www.vetfolio.com/learn/article/anatomy-of-the-avian-reproductive-system))
+1. take both testes, and weigh each separately. 
+2. take photo of both testes with a scale (ruler) next to the testes 
+3. store one testis in 5% formalin, 
+4. cut the other testis in half longitudinally, remove a small piece from the middle - mush-like tissue (1mm x 1mm), mix with 200µl PBS and pipette on the microscope slide (see [Preparing slides]), store the rest in 5% formalin 
+   
+
+### Preparing slides ###  
+#### Abdominal massage & cloaca lavage samples / fresh testes or vas deferens ####  {#Abdom}
+1.  pipette 10µl of the sample be it formalin-fixed one (avoid feces) or fresh testes / vas deferens  EITHER
+    a. onto the end of a microscope slide and make a smear by lying the pipette tip flat on the drop and without applying any pressure, gently drag the drop to the other end of the slide so as the entire slide is covered with the sample OR
+    b. prepare 5-7 lines on the slide (like when ploughing a field):  bring the pipette tip to the slide and drag it zig-zag across the slide creating uninterrupted, low profile drop. The tip can be drawn slantwise to the slide and thus you can use it to spread the sample, however, try not to touch the slide with the tip as it can break the sperm. Ideally the tip and slide do not touch.
+2.  allow to dry at room temperature or heat fix the slide by placing it on a heating block at 56 °C for 5 minutes (vas deferens sperm samples were heat fixed) - sperm cells should stay “glued” on the glass
+3.  gently wash with distilled water to remove crystal formed by dried PBS and formalin. The water stream should be applied to the sperm free part of the slide letting the water flow over the part with the sperm sample.
+4.  allow to dry at room temperature
+5.  slides can now be stored
+
+#### Testes stored in formalin#### 
+0. ❗not the best method as immature sperm might be present because the sperm matures and is stored in epididymis -  a cordlike structure along the top of each testicle
+1.  cut testes in half longitudinally, remove a small piece from the middle - mush-like tissue (~1mm x 1mm),
+2.  put into 200 µl 5% formalin and crush with a pipette tip.
+3.  spin 500rpm x 1 minute, which shall separate the light immature cells from the mature ones (note that often the results are similar without spinning)
+4.  Pipette 20 µl from the upper half onto a slide, spread and dry on a 56°C block, rinse and dry again
+
+
+#### Vas deferens stored in formalin ####
+1.  place the vas deferens onto a microscope slide
+2.  cut out a piece (~1-2mm x 1-2mm in size)
+3.  return the rest of the vas deferens into the tube  
+4.  add ~30µl of PBS onto the slide and with forceps tease apart the tissue as much as possible 
+5.  leave for ~5min to allow the sperm to disperse
+6.  add additional PBS in case the initial drop starts to dry up
+7.  prepare slides as described in the [above section](#Abdom)
+3.  pippete excess sample onto additional slides
+
+### Staining ### 
+Optimizes visualization of individual sperm parts.
+
+1. prepare stains:
+    i. add 74.41 µl dimethylsulfoxide (DMSO) to 50 µg of desiccated (-20 °C) Mitotracker Green FM (Invitrogen M7514), resuspend ('Green solution')
+    ii. dilute 1 µl of Hoechst 33342 (10mg/ml, Molecular Probes) in 100 µl of distilled water (Hoechst solution)
+    iii. to 1 ml of distilled water, add 1 µl of 'Green solution' and 10 µl of 'Hoechst solution', mix well
+2. flood each slide with 1 ml of the stain mix and incubate at room temperature in the dark for 30 minutes
+3. rinse gently with distilled water
+4. allow to dry at room temperature
+5. ❗store slides in the dark and photograph within 48h, else the Mitotracker stain may fade
+
+### Sample inspection and photo-shooting ### 
+1.  place the slide under the microscope
+2.  start with 200x magnification to find a nice area of single sperm
+3.  for stained samples, use dark field with fluorescence imaging with DAPI 465nm and green 519nm microscope filters
+4.  use 400x magnification for taking photos (objective size 40 and ocular 10: 40*10)
+5.  take photos of complete normal sperm cells - the unbroken tail tapers off at the end
+    a.  for single species study, photograph a minimum of 10 cells per individual; photographing >10 is advised as later we can choose the nicest photos
+    b.  for comparative studies, ideally photograph >10 individuals/species and >5 sperm/individual
+4.  include scale on each photo
+5.  photos should have 300 dpi and dimensions of about 4080 x 3072 pixels (i.e. use camera with 12Megapixel resolution)
+6.  save each photo as a jpg file and in a native file format (e.g. czi for Zeiss equipment)
+
+#### Microscope, camera, software specifications ####
+**Max Planck, Seewiesen**
+
+- Microscope: Zeiss Axio Imager.M2 
+- Camera: Zeiss Axiocam 512 colour (12 megapixel)
+- Filters: DAPI 465nm, green 519nm
+- Imaging Software: ZEN blue 3.1
+             
+**Czech Academy of Sciences, Studenec**
+
+- Microscope: Olympus BX51
+- Camera (three parts): 
+  + Olympus DP71 (4080 x 3072 pixel images due to 1.45 million pixel CCD and a sophisticated pixel-shift algorithm)
+  + Olympus U-CMAD3
+  + Olympus U-TV1X-2
+
+### General tips ###  
+- **mix all samples with 10-20µl of PBS**, else the sperm may clump and stick to each other making measurements of single cells harder
+- if sacrificing birds, take testes and vas deference and use those to prepare fresh microscope slides (see [Testes] and [Vas deferens]) and store the rest for later in 5% formalin
+- microscope slides can be air-dried at room temperatures
+- in general no stains needed
+
+### References ###
