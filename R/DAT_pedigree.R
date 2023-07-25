@@ -1,31 +1,31 @@
+# tools
 require(data.table)
 require(gtools)
 require(readxl)
 
-# load data
-  # merge datasets & fix issues
-    n1 = data.table(read_excel(here::here("Data/Ruffs_microsat_2020.xlsx"), sheet = "allBins", na = "NA"))
-    #n1 = n1[Sex == 1]
-    n1 = n1[!is.na(OriginalRing)]
-    n1 = n1[,c('Population',"OriginalRing","Sex",'Mother', 'Father', "notes")]
-    n2 = data.table(read_excel(here::here("Data/Ruffs_microsat_2010-19.xlsx"), sheet = "allAlleles", na = "NA", col_type = 'text'))
-    n2 = n2[!is.na(OriginalRing)]
-    n2 = n2[,c('year',"OriginalRing","sex",'Mother', 'Father', "notes")]
-    setnames(n2, old = 'sex', new = 'Sex')
-    
-    n = merge(n1,n2, all=TRUE) #
-    nn=n[!is.na(Mother) | !is.na(Father)]
-    #nn[OriginalRing==261] 
-    nn[OriginalRing==1005 & Father == 301, notes:= 'father previously 288'] 
-    nn = nn[!which(OriginalRing==1005 & Father == 288)] 
-    nn[OriginalRing==1310 &  Father == 264, notes:= 'father previously 333'] 
-    nn = nn[!which(OriginalRing==1310 &  Father == 333)] 
-    nn[OriginalRing == 1332, Father :=302]
+# load data, merge datasets & fix issues
+   n1 = data.table(read_excel(here::here("Data/Ruffs_microsat_2020.xlsx"), sheet = "allBins", na = "NA"))
+   #n1 = n1[Sex == 1]
+   n1 = n1[!is.na(OriginalRing)]
+   n1 = n1[,c('Population',"OriginalRing","Sex",'Mother', 'Father', "notes")]
+   n2 = data.table(read_excel(here::here("Data/Ruffs_microsat_2010-19.xlsx"), sheet = "allAlleles", na = "NA", col_type = 'text'))
+   n2 = n2[!is.na(OriginalRing)]
+   n2 = n2[,c('year',"OriginalRing","sex",'Mother', 'Father', "notes")]
+   setnames(n2, old = 'sex', new = 'Sex')
 
-    nn = nn[Mother != "561.80600000000004"]
-    nn = nn[OriginalRing!=1374]
+   n = merge(n1,n2, all=TRUE) #
+   nn=n[!is.na(Mother) | !is.na(Father)]
+   #nn[OriginalRing==261] 
+   nn[OriginalRing==1005 & Father == 301, notes:= 'father previously 288'] 
+   nn = nn[!which(OriginalRing==1005 & Father == 288)] 
+   nn[OriginalRing==1310 &  Father == 264, notes:= 'father previously 333'] 
+   nn = nn[!which(OriginalRing==1310 &  Father == 333)] 
+   nn[OriginalRing == 1332, Father :=302]
 
- # adjust bird IDs
+   nn = nn[Mother != "561.80600000000004"]
+   nn = nn[OriginalRing!=1374]
+
+   # adjust bird IDs
     nn[ OriginalRing== '7 -04 - 105', OriginalRing := 704105]
     nn[ Father== '7 -04 - 105', Father := 704105]
     nn[ OriginalRing== 'AIF AO - 15 - 11', OriginalRing := 'AIFAO15-11']
@@ -54,7 +54,7 @@ require(readxl)
 
     setnames(nn, old='OriginalRing', new = 'bird_ID')  
 
-  # DONE check whether all in based on a different dataset - all in and ok
+   # DONE check whether all in, based on a different dataset - all in and ok
       p = fread('Data/pedigree2014to2019.txt')
       setnames(p, old='ind', new = 'bird_ID') 
       p[,bird_ID:=as.character(bird_ID)]
@@ -84,4 +84,7 @@ require(readxl)
       #y = unique(b$bird_ID)
       #y[!y%in%x]
 
+# export
   fwrite(fmn[,.(bird_ID, Mother, Father)],file = 'Data/Dat_parentage.txt')
+
+# END
