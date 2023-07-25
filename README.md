@@ -1,5 +1,7 @@
 ## Supporting information for "Sperm traits of the three genetic morphs in the ruff sandpiper "
 
+![Satellite](./Illustrations/independent.png)
+
 ### **Overview**
 
 Contains data collection and preregistration protocols, recordings and pictures of sperm to estimate motility and measure morphology of sperm in three ruff morphs, meta-data on individual males, and computer code to generate outputs of the analysis. 
