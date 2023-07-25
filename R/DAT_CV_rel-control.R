@@ -52,7 +52,7 @@
       ddxl[Motility == 'VSL' ,mot:='Straight line']
       ddxl[, animal := bird_ID]
   
-# relatedness controlled models for CV - cauchy
+# relatedness controlled models for CV - cauchy prior
   effects_ = c('Satellite relative to independent','Faeder relative to independent', 'Faeder relative to satellite')
   # constants for MCMC
     cores_ = 60
@@ -62,12 +62,12 @@
     sample_ = chains_*(iter_/2)/thin_
     adapt_d = 0.999
 
-    cores_ = 1#20
-    chains_ = 1
-    iter_ = 4000
-    thin_ = 2
-    sample_ = chains_*(iter_/2)/thin_
-    adapt_d = 0.999
+    #cores_ = 1#20
+    #chains_ = 1
+    #iter_ = 4000
+    #thin_ = 2
+    #sample_ = chains_*(iter_/2)/thin_
+    #adapt_d = 0.999
   
   prior_x = c(
     prior(normal(0, 5), "Intercept"), #prior(normal(0, 10), class = Intercept),
@@ -146,12 +146,12 @@
     sample_ = chains_*(iter_/2)/thin_
     adapt_d = 0.999
 
-    cores_ = 1#20
-    chains_ = 1
-    iter_ = 4000
-    thin_ = 2
-    sample_ = chains_*(iter_/2)/thin_
-    adapt_d = 0.999
+    #cores_ = 1#20
+    #chains_ = 1
+    #iter_ = 4000
+    #thin_ = 2
+    #sample_ = chains_*(iter_/2)/thin_
+    #adapt_d = 0.999
   
 
   lmi =list()
