@@ -1,6 +1,6 @@
 ## Supporting information for "Sperm traits of the three genetic morphs in the ruff sandpiper "
 
-![Satellite](./Illustrations/independent.png)
+![Satellite](./Illustrations/morphs.png)
 
 ### **Overview**
 
