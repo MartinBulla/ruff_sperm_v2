@@ -14,12 +14,16 @@ link-citations: yes
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+require(here)
+path_ <- here::here("Illustrations/sperm_sampling_shorebirds.mp4")
 ```
+
+***
 
 ### Equipment ###  
 - phosphate buffered saline solution (PBS): mix one PBS tablet (Sigma; product number P-4417) with 200ml water (use gloves, if you touch the tablet)
 - eppies with 100µl of 5% formalin 
-- pipette tips (use a new pipet tip for each bird/wash) - **KIM WILL ADD SIZE**
+- pipette tips (use a new pipet tip for each bird/wash)
 - microscope slides
 - dissecting tools (forceps, scalpel, dissecting microscope)
 - microscope and camera set up for sample inspection and photographing (see [Microscope, camera, software specifications])
@@ -32,7 +36,7 @@ knitr::opts_chunk$set(echo = TRUE)
 1.  pipette 10-20 µl (bird size dependent) of PBS into the lid of an eppi with formalin 
 2.  massage the cloaca 
 <video autosize: true controls>
-  <source src="sperm_sampling_shorebirds.mp4" type="video/mp4">
+  <source src="`r path_`"  type="video/mp4">
 </video>
 3.  collect the sperm or all the wet-liquid part of the fecal sample with a pipette
 4.  mix by gently pipetting the sample up and down 2-3 times - ❗very important to prevent clumping of the sperm
