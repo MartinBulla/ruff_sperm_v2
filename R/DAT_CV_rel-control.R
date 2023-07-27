@@ -1,3 +1,11 @@
+# =============================================================
+# ❗ The script runs relative to the project's root directory,
+#  requires relatedness matrix (DAT_rel-mat.RData) generated
+# by DAT_relatedness_matrix.R, and runs CV models controlled
+# for relatedness,exports their outputs to ./DATA/mcmc/ and 
+# summary output of all together to ./DATA/
+# =============================================================
+
 # TOOLS
   require(here)
   source(here::here('R/tools.R'))
@@ -117,17 +125,19 @@
      mi_co[,response:=paste('CV', i)]
     lco[[i]] = mi_co
 
-    save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control_',sample_,'.Rdata'))
+    save(mi, file = paste0('Data/mcmc/CV_',i,'_relatedness-control_',sample_,'.Rdata'))
     print(i)
   }
   mi_ = do.call(rbind,lmi)
   mi_co_ = do.call(rbind,lco)
-  save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_cauchy_', sample_,'.Rdata'))
+  #save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_cauchy_', sample_,'.Rdata'))
+  fwrite(mi_, file = paste0("Data/Dat_CV_rel_control_cauchy_output.csv", sample_, ".csv"))
+  fwrite(mi_co_, file = paste0("Data/Dat_CV_rel_control_cauchy_morph-comp.csv", sample_, ".csv"))
   
 
   # check for warnings - no divergent transitions
-    load(file = 'Outputs/CV_rel_control_cauchy_5000.Rdata')
-    f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_5000', recursive = TRUE, full.names = TRUE))
+    #load(file = 'Outputs/freeze/CV_rel_control_cauchy_5000.Rdata')
+    f = c(list.files(path = here::here('Data/mcmc/'), pattern = 'relatedness-control_5000', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
       load(i)
@@ -190,17 +200,19 @@
      mi_co[,response:=paste('CV', i)]
     lco[[i]] = mi_co
 
-    save(mi, file = paste0('Data/sim/CV_',i,'_relatedness-control_default_',sample_,'.Rdata'))
+    save(mi, file = paste0('Data/mcmc/CV_',i,'_relatedness-control_default_',sample_,'.Rdata'))
     print(i)
   }
   mi_ = do.call(rbind,lmi)
   mi_co_ = do.call(rbind,lco)
-  save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_default_', sample_,'.Rdata'))
+  #save(mi_,mi_co_,file = paste0('Outputs/CV_rel_control_default_', sample_,'.Rdata'))
+  fwrite(mi_,file = paste0('Data/Dat_CV_rel_control_default_output.csv', sample_, '.csv'))
+  fwrite(mi_co_, file = paste0("Data/Dat_CV_rel_control_default_morph-comp.csv", sample_, ".csv"))
   
 
   # check for warnings - no divergent transitions
-    load(file = 'Outputs/CV_rel_control_default_5000.Rdata')
-    f = c(list.files(path = here::here('Data/sim/'), pattern = 'relatedness-control_default_5000', recursive = TRUE, full.names = TRUE))
+    #load(file = 'Outputs/freeze/CV_rel_control_default_5000.Rdata')
+    f = c(list.files(path = here::here('Data/mcmc/'), pattern = 'relatedness-control_default_5000', recursive = TRUE, full.names = TRUE))
     for(i in f){
       #i=f[1]
       load(i)

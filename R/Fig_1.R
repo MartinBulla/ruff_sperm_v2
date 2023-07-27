@@ -1,3 +1,8 @@
+# =============================================================
+# ❗ Runs relative to the project's root directory, requires
+# testes.xlsx, and exports Fig 1 into ./Outputs/
+# =============================================================
+
 # Tools
    require(here)
    source(here::here("R/tools.R"))
@@ -77,4 +82,5 @@
     )  
    ggA         
    ggsave('Outputs/Fig_1_width-50mm.png',ggA, width = 7, height =13, units = 'cm', bg="white", dpi = 600)
-   ggsave('Outputs/Fig_1_width-50mm.jpg',ggA, width = 7, height =13, units = 'cm', bg="white", dpi = 600)
+
+# END

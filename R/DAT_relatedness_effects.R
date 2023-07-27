@@ -1,3 +1,12 @@
+# =============================================================
+# ❗ Runs relative to the project's root directory, requires 
+# relatedness matrix (DAT_rel-mat.RData) generated
+# by DAT_relatedness_matrix.R, and runs models that check for
+# relatedness signal in the residuals of the original models, 
+# exports their outputs to ./DATA/mcmc/ and
+# summary output of all together to ./DATA/
+# =============================================================
+
 # TOOLS
   require(here)
   source(here::here('R/tools.R'))
@@ -74,7 +83,7 @@
         #prior_yes <- get_prior(res ~ 0 + Intercept + (1|bird_ID) + (1|gr(animal, cov = Amat)), data=bi, data2   = list(Amat = Amat)) 
         mp_yes = brm(res ~ 0 + Intercept  + (1|bird_ID) + (1 | gr(animal, cov = Amat)), data = bi,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
         
-        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_sin_relatedness_',sample_,'.Rdata'))
+        save(mp_no, mp_yes, file = paste0('Data/mcmc/',i,'_res_sin_relatedness_',sample_,'.Rdata'))
         
         yy =bayes_factor(mp_no, mp_yes)
         zz = post_prob(mp_no, mp_yes)
@@ -95,7 +104,7 @@
         #prior_yes <- get_prior(res ~ 0 + Intercept + (1|gr(animal, cov = Amat)), data=ai, data2   = list(Amat = Amat)) 
         mp_yes_ped = brm(res ~ 0 + Intercept  + (1 | gr(animal, cov = Amat)), data = ai,  data2 = list(Amat = Amat), cores = cores_, chains = chains_, iter = iter_, thin = thin_, seed = 5,  control = list(adapt_delta = 0.99), sample_prior="yes",save_pars = save_pars(all = TRUE))#, prior   = prior_yes)
         
-        save(mp_no, mp_yes, file = paste0('Data/sim/',i,'_res_avg_relatedness_',sample_,'.Rdata'))
+        save(mp_no, mp_yes, file = paste0('Data/mcmc/',i,'_res_avg_relatedness_',sample_,'.Rdata'))
         #summary(mp_yes)
         #plot(mp_yes)
         #mcmc_plot(mp_yes, type = "acf")
@@ -116,8 +125,10 @@
 
     v = do.call(rbind,ls)
     w = do.call(rbind,la)
-    save(v,w, file = paste0('Outputs/resRel_morpho_',sample_,'.Rdata'))
-    #load('Outputs/temp_resPed_test.Rdata')
+    #save(v,w, file = paste0('Outputs/freeze/resRel_morpho_',sample_,'.Rdata'))
+    fwrite(v, file = paste0('Data/DAT_resRel_morpho_single_',sample_,'.csv'))
+    fwrite(w, file = paste0('Data/DAT_resRel_morpho_avg_',sample_,'.csv'))
+    # load('Outputs/resRel_morpho_5000.Rdata')
   # motil
     vs =list()
     va =list()
@@ -145,7 +156,7 @@
         xx = summary(as.mcmc(v_sc / (v_sc + v_sp + v_r)))$quantiles
         vs[[i]] =  data.table(response = i, est = xx[3], lwr = xx[1], upr = xx[5], bf = yy$bf, prob=zz[1], Rhat_no = summary(mp_no)$spec_pars$Rhat, Rhat_yes =summary(mp_yes)$spec_pars$Rhat) #bf & prob in 
 
-      # on averages values  
+      # on June values  
         ai = ddxl[mot == i]
         m = lm(scale(value) ~ scale(log(motileCount)) + Morph, ai)
         ai[, res := resid(m)]
@@ -176,7 +187,10 @@
     }
     vv = do.call(rbind,vs)
     wv = do.call(rbind,va)
-    save(vv,wv, file = paste0('Outputs/resRel_motil_',sample_,'.Rdata'))
+    #save(vv,wv, file = paste0('Outputs/freeze/resRel_motil_',sample_,'.Rdata'))
+    fwrite(vv, file = paste0("Data/DAT_resRel_motil_single_", sample_, ".csv"))
+    fwrite(wv, file = paste0("Data/DAT_resRel_motil_June_", sample_, ".csv"))
+    # load('Outputs/resRel_motil_5000.Rdata')
   # CV
     vcv_ =list()
     for(i in unique(b$part)){
@@ -213,6 +227,8 @@
     }
    
     wcv = do.call(rbind,vcv_)
-    save(wcv, file = paste0('Outputs/resRel_CV_',sample_,'.Rdata'))
+    # save(wcv, file = paste0('Outputs/freeze/resRel_CV_',sample_,'.Rdata'))
+    fwrite(wcv, file = paste0("Data/DAT_resRel_CV_", sample_, ".csv"))
+    # load('Outputs/resRel_CV_5000.Rdata')
 # END
 

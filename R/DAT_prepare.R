@@ -1,3 +1,14 @@
+# =============================================================
+# ❗ The script runs relative to the project's root directory,
+# requires DAT_morphometrics.csv, sperm_sampling.xlsx, 
+# ruff_males_Seewiesen.xlsx, motility.xlsx, and DAT_HL.txt,
+# is sourced via other scripts (i.e. doesn't run otherwise as
+# it requires r-packages, makes composite morhpology measures,
+# and prepares datasets on individual morphological or 
+# velocity measurements, as well as datasets with a single
+# morpho and velocity value per male, including CV
+# =============================================================
+
 # load data 
   x = fread(here::here('Data/DAT_morphometrics.csv')) 
   setnames(x,old = 'pic', new = 'sperm_ID')

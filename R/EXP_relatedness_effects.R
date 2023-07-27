@@ -1,3 +1,6 @@
+# ❗ Runs relative to the project's root directory, 
+# was used to explore issues and mixing of the mcmc chains
+
 # TOOLS
 require(here)
 source(here::here("R/tools.R"))
@@ -8,7 +11,7 @@ require(gtools)
 require(MasterBayes)
 
 # EXPLORE DIVERGENCE - Increasing adapt_delta above 0.999 makes all look okeisch
-f <- c(list.files(path = here::here("Data/sim/"), pattern = "relatedness", recursive = TRUE, full.names = TRUE))
+f <- c(list.files(path = here::here("Data/mcmc/"), pattern = "relatedness", recursive = TRUE, full.names = TRUE))
 for (i in f) {
   # i=f[1]
   load(i)
@@ -19,7 +22,7 @@ for (i in f) {
 }
 
 # EXPLORE CHAINS 
-load(here::here("Data/sim/Flagellum_res_CV_relatedness5000.Rdata")) # choose output to load and explore
+load(here::here("Data/mcmc/Flagellum_res_CV_relatedness5000.Rdata")) # choose output to load and explore
 #load("Data/sim/Nucleus_res_CV_relatedness.RData")
 #load("Data/sim/Straight line_res_avg_relatedness.RData")
 #load("Data/sim/Total_res_avg_relatedness.RData")

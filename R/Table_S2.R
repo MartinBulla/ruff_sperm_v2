@@ -1,3 +1,9 @@
+  # =============================================================
+  # ❗ Runs relative to the project's root directory, uses
+  # repeated test measurements of 40 sperm (DATA/test_40_*.csv)
+  # and exports repeatability Table S2 into ./Outputs/
+  # =============================================================
+  
   # TOOLS
     require(here)
     source(here::here('R/tools.R'))
@@ -295,7 +301,7 @@
     yb[,type:='between observer']
     y = rbind(yw,yb) 
     
-# savee
+# save
   y[, Repeatability := format(round(pred), nsmall = 0)]
   y[,lwr_f := format(round(lwr,1), nsmall = 1)]
   y[,upr_f := format(round(upr,1), nsmall = 1)]

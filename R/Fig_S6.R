@@ -1,3 +1,8 @@
+# =============================================================
+# ❗ Runs relative to the project's root directory,
+# and exports Fig S6 into ./Outputs/
+# =============================================================
+
 # TOOLS & DATA
   require(here)
   source(here::here('R/tools.R'))

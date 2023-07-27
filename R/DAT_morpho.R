@@ -1,7 +1,8 @@
 # =============================================================
 # ❗ The script runs relative to the project's root directory,
 # links the randomized and blinded sperm measurements with 
-# the individual males, and exports the dataset to ./DATA/
+# the individual males and exports the DAT_morphometrics.csv 
+# dataset to ./DATA/
 # =============================================================
 
 # TOOLS & DATA
@@ -17,38 +18,40 @@
 > sapply(packages, function(x) suppressPackageStartupMessages(using(x)) )
    
 # DATA 
-  p = fread('Data/randomised_pics.csv') #p = fread(here::here('R/all_randomized_2022-03-21.csv')) # reads id as integer, instead of character
+  p = fread('Data/DAT_randomised_pics.csv') #p = fread(here::here('R/all_randomized_2022-03-21.csv')) # reads id as integer, instead of character
   p[, pic :=as.character(id)]
   p[nchar(pic)==1, pic := paste0('00',pic)]
   p[nchar(pic)==2, pic := paste0('0',pic)]
   p$id = NULL
   
+  # extracted whether pics further manipulated before measuerement
   m1 = data.table(
-    f = c(list.files(path = here::here('Measurements/'), pattern = '.erT', recursive = TRUE, full.names = TRUE)),
-    f2 = c(list.files(path = here::here('Measurements/'), pattern = '.erT', recursive = TRUE, full.names = FALSE))
+    f = c(list.files(path = here::here('Data/sperm_morpho/'), pattern = '.erT', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here("Data/sperm_morpho/"), pattern = ".erT", recursive = TRUE, full.names = FALSE))
     )
   m1[, pic := substr(m1$f2, 28, 30)]
   m2 = data.table(
-    f = c(list.files(path = here::here('Measurements/'), pattern = '.erA', recursive = TRUE, full.names = TRUE)),
-    f2 = c(list.files(path = here::here('Measurements/'), pattern = '.erA', recursive = TRUE, full.names = FALSE))
+    f = c(list.files(path = here::here('Data/sperm_morpho/'), pattern = '.erA', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here("Data/sperm_morpho/"), pattern = ".erA", recursive = TRUE, full.names = FALSE))
     )
   m2[, pic := substr(m2$f2, 28, 30)]
 
   m3 = data.table(
-    f = c(list.files(path = here::here('Measurements/'), pattern = '.erN', recursive = TRUE, full.names = TRUE)),
-    f2 = c(list.files(path = here::here('Measurements/'), pattern = '.erN', recursive = TRUE, full.names = FALSE))
+    f = c(list.files(path = here::here('Data/sperm_morpho/'), pattern = '.erN', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here("Data/sperm_morpho/"), pattern = ".erN", recursive = TRUE, full.names = FALSE))
     )
   m3[, pic := substr(m3$f2, 28, 30)]
 
   m4 = data.table(
-    f = c(list.files(path = here::here('Measurements/'), pattern = '.erM', recursive = TRUE, full.names = TRUE)),
-    f2 = c(list.files(path = here::here('Measurements/'), pattern = '.erM', recursive = TRUE, full.names = FALSE))
+    f = c(list.files(path = here::here('Data/sperm_morpho/'), pattern = '.erM', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here("Data/sperm_morpho/"), pattern = ".erM", recursive = TRUE, full.names = FALSE))
     )
   m4[, pic := substr(m4$f2, 28, 30)]
 
+# get and prepare measurements
   d = data.table(
-    f = c(list.files(path = here::here('Measurements/'), pattern = '.csv', recursive = TRUE, full.names = TRUE)),
-    f2 = c(list.files(path = here::here('Measurements/'), pattern = '.csv', recursive = TRUE, full.names = FALSE))
+    f = c(list.files(path = here::here('Data/sperm_morpho/'), pattern = '.csv', recursive = TRUE, full.names = TRUE)),
+    f2 = c(list.files(path = here::here("Data/sperm_morpho/"), pattern = ".csv", recursive = TRUE, full.names = FALSE))
     )
   d[ , measured := substring(d$f2,29,47)]
 
@@ -76,3 +79,4 @@
   bp =  merge(b,p, all.x = TRUE)
 
   fwrite(bp, file = 'Data/DAT_morphometrics.csv')
+# END

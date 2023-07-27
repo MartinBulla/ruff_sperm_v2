@@ -1,3 +1,8 @@
+ # =============================================================
+ # ❗ Runs relative to the project's root directory and
+ # loads packages, functions and pictures of the morhps
+ # =============================================================
+
 #' Loads packages and installs those that are not in the library
 #' @param  vector of package names
 #' @export

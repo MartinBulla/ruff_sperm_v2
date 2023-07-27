@@ -1,3 +1,9 @@
+# =============================================================
+# ❗ Runs relative to the project's root directory, makes use
+# of brms model outputs on CV, combines them with linear model
+# outputs and exports as Fig S8 into ./Outputs/
+# =============================================================
+
 # TOOLS
   require(here)
   source(here::here('R/tools.R'))
@@ -42,8 +48,8 @@
       ddxl[, animal := bird_ID]
 
 # load CV estimates from models controlled for relatedness (cauchy and default priors give same results)
-    load(file = 'Outputs/CV_rel_control_cauchy_5000.Rdata') #load(file = 'Outputs/CV_rel_control_default_5000.Rdata')# #mi_, mi_co_
-    s = mi_co_
+    s = fread("Data/Dat_CV_rel_control_cauchy_morph-comp_5000.csv") # load(file = 'Outputs/freeze/CV_rel_control_cauchy_5000.Rdata'); mi_co_ #load(file = 'Outputs/CV_rel_control_default_5000.Rdata')# #mi_, mi_co_
+
     setnames(s, old = c('Estimate','CI.Lower','CI.Upper'), new = c('estimate','lwr','upr'))
     s[,model:='yes']
     s[, model := factor(model, levels=rev(c("no", "yes")))] 

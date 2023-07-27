@@ -1,3 +1,8 @@
+  # =============================================================
+  # ❗ Runs relative to the project's root directory and
+  # exports Table S5a & S5b into ./Outputs/
+  # =============================================================
+  
 # TOOLS
   require(here)
   source(here::here('R/tools.R'))
@@ -132,8 +137,5 @@
   tt[, es_ci := paste0(estimate, ' (', lwr,' -',upr,')')]
   tt_w = reshape(tt[,.(response, effect, unit, es_ci)], idvar = c('response','effect'), timevar = 'unit', direction = "wide") 
   fwrite(tt_w, file = 'Outputs/Table_S5b.csv')
-
-
-  fwrite(rbind(llvx,ll,llcv), file = 'Outputs/Table_S1_long.csv')
 
 # END

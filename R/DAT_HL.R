@@ -1,9 +1,9 @@
 # =======================================================================================
 # ❗ The script runs relative to the project's root directory,
 # generates homozygosity by locus using 
-#   the microsat data (see DAT_genotypes.R) and
+#   the microsat data Dat_GenotypesRuff.txt (see DAT_genotypes.R) and
 #   GENHETv3.1 function (Coulon 2010, https://doi.org/10.1111/j.1755-0998.2009.02731.x) 
-# and exports the dataset to ./DATA/
+# and exports the DAT_HL.txt dataset to ./DATA/
 # =======================================================================================
 
 # tools
