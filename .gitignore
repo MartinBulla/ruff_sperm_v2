@@ -21,11 +21,14 @@
 !/sperm_pics/
 !/sperm_rec/
 !/sperm_morpho/
+!/sperm-sizer-1.6.6/
 
 # Ignore everything in freeze (even if in Except)
 freeze/
 .DS_Store
 MS_files/
 MS_cache/
+sim/
+mcmc/
 
 # End
