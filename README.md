@@ -37,7 +37,7 @@ Contains data collection and preregistration protocols, recordings and pictures 
 - [Sperm measuring with Sperm Sizer](https://nbviewer.org/github/MartinBulla/ruff_sperm_v2/blob/main/Protocols/Protocol_sperm_measuring-with_SpermSizer.pdf)
 - [Layout of the aviaries](Protocols/Aviaries)
 
-[Illustrations](Illustrations): ruff morph pictures used in the graphs, drawn by Yifan Pei, example video of abdominal masage used in [sperm sampling protocol](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/protocol_sperm.html) and two example videos of ruff and zebrafinch sperm motility (cut from the original videos from [sperm_recs](Data/sperm_recs/)) and linked to from within the paper
+[Illustrations](Illustrations): ruff morph pictures used in the graphs, drawn by Yifan Pei, example video of abdominal masage used in the [sperm sampling protocol](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/protocol_sperm.html) and two example videos of ruff and zebrafinch sperm motility (cut from the original videos from [sperm_recs](Data/sperm_recs/)) and linked to from within the paper
 
 [Sperm Sizer](sperm-sizer-1.6.6): Sperm Sizer 1.6.6 (.jar for Mac, .exe for PC; downloaded from [GitHub](https://github.com/wyrli/sperm-sizer)) with config.ini configured for the purpose of this study
 
