@@ -15,7 +15,7 @@ Contains data collection and preregistration protocols, recordings and pictures 
 - [sperm_morpho](Data/sperm_morpho/): Folders (named as date and sperm batch) containing 
     - *measure* folder with inverted randomised pictures measured in a given batch; if further manipulation of the picture was needed, an alternative picture is included; note that tails were measured on desaturated pictures and included are additional folders with inverted (*random_inv*) and desaturated images (*random_des*) as that improves workflow with Sperm Sizer software (see [sperm measuring protocl](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/Protocol_sperm_measuring-with_SpermSizer_mod-with-GIMP_inv_des.pdf))
     - *Results* folder created by Sperm Sizer software, having date and time of the measurement in the name, and containing pictures of each measured part with indicated measurement lines and line lengths (in pixels), and respective excel files with meaasurements, all corresponding to the picture names in *measure*
-
+- [sperm_40_test](Data/sperm_40_test/): contains sample of 40 sperm pictures ([inverted](Data/sperm_40_test/random_inv) and [desaturated](Data/sperm_40_test/random_inv)) used for repeated measurements with Sperm Sizer included in folders MB_inv, MC_1, and MC_2; the measurements were used to estimate within and between observer repeatability; folder with mod in the name show pictures that needed further modifications for Sperm Sizer to work 
 - [mcmc](https://osf.io/pbfzk/): mcmc folder contains Rdata files with mcmc chains and model outputs from the brms models; because of file size issues the folder is locates at the OSF repository
 
 [R](R/)-scripts used in the analysis; those starting with 
