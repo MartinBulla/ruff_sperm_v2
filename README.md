@@ -7,7 +7,7 @@
 Contains data collection and preregistration protocols, recordings and pictures of sperm to measure sperm motility and  morphology in the three ruff morphs, meta-data on individual males, raw data and computer code to generate outputs of the analysis for the paper ([preprint]()). Please, when using this content cite the [preprint]() and this repository.
 
 ### **Files & Folders**
-[Supplement](Supplement.pdf): pdf with supplementary methods, figures and tables
+[Supplement](https://nbviewer.org/github/MartinBulla/ruff_sperm_v2/blob/main/Supplement.pdf): pdf with supplementary methods, figures and tables
 
 [Data](Data/): raw data and manipulated data (starting with 'DAT_') generated with R-scripts
 - [sperm_recs](Data/sperm_recs/): Recordings of sperm motility
@@ -34,7 +34,7 @@ Contains data collection and preregistration protocols, recordings and pictures 
 [Protocols](Protocols/): Protocols used in this study, including Rmd source code and example videos for respective html documents
 - [*A priory* study design](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/Preregistration_v3.html)
 - [Sperm sampling and sample preparation](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/protocol_sperm.html)
-- [Sperm measuring with Sperm Sizer](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/Protocol_sperm_measuring-with_SpermSizer.pdf)
+- [Sperm measuring with Sperm Sizer](https://nbviewer.org/github/MartinBulla/ruff_sperm_v2/blob/main/Protocols/Protocol_sperm_measuring-with_SpermSizer.pdf)
 - [Layout of the aviaries](Protocols/Aviaries)
 
 [Illustrations](Illustrations): ruff morph pictures used in the graphs, drawn by Yifan Pei, example video of abdominal masage used in [sperm sampling protocol](https://raw.githack.com/MartinBulla/ruff_sperm_v2/main/Protocols/protocol_sperm.html) and two example videos of ruff and zebrafinch sperm motility (cut from the original videos from [sperm_recs](Data/sperm_recs/)) and linked to from within the paper
