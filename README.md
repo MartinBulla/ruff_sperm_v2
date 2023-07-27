@@ -6,7 +6,7 @@
 
 Contains data collection and preregistration protocols, recordings and pictures of sperm to measure sperm motility and  morphology in the three ruff morphs, meta-data on individual males, raw data and computer code to generate outputs of the analysis for the paper ([preprint]()). Please, when using this content cite the [preprint]() and this repository.
 
-### **Files & Folder**
+### **Files & Folders**
 [Supplement](Supplement.pdf): pdf with supplementary methods, figures and tables
 
 [Data](Data/): raw data and manipulated data (starting with 'DAT_') generated with R-scripts
