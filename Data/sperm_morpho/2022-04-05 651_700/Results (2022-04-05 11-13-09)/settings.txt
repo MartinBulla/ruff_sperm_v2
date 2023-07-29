@@ -1,0 +1,3 @@
+LineSmoothing=4
+SnapEnabled=true
+TrimRadius=8
