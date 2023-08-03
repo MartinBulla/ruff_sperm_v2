@@ -29,7 +29,7 @@ When using this content **PLEASE CITE** the [paper]() and [this repository](http
 - "Out_velocity-videos.Rmd" script to create html docuement showing the ruff and zebra finch motility
 - "Preregistration_v3.Rmd" script to create html document of a priory methods of data collection and analyses
 - "protocol_sperm.Rmd" script to create html document of sperm sampling, sample preparation, and picture taking protocol
-- "_runRmarkdown.R generates htmls from Rmd scripts
+- "_runRmarkdown.R" generates htmls from Rmd scripts
 
 [Outputs](Outputs/): all outputs used in the manuscript and Supplement
 
