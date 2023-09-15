@@ -46,7 +46,7 @@
     scale_fill_manual(values=c(ind,sat,fae))+
     #scale_color_manual(values=c(ind,sat,fae))+
     #scale_fill_manual(values=c(ind,sat,fae))+ #scale_fill_viridis(discrete=TRUE)+
-    scale_y_continuous('Testes mass [g]', limits = c(1.93,4.5),expand = c(0, 0))+
+    scale_y_continuous('Testes mass [g]', limits = c(1.5,4.5),expand = c(0, 0))+
     theme_bw() +
     theme(axis.title.x = element_blank(), axis.text.x = element_blank(), 
       axis.title = element_text(size = 10, , colour="grey10"),
