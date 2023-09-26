@@ -1,5 +1,5 @@
 ---
-title: "Example recordings of ruff and zebra finch sperm motility"  
+title: "Example recordings of ruff, zebra finch and cockatiel sperm motility"  
 author: "Martin Bulla"  
 date: "`r Sys.time()`"
 output:
@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 require(here)
 path_r <- here::here("Illustrations/ruff_1307-diluted-0001.m4v")
 path_z <- here::here("Illustrations/zebra-finch_K19180-0001.m4v")
+path_c <- here::here("Illustrations/cockatiel_2.m4v")
 ```
 
 ***
@@ -34,12 +35,13 @@ path_z <- here::here("Illustrations/zebra-finch_K19180-0001.m4v")
   <source src="`r path_z`" type="video/mp4">
 </video>
 
+
 ***
 
 ### Comparison of velocities
 
-```{r Pic1, echo=FALSE, fig.cap="**Comparison of sperm swimming speed between ruff morphs and zebra finch** | Dots represent velocity values for 4 ruff and 4 zebra finch males recorded in May, 46 ruff males recorded in June, and two values for 42 ruff males recorded in May and June. Boxplots depict median (horizontal line inside the box), the 25th and 75th percentiles (box) and the 25th and 75th percentiles ±1.5 times the interquartile range or the minimum/maximum value, whichever is smaller (bars). Five zebra finch males from a Max Planck population were sampled in May along with the ruffs to ensure that the ruff motilities and velocities are not an artifact of the sampling method. The zebra finch sperm swam normally (see example), with velocity values well within the norm (Opatova et al. 2016, Knief et al. 2017). Created with ‘ggplot’ function and dots stacked using ‘geom_dotplot’ function, both from the ‘ggplo2’ R-package (Wickham 2016). Illustrations by Yifan Pei under Creative Commons Attribution (CC BY 4.0).", echo=FALSE, out.width = "300px"}
-knitr::include_graphics(here::here("Outputs/Fig_Sm_zebra_v2_60mm.png"))
+```{r Pic1, echo=FALSE, fig.cap="**Comparison of sperm swimming speed between ruff morphs and zebra finch** | Dots represent velocity values for 4 ruff and 4 zebra finch males recorded in May, 46 ruff males recorded in June, and two values for 42 ruff males recorded in May and June. Boxplots depict median (horizontal line inside the box), the 25th and 75th percentiles (box) and the 25th and 75th percentiles ±1.5 times the interquartile range or the minimum/maximum value, whichever is smaller (bars). Five zebra finch males from a Max Planck population were sampled in May along with the ruffs to ensure that the ruff motilities and velocities are not an artifact of the sampling method. The zebra finch sperm swam normally (see example), with velocity values within the norm (Opatova et al. 2016, Knief et al. 2017). Created with ‘ggplot’ function and dots stacked using ‘geom_dotplot’ function, both from the ‘ggplo2’ R-package (Wickham 2016). Illustrations by Yifan Pei under Creative Commons Attribution (CC BY 4.0).", echo=FALSE, out.width = "300px"}
+knitr::include_graphics(here::here("Outputs/Fig_S1_width-60mm.png"))
 ```
 
 ***
@@ -48,3 +50,21 @@ knitr::include_graphics(here::here("Outputs/Fig_Sm_zebra_v2_60mm.png"))
 Sperm was collected in May/June 2021 from captive ruffs by abdominal massage (for a detailed protocol of sperm collection – including video - and sample preparation see [here]shorturl.at/ijnp9). Sperm (~0.5–3μl) was pipetted from the cloaca and immediately diluted and gently mixed in 50μl of preheated (40°C) Dulbecco’s Modified Eagle’s Medium (Advanced D-MEM, Invitrogen™). An aliquot of 2.5μl was pipetted onto a standard 20μm two-chamber count slide (Leja, The Netherlands) placed on a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at 40 °C. The slide was inspected and either recorded (if sperm densities were fine) or a new aliquot was taken and further diluted. 
 
 Sperm was recorded immediately after sample collection at 25 frames per second in eight different fields of the Leja slide under a 100x magnification using phase contrast and a digital camera (UI-1540-C, Olympus) mounted on a microscope (CX41, Olympus) fitted with a thermal plate (Tokai Hit, Tokai Hit Co., LtD.) kept at a constant temperature of 40°C.
+
+***
+
+### Cockatiel sperm ### 
+<video width = "600" controls>
+  <source src="`r path_c`" type="video/mp4">
+</video>
+
+Motility of cockatiel (*Nymphicus hollandicus*) sperm shows the difference in movement to ruff sperm and was recorded by
+M.Fuchs at the Clinic for Birds, Reptiles, Amphibians and Fish, Justus-Liebig University Giessen, Germany in September 2023 using Leica DM2500. The sperm sample was diluted (1:4) with a modified solution of Lake & Stewart ([Schneider et al, 2018](https://doi.org/10.33687/zoobiol.001.01.1579); see below) by setting the pH to 7.42 using 1M sodium hydroxide/1M hydrochloric acid
+ 
+Lake & Stewart solution
+- 0.7 g D-(-)-fructose
+- 1.92 g sodium glutamate
+- 0.08 g magnesium acetate tetrahydrate
+- 0.5 g potassium acetate
+- 0.3 g polyvinylpyrrolidone 
+- 100 g water for injections
