@@ -17,7 +17,7 @@
   source(here::here('R/DAT_prepare.R'))       
   # prepare motility for plotting
     am = a[part=='Acrosome']
-    aml = data.table(melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount"), variable.name = "Motility"))
+    aml = data.table(melt(am[,.(bird_ID,month,Morph,age,HL,motileCount,VAP,VSL,VCL, location, avi)], id.vars = c("bird_ID","month","Morph","age","HL","motileCount", "location", 'avi'), variable.name = "Motility"))
     aml[Motility == 'VAP' ,mot:='Average path']
     aml[Motility == 'VCL' ,mot:='Curvilinear']
     aml[Motility == 'VSL' ,mot:='Straight line']
@@ -52,6 +52,9 @@
 
       # get predictions
       m = lm(VAP ~ motileCount_ln + Morph, ddx)
+      #m = lm(VAP ~ motileCount_ln + as.factor(location)+ Morph, ddx)
+      #ddx[, loc_avi := paste(location, avi)]
+      #m = lmer(VAP ~ motileCount_ln + Morph + (1|loc_avi), ddx)
       bsim = sim(m, n.sim=nsim) 
       v = apply(bsim@coef, 2, quantile, prob=c(0.5))
       newD=data.frame(motileCount_ln = mean(ddx$motileCount_ln), Morph = unique(b$Morph)) # values to predict for
@@ -139,12 +142,16 @@
     lpcv = list()
     
     for(i in unique(a$part)){
-      #i ='Nucleus'
+      #i ='Total'
+      #i ='Midpiece'
       m = lm(scale(Length_avg) ~ Morph, a[part == i])
+            # m = lm(scale(Length_avg)  ~ as.factor(location)+ Morph, a[part == i])
+            # a[, loc_avi := paste(location, avi)]
+            # m = lmer(scale(Length_avg) ~ Morph + (1|loc_avi), a[part == i])
       #summary(m)
       #plot(allEffects(m))
       bsim = sim(m, n.sim=nsim) 
-      mb = data.table(bsim@coef)
+      mb = data.table(bsim@coef) #   mb = data.table(bsim@fixef)
       names(mb) = c('int','s','f')
       mb[, FrelS:=(int+f)-(int+s)]
       mb$int = NULL
