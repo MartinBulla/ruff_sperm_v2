@@ -60,6 +60,7 @@
   adw[,motileCount_ln_z := scale(log(motileCount))]
   adwl[,motileCount_ln_z := scale(log(motileCount))]
   ar[,motileCount_ln_z := scale(log(motileCount))]
+  #ggplot(adw, aes(x = Midpiece, y =VSL, fill = Morph, col = Morph)) + geom_point() + stat_smooth(method='rlm')+facet_wrap(~Morph) + stat_cor()
 # prepare estimates and pred for univariate models
   effects_ = c('intercept','motileCount_ln', 'morphSat', 'morphFae', 'pred')
   lvx = list()
