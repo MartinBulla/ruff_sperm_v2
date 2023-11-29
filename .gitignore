@@ -31,5 +31,7 @@ MS_cache/
 sim/
 mcmc/
 Thumbs.db
+R/.Rhistory
+Protocols/.Rhistory
 
 # End
