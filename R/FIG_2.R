@@ -8,6 +8,7 @@
   source(here::here('R/tools.R'))
   require(arm)
   #require(facetscales)
+  require(ggnewscale)
   require(ggpubr) 
   require(ggsci)
 
@@ -371,16 +372,20 @@
   llpcv_[, part := factor(part, levels=(c("Acrosome", "Nucleus", "Midpiece","Tail","Total")))] 
   llpcv_[,CV:=Length_avg]
   size_ =1.2
+  cols_box = c("grey75", "grey25", "grey50") # c("grey75", "grey25", "grey25") #
   gv =
   ggplot(aml, aes(x = Morph, y = value)) +
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    new_scale_colour() +
+    geom_boxplot( aes(col =Morph), width = 0.25, outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols_box)+ 
     geom_errorbar(data = llvpx, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
     geom_point(data = llvpx, aes(x = Morph, y =value), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~mot2, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
+
     scale_y_continuous('Velocity [μm/s]', expand = c(0, 0))+
     xlab('Morph') +
     labs(tag = '(B)')+
@@ -422,12 +427,14 @@
   ggplot(a_m, aes(x = Morph, y = Length_avg)) +
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    new_scale_colour() +
+    geom_boxplot( aes(col =Morph), width = 0.25, outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols_box)+ 
     geom_errorbar(data = llp_m, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
     geom_point(data = llp_m, aes(x = Morph, y =Length_avg), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
     xlab('Morph') +
     scale_y_continuous('Length [µm]', expand = c(0, 0))+
     guides(x =  guide_axis(angle = -15)) +
@@ -463,12 +470,14 @@
   ggplot(cv_m, aes(x = Morph, y = CV)) +
     geom_dotplot(binaxis = 'y', stackdir = 'center',
                  position = position_dodge(),  aes(col = Morph, fill =Morph), dotsize = 1.1)+
-    geom_boxplot(width = 0.25, col = 'grey50', outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols)+ 
+    scale_fill_manual(values=fills)+
+    new_scale_colour() +
+    geom_boxplot( aes(col =Morph), width = 0.25, outlier.shape = NA, fill = NA) + 
+    scale_color_manual(values=cols_box)+ 
     geom_errorbar(data = llpcv_, aes(ymin = lwr, ymax = upr), width = 0, position = position_dodge(width = 0.25), col = 'red' ) +
     geom_point(data = llpcv_, aes(x = Morph, y =CV), position = position_dodge(width = 0.25), col = 'red', size = size_) +
     facet_wrap(~part, scales = 'free_y', nrow = 1,drop=FALSE)+
-    scale_color_manual(values=cols)+ 
-    scale_fill_manual(values=fills)+
     xlab('Morph') +
     scale_y_continuous('Coefficient of variation', expand = c(0, 0))+
     guides(x =  guide_axis(angle = -15)) +
@@ -533,6 +542,6 @@
   blank = ggplot() + theme_void() 
   ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(10,92.9, 7.1+4.3))
   ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
-  ggsave('Outputs/Fig_2_width-180mm_v5.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
-  ggsave('Outputs/Fig_2_width-180mm_v5.jpg',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_2_width-180mm_v7.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_2_width-180mm_v7.jpg',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
 # END
