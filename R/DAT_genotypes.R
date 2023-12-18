@@ -59,6 +59,7 @@ require(reshape2)
     nn[ OriginalRing== 'G 5.0 - 14 -221', OriginalRing := 'G1221'] 
     nn[ OriginalRing== 'AO 3999-18-4-NL 6.5', OriginalRing := 'AO3999-18-4-NL'] 
 
+  #nn$Ruff8a = nn$Ruff8b = NULL
   fwrite(nn,file = 'Data/Dat_GenotypesRuff.txt', sep="\t")
   fwrite(nn[OriginalRing %in% b], file = "Data/Dat_GenotypesRuff_sampled.txt", sep = "\t", col.names = FALSE)
 

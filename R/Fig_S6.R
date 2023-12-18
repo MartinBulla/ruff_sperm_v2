@@ -26,7 +26,7 @@
       dd1 = dd[month == 'June']
       dd2 = dd[month == 'May']
       ddx = rbind(dd1,dd2[!bird_ID%in%dd1$bird_ID])
-    
+ 
     # VAP
       m = lm(scale(VAP) ~ scale(log(motileCount)) + Morph, ddx)
       #summary(m)
@@ -240,6 +240,125 @@
     llvpx_b = data.table(do.call(rbind, lvpx_b))
     llvpx_b[, motility := factor(motility, levels = (c("Curvilinear", "Straight line", "Average path")))]
     llvpx_b[, Morph := factor(Morph, levels = rev(c("Independent", "Satellite", "Faeder")))]
+
+  # motility 1c - control for access to females
+    lvx_c <- list()
+    lvpx_c <- list()
+    d[, motileCount_ln := scale(log(motileCount))]
+    dd <- d[!Morph %in% "Zebra finch"]
+
+    # use June values and for 4 males without June, May
+    dd1 <- dd[month == "June"]
+    dd2 <- dd[month == "May"]
+    ddx <- rbind(dd1, dd2[!bird_ID %in% dd1$bird_ID])
+
+    # specify access to females
+    ddx[location == 9 & avi %in% c(1, 2), access_to_females := "partial"]
+    ddx[treat == "prison", access_to_females := "none"]
+    ddx[is.na(access_to_females), access_to_females := "continuous"]
+    ddx[, access_to_females := factor(access_to_females, levels = c("none", "partial", "continuous"))]
+
+    # VAP
+    m <- lm(scale(VAP) ~ scale(log(motileCount)) + access_to_females + Morph, ddx)
+    # summary(m)
+    # plot(allEffects(m))
+    bsim <- sim(object = m, n.sims = nsim)
+
+    mb <- data.table(bsim@coef)
+    names(mb) <- c("int", "n", "a_p", "a_c", "s", "f")
+    mb[, FrelS := (int + f) - (int + s)]
+    v <- c(apply(bsim@coef, 2, quantile, prob = c(0.5))[5:6], median(mb$FrelS))
+    lwr <- c(apply(bsim@coef, 2, quantile, prob = c(0.025))[5:6], quantile(mb$FrelS, prob = 0.025))
+    upr <- c(apply(bsim@coef, 2, quantile, prob = c(0.975))[5:6], quantile(mb$FrelS, prob = 0.975))
+
+    lvx_c[["VAP"]] <- data.frame(response = "Average path", effect = effects_, estimate = v, lwr = lwr, upr = upr)
+
+    # get predictions
+    m <- lm(scale(VAP) ~ motileCount_ln + access_to_females + Morph, ddx)
+    bsim <- sim(m, n.sim = nsim)
+    v <- apply(bsim@coef, 2, quantile, prob = c(0.5))
+    newD <- data.frame(motileCount_ln = mean(ddx$motileCount_ln), access_to_females = unique(ddx$access_to_females), Morph = unique(b$Morph)) # values to predict for
+    X <- model.matrix(~ motileCount_ln + access_to_females + Morph, data = newD) # exactly the model which was used has to be specified here
+    newD$pred <- (X %*% v)
+    predmatrix <- matrix(nrow = nrow(newD), ncol = nsim)
+    for (j in 1:nsim) {
+      predmatrix[, j] <- (X %*% bsim@coef[j, ])
+    }
+    predmatrix[predmatrix < 0] <- 0
+    newD$lwr <- apply(predmatrix, 1, quantile, prob = 0.025)
+    newD$upr <- apply(predmatrix, 1, quantile, prob = 0.975)
+    newD$motility <- "Average path"
+    lvpx_c[["vap"]] <- data.table(newD)
+    # VSL
+    m <- lm(scale(VSL) ~ scale(log(motileCount)) + access_to_females + Morph, ddx)
+    # summary(m)
+    # plot(allEffects(m))
+    bsim <- sim(object = m, n.sims = nsim)
+
+    mb <- data.table(bsim@coef)
+    names(mb) <- c("int", "n", "a_p", "a_c", "s", "f")
+    mb[, FrelS := (int + f) - (int + s)]
+    v <- c(apply(bsim@coef, 2, quantile, prob = c(0.5))[5:6], median(mb$FrelS))
+    lwr <- c(apply(bsim@coef, 2, quantile, prob = c(0.025))[5:6], quantile(mb$FrelS, prob = 0.025))
+    upr <- c(apply(bsim@coef, 2, quantile, prob = c(0.975))[5:6], quantile(mb$FrelS, prob = 0.975))
+
+    lvx_c[["VSL"]] <- data.frame(response = "Straight line", effect = effects_, estimate = v, lwr = lwr, upr = upr)
+
+    # get predictions
+    m <- lm(VSL ~ motileCount_ln + access_to_females + Morph, ddx)
+    bsim <- sim(m, n.sim = nsim)
+    v <- apply(bsim@coef, 2, quantile, prob = c(0.5))
+    newD <- data.frame(motileCount_ln = mean(ddx$motileCount_ln), access_to_females = unique(ddx$access_to_females), Morph = unique(b$Morph)) # values to predict for
+    X <- model.matrix(~ motileCount_ln + access_to_females + Morph, data = newD) # exactly the model which was used has to be specified here
+    newD$pred <- (X %*% v)
+    predmatrix <- matrix(nrow = nrow(newD), ncol = nsim)
+    for (j in 1:nsim) {
+      predmatrix[, j] <- (X %*% bsim@coef[j, ])
+    }
+    predmatrix[predmatrix < 0] <- 0
+    newD$lwr <- apply(predmatrix, 1, quantile, prob = 0.025)
+    newD$upr <- apply(predmatrix, 1, quantile, prob = 0.975)
+    newD$motility <- "Straight line"
+    lvpx_c[["VSL"]] <- data.table(newD)
+    # VCL
+    m <- lm(scale(VCL) ~ scale(log(motileCount)) + access_to_females + Morph, ddx)
+    # summary(m)
+    # plot(allEffects(m))
+    bsim <- sim(object = m, n.sims = nsim)
+
+    mb <- data.table(bsim@coef)
+    names(mb) <- c("int", "n", "a_p", "a_c", "s", "f")
+    mb[, FrelS := (int + f) - (int + s)]
+    v <- c(apply(bsim@coef, 2, quantile, prob = c(0.5))[5:6], median(mb$FrelS))
+    lwr <- c(apply(bsim@coef, 2, quantile, prob = c(0.025))[5:6], quantile(mb$FrelS, prob = 0.025))
+    upr <- c(apply(bsim@coef, 2, quantile, prob = c(0.975))[5:6], quantile(mb$FrelS, prob = 0.975))
+
+    lvx_c[["VCL"]] <- data.frame(response = "Curvilinear", effect = effects_, estimate = v, lwr = lwr, upr = upr)
+
+    # get predictions
+    m <- lm(VCL ~ motileCount_ln + access_to_females + Morph, ddx)
+    bsim <- sim(m, n.sim = nsim)
+    v <- apply(bsim@coef, 2, quantile, prob = c(0.5))
+    newD <- data.frame(motileCount_ln = mean(ddx$motileCount_ln), access_to_females = unique(ddx$access_to_females), Morph = unique(b$Morph)) # values to predict for
+    X <- model.matrix(~ motileCount_ln + access_to_females + Morph, data = newD) # exactly the model which was used has to be specified here
+    newD$pred <- (X %*% v)
+    predmatrix <- matrix(nrow = nrow(newD), ncol = nsim)
+    for (j in 1:nsim) {
+      predmatrix[, j] <- (X %*% bsim@coef[j, ])
+    }
+    predmatrix[predmatrix < 0] <- 0
+    newD$lwr <- apply(predmatrix, 1, quantile, prob = 0.025)
+    newD$upr <- apply(predmatrix, 1, quantile, prob = 0.975)
+    newD$motility <- "Curvilinear"
+    lvpx_c[["VCL"]] <- data.table(newD)
+
+    llvx_c <- data.table(do.call(rbind, lvx_c))
+    llvx_c[, effect := factor(effect, levels = c("Faeder relative to satellite", "Faeder relative to independent", "Satellite relative to independent"))]
+    llvx_c[, response := factor(response, levels = rev(c("Curvilinear", "Straight line", "Average path")))]
+
+    llvpx_cc <- data.table(do.call(rbind, lvpx_c))
+    llvpx_cc[, motility := factor(motility, levels = (c("Curvilinear", "Straight line", "Average path")))]
+    llvpx_cc[, Morph := factor(Morph, levels = rev(c("Independent", "Satellite", "Faeder")))]
 
   # motility 2 - mixed model
     lvq = list()
@@ -537,12 +656,14 @@
   
   llvx[,model := 'linear, June recordings']
   llvx_b[,model := 'mixed, June recordings, control for aviary']
+  llvx_c[, model := 'linear, June recordings, control for access to \u2640']
   llvq[,model := 'mixed, all recordings']
   llvm[,model := 'mixed, all recordings & control for month']
   llvs[,model := 'mixed, all recordings & control for month & issues']
         
-  xqm = rbind(llvx, llvx_b, llvq, llvm, llvs)
-  xqm[, model := factor(model, levels=c('mixed, all recordings & control for month & issues','mixed, all recordings & control for month', 'mixed, all recordings','mixed, June recordings, control for aviary', "linear, June recordings"))] 
+  xqm = rbind(llvx, llvx_b, llvx_c, llvq, llvm, llvs)
+  xqm[, model := factor(model, levels = c("mixed, all recordings & control for month & issues", "mixed, all recordings & control for month", "mixed, all recordings", "mixed, June recordings, control for aviary", "linear, June recordings, control for access to \u2640", "linear, June recordings"))]
+  #save(file = here::here('freeze/Data/Fig_S6_motil_pred.Rdata'), xqm)
 
   # morpho - averages
     l = list()
@@ -901,8 +1022,9 @@
   llll[response == 'Midpiece_rel', response:='Midpiece\n(relative)']
   llll[response == 'Flagellum_rel', response:='Flagellum\n(relative)']
   llll[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Midpiece","Tail","Head", "Flagellum","Total","Midpiece\n(relative)","Flagellum\n(relative)")))] 
-  
-# Fig SE
+   # save(file = here::here('freeze/Data/Fig_S6_morpho_pred.Rdata'), llll)
+
+# plot
   cols_=pal_jco()(3)
   gV = 
   ggplot(xqm, aes(y = response, x = estimate, col = effect, fill = effect, shape = model)) +  
@@ -912,7 +1034,7 @@
     scale_x_continuous(limits = c(-1.5, 2), expand = c(0, 0))+
     scale_color_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     scale_fill_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
-    scale_shape_manual(name = 'Model & data', values =c(25, 24,23,22,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'), order = 0,nrow=5,byrow=TRUE))+
+    scale_shape_manual(name = 'Model & data', values =c(25, 24,23,22,21,8), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'), order = 0,nrow=6,byrow=TRUE))+
     labs(y = NULL, x = "Standardized effect size", subtitle = 'Velocity')+
     #guides(col=, shape = )+#,shape = guide_legend(nrow=4,byrow=TRUE,reverse = TRUE))+
     #annotate(geom="text", x=0.65, y=3.13, label="Satellite\nrelative to\nindependent", color=cols_[3],hjust = 0, size = 3.25) +
@@ -971,7 +1093,7 @@
   
   ggA = ggarrange(
     gV,gM,
-    nrow=2, heights=c(3.5, 6.4), align = 'v'
+    nrow=2, heights=c(3.6, 6.4), align = 'v'
     )
   ggsave('Outputs/Fig_S6_width-110mm.png',ggA, width = 11/(5/7), height =20/(5/7), units = 'cm', bg="white", dpi = 600)
 
