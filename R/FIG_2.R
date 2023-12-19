@@ -534,7 +534,7 @@
     annotation_custom(gf, xmin=0.064+0.1+right, xmax=0.116+0.1+right, ymin=ymin_) #+
 
     #annotation_custom(gi, xmin=0.064+2*right+right2, xmax=0.116+2*right+right2, ymin=ymin_) + 
-    #annotation_custom(gs, xmin=0.064+0.05+2*right+right2, xmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
+    #annotation_custom(gs, xmin=0.064+0.05+2*right+right2, sxmax=0.116+0.05+2*right+right2, ymin=ymin_) + 
     #annotation_custom(gf, xmin=0.064+0.1+2*right+right2, xmax=0.116+0.1+2*right+right2, ymin=ymin_) 
   #ggExp   
   #ggsave('Outputs/Fig_3b_130mm_v1.png',ggExp, width = 13/(5/7), height =13, units = 'cm', bg="white", dpi = 600)
