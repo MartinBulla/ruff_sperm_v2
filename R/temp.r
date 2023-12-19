@@ -1,12 +1,3 @@
-  
-  fig <- function(p, fig, w, h, u = 'cm', ...) {
-  png(file = glue("./Outputs/{fig}.png"), width = w, height = h, units = u, res = 300)
-   par(mar = c(0.25, 0, 0, 1.2)
-   , oma = c(2.1, 2.2, 0.2, 2.4), ps = 12, mgp = c(1.2, 0.35, 0), las = 1, cex = 1, col.axis = "black", font.main = 1, col.lab = "black", col.main = "black", fg = "black", cex.lab = 0.6, cex.main = 0.7, cex.axis = 0.5, tcl = -0.1, bty = "n", xpd = TRUE, lwd = 0.5)
-    plot(p)
-    dev.off()
-  }
-  
   # CV
   m = lm(scale(Length_avg) ~ Morph, a[part == i])
 
