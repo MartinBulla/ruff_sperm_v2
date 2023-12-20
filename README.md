@@ -1,4 +1,4 @@
-## Supporting information for "Sperm traits of the three genetic morphs in the ruff sandpiper "
+## Supporting information for "Differences in sperm swimming speed and morphology between the three genetic morphs in the ruff sandpiper"
 
 ![Satellite](./Illustrations/morphs.png)
 
