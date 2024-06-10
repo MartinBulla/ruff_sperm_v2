@@ -1,4 +1,4 @@
-## Supporting information for "Differences in sperm swimming speed and morphology between the three genetic morphs in the ruff sandpiper"
+## Supporting information for "Sperm swimming speed and morphology differ slightly among the three genetic morphs of ruff sandpiper (*Calidris pugnax*)"
 
 ![Satellite](./Illustrations/morphs.png)
 
