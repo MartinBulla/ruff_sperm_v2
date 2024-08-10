@@ -1,6 +1,6 @@
 ---
 title: "Example recordings of ruff, zebra finch and cockatiel sperm motility"  
-author: "Martin Bulla"  
+author: "xx"  
 date: "`r Sys.time()`"
 output:
    html_document: 

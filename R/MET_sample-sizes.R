@@ -67,5 +67,11 @@
               lty = 3, col = 'red')+
     labs(x = 'Coefficient of varation based on five sperm', y = 'Coefficient of varation based on ten sperm')
 
-
+# prop_motile
+  source(here::here('R/DAT_prepare.R'))
+  summary(d$prop_motile)
+  summary(d$prop_smotile[d$Morph%in%'Independent'])
+  summary(d$prop_motile[d$Morph%in%'Satellite'])
+  summary(d$prop_motile[d$Morph%in%'Faeder'])
+  ggplot(d, aes(x = Morph, y = prop_motile)) + geom_boxplot()
 # END

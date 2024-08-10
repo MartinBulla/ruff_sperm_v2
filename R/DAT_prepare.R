@@ -123,22 +123,22 @@
   d[is.na(treat), treat := "mixed"]
 
 # prepare for correlations and repeatability
-  bw = reshape(b[, .(bird_ID, Morph, age, datetime, month, location, avi, loc_avi, sample_ID, sperm_ID, VAP, VSL, VCL, motileCount, part, Length_µm)], idvar = c("bird_ID", "Morph", "age", "datetime", "month", "location", "avi", "loc_avi","sample_ID", "sperm_ID", "VAP", "VSL", "VCL", "motileCount"), timevar = "part", direction = "wide")
+  bw = reshape(b[, .(bird_ID, Morph, age, datetime, month, location, avi, loc_avi, sample_ID, sperm_ID, VAP, VSL, VCL, motileCount, prop_motile, part, Length_µm)], idvar = c("bird_ID", "Morph", "age", "datetime", "month", "location", "avi", "loc_avi","sample_ID", "sperm_ID", "VAP", "VSL", "VCL", "motileCount", "prop_motile"), timevar = "part", direction = "wide")
   setnames(bw,old = c('Length_µm.Acrosome', 'Length_µm.Nucleus','Length_µm.Head','Length_µm.Midpiece','Length_µm.Tail','Length_µm.Flagellum', 'Length_µm.Total'), new = c('Acrosome', 'Nucleus', 'Head','Midpiece', 'Tail','Flagellum','Total'))
   # add relative measures
     bw[, Midpiece_rel := Midpiece/Total]
     bw[, Flagellum_rel := Flagellum/Total]
 
- dw = reshape(d[bird_ID %in% d[duplicated(bird_ID), bird_ID], .(bird_ID, species, Morph, age, month, location, avi, loc_avi, VAP, VSL, VCL, motileCount, motileCount_ln)], idvar = c("bird_ID", "species", "Morph", "age"), timevar = "month", direction = "wide")
+ dw = reshape(d[bird_ID %in% d[duplicated(bird_ID), bird_ID], .(bird_ID, species, Morph, age, month, location, avi, loc_avi, VAP, VSL, VCL, motileCount, motileCount_ln,prop_motile)], idvar = c("bird_ID", "species", "Morph", "age"), timevar = "month", direction = "wide")
 
 # mean/male dataset
-  a = b[, list(mean(Length_µm), mean(VAP), mean(VSL), mean(VCL), mean(motileCount)), by = list(month, location, avi, loc_avi, bird_ID, Morph, age, part)]
-   setnames(a, old = c('V1', 'V2','V3','V4','V5'), new = c('Length_avg', 'VAP', 'VSL', 'VCL', 'motileCount'))
+  a = b[, list(mean(Length_µm), mean(VAP), mean(VSL), mean(VCL), mean(motileCount), mean(prop_motile)), by = list(month, location, avi, loc_avi, bird_ID, Morph, age, part)]
+   setnames(a, old = c('V1', 'V2','V3','V4','V5','V6'), new = c('Length_avg', 'VAP', 'VSL', 'VCL', 'motileCount','prop_motile'))
   a1 = data.table(bird_ID = unique(a$bird_ID), blind = c(rep(c('Independent','Satellite', 'Faeder'), floor(length(unique(a$bird_ID))/3)), 'Independent','Satellite'))
   a = merge(a,a1, all.x = TRUE)
 
-  aw = reshape(a, idvar = c("month", "location", "avi", "loc_avi","bird_ID", "Morph", "blind", "age", "VAP", "VSL", "VCL", "motileCount"), timevar = "part", direction = "wide")
-  names(aw) = c("bird_ID", "month", "location", "avi", "loc_avi", "Morph", "age", "VAP", "VSL", "VCL", "motileCount", "blind", as.character(unique(a$part)))
+  aw = reshape(a, idvar = c("month", "location", "avi", "loc_avi","bird_ID", "Morph", "blind", "age", "VAP", "VSL", "VCL", "motileCount",'prop_motile'), timevar = "part", direction = "wide")
+  names(aw) = c("bird_ID", "month", "location", "avi", "loc_avi", "Morph", "age", "VAP", "VSL", "VCL", "motileCount",'prop_motile', "blind", as.character(unique(a$part)))
   # add relative measures
   aw[, Midpiece_rel := Midpiece/Total]
   aw[, Flagellum_rel := Flagellum/Total]
@@ -166,12 +166,12 @@
     cv_ = merge(cv_,z[,.(sampleid, HL)], by.x = 'bird_ID', by.y = 'sampleid')
 
 # dataset for relative measurements
-  bt = b[part == 'Total',.(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln)]
+  bt = b[part == 'Total',.(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln, prop_motile)]
   
-  b1 = b[part%in%c('Midpiece'),.(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln, location, avi, loc_avi)]
+  b1 = b[part%in%c('Midpiece'),.(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln, prop_motile, location, avi, loc_avi)]
   b1[, Length_rel := Length_µm/bt$Length_µm]
  
-  b2 = b[part %in% c("Flagellum"), .(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln, location, avi, loc_avi)]
+  b2 = b[part %in% c("Flagellum"), .(Morph, bird_ID, sample_ID, sperm_ID, part, Length_µm, VAP, VSL, VCL, motileCount, motileCount_ln, prop_motile, location, avi, loc_avi)]
   b2[, Length_rel := Length_µm/bt$Length_µm]
   
   br = rbind(b1,b2)
@@ -180,12 +180,12 @@
   br[location == 9 & avi == 3, treat := "prison"]
   br[is.na(treat), treat := "mixed"]
 
-  at = a[part == "Total", .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount)]
+  at = a[part == "Total", .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount, prop_motile)]
   
-  a1 = a[part %in% c("Midpiece"), .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount, location, avi, loc_avi)]
+  a1 = a[part %in% c("Midpiece"), .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount, prop_motile, location, avi, loc_avi)]
   a1[, Length_rel := Length_avg/at$Length_avg]
  
-  a2 = a[part %in% c("Flagellum"), .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount, location, avi, loc_avi)]
+  a2 = a[part %in% c("Flagellum"), .(Morph, bird_ID, part, Length_avg, VAP, VSL, VCL, motileCount, prop_motile, location, avi, loc_avi)]
   a2[, Length_rel := Length_avg/at$Length_avg]
   
   ar = rbind(a1,a2)
