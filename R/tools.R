@@ -221,7 +221,85 @@ using<-function(...) {
         x[is.na(x)] = ""
         return(x)
       } 
-       
+# model ass
+m_ass_s = function(name = 'define', title = 'define', binomial = FALSE, mo = m0, dat = d, fixed = NULL, categ = NULL, trans = NULL, spatial = TRUE, temporal = TRUE, PNG = TRUE, outdir = 'outdir'){
+    # binomial - shall a plot visualizing response means per sequence of fitted data be visualized?
+    # trans - vector containing transformation function used to transform each predictor
+   if(PNG == TRUE){
+    png(paste(outdir,name, ".png", sep=""), width=6,height=9,units="in",res=600)
+     }else{dev.new(width=6,height=9)}
+   
+   n = length(fixed)+length(categ) + 4 + if(temporal==TRUE){1}else{0} + if(spatial==TRUE){1}else{0} 
+   par(mfrow=c(ceiling(n/3),3))
+   
+   scatter.smooth(fitted(mo),resid(mo),col='grey');abline(h=0, lty=2, col ='red')
+   scatter.smooth(fitted(mo),sqrt(abs(resid(mo))), col='grey')
+   if(binomial == TRUE){
+      plot(fitted(mo), jitter(mo$model[,1], amount=0.05), xlab="Fitted values", ylab="Original values", las=1, cex.lab=1, cex=0.8,  main=list(paste("Probability of", names(mo$model)[1]),cex=0.8) )
+      abline(0,1, lty=3)
+      t.breaks <- cut(fitted(mo), quantile(fitted(mo)))
+      means <- tapply(mo$model[,1], t.breaks, mean)
+      semean <- function(x) sd(x)/sqrt(length(x))
+      means.se <- tapply(mo$model[,1], t.breaks, semean)
+      points(quantile(fitted(mo),c(0.125,0.375,0.625,0.875)), means, pch=16, col="orange")
+      segments(quantile(fitted(mo),c(0.125,0.375,0.625,0.875)), means-2*means.se, quantile(fitted(mo),c(0.125,0.375,0.625,0.875)), means+2*means.se,lwd=2, col="orange")
+   }
+
+   qqnorm(resid(mo), main=list("Normal Q-Q Plot: residuals", cex=0.8),col='grey');qqline(resid(mo))
+  
+   # variables
+     scatter={} 
+     for (i in rownames(summary(mo)$coef)) {
+          #i = "lat_abs"
+        j=sub("\\).*", "", sub(".*\\(", "",i)) 
+        scatter[length(scatter)+1]=j
+      }
+      x = data.frame(scatter=unique(scatter)[2:length(unique(scatter))],
+                      log_ = grepl("log",rownames(summary(mo)$coef)[2:length(unique(scatter))]), stringsAsFactors = FALSE)
+      if(length(fixed)>0){
+      for (i in 1:length(fixed)){
+          jj =fixed[i]
+          variable=dat[, ..jj][[1]]
+          if(trans[i]=='log'){
+          scatter.smooth(resid(mo)~log(variable),xlab=paste('log(',jj,')',sep=''), col = 'grey');abline(h=0, lwd=1, lty = 2, col ='red')
+          }else if(trans[i]=='abs'){
+          scatter.smooth(resid(mo)~abs(variable),xlab=paste('abs(',jj,')',sep=''), col = 'grey');abline(h=0, lwd=1, lty = 2, col ='red')
+          }else if(trans[i]=='sin'){
+            scatter.smooth(resid(mo)~sin(variable),xlab=paste('sin(',jj,')',sep=''), col = 'grey');abline(h=0, lwd=1, lty = 2, col ='red')
+          }else if(trans[i]=='cos'){
+            scatter.smooth(resid(mo)~cos(variable),xlab=paste('cos(',jj,')',sep=''), col = 'grey');abline(h=0, lwd=1, lty = 2, col ='red')
+          } else {  
+          scatter.smooth(resid(mo)~variable,xlab=jj,col = 'grey');abline(h=0, lwd=1, lty = 2, col ='red')
+        }
+       }
+      }
+      if(length(categ)>0){
+        for(i in categ){
+           variable=dat[, ..i][[1]]
+            boxplot(resid(mo)~variable, medcol='grey', whiskcol='grey', staplecol='grey', boxcol='grey', outcol='grey');abline(h=0, lty=3, lwd=1, col = 'red')
+           }
+      }     
+          
+   if(temporal == TRUE){
+        acf(resid(mo), type="p", main=list("Temporal autocorrelation:\npartial series residual",cex=0.8))
+        }
+   if(spatial == TRUE){    
+      spdata=data.frame(resid=resid(mo), x=dat$Longitude, y=dat$Latitude)
+        spdata$col=ifelse(spdata$resid<0,rgb(83,95,124,100, maxColorValue = 255),ifelse(spdata$resid>0,rgb(253,184,19,100, maxColorValue = 255), 'red'))
+        #cex_=c(1,2,3,3.5,4)
+        cex_=c(1,1.5,2,2.5,3)
+        spdata$cex=as.character(cut(abs(spdata$resid), 5, labels=cex_))
+      plot(spdata$x, spdata$y,col=spdata$col, cex=as.numeric(spdata$cex), pch= 16, main=list('Spatial distribution of residuals', cex=0.8))
+        legend("topleft", pch=16, legend=c('>0','<0'), ,col=c(rgb(83,95,124,100, maxColorValue = 255),rgb(253,184,19,100, maxColorValue = 255)), cex=0.8)
+      plot(spdata$x[spdata$resid<0], spdata$y[spdata$resid<0],col=spdata$col[spdata$resid<0], cex=as.numeric(spdata$cex[spdata$resid<0]), pch= 16, main=list('Spatial distribution of residuals (<0)', cex=0.8))
+      plot(spdata$x[spdata$resid>=0], spdata$y[spdata$resid>=0],col=spdata$col[spdata$resid>=0], cex=as.numeric(spdata$cex[spdata$resid>=0]), pch= 16, main=list('Spatial distribution of residuals (>=0)', cex=0.8))
+        }
+   
+   mtext(title, side = 3, line = -1, cex=0.7,outer = TRUE)
+   
+   if(PNG==TRUE){dev.off()}
+  }  
+
 # prepare images
   img_i=readPNG('Illustrations/independent.png')
   img_s=readPNG('Illustrations/satelite.png')

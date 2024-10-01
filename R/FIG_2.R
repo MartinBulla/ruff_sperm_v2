@@ -68,7 +68,11 @@
                   newD$upr <- apply(predmatrix, 1, quantile, prob=0.975)
                   #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
       newD$motility = 'Average path'
-      lvpx[['vap']] = data.table(newD)   
+      lvpx[['vap']] = data.table(newD)  
+      
+      # get model assumptions
+      ddx[, res := resid(m)] 
+      m_ass_s('Fig_2_VAP', 'VAP', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
     # VSL
       m = lm(scale(VSL) ~ scale(log(motileCount))  + Morph, ddx)
       #summary(m)
@@ -98,6 +102,10 @@
                   #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
       newD$motility = 'Straight line'
       lvpx[['VSL']] = data.table(newD)
+      
+      # get model assumptions
+      ddx[, res := resid(m)] 
+      m_ass_s('Fig_2_VSL', 'VSL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
     # VCL
       m = lm(scale(VCL) ~scale(log(motileCount)) + Morph, ddx)
       #summary(m)
@@ -127,7 +135,12 @@
                   #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
       newD$motility = 'Curvilinear'
       lvpx[['VCL']] = data.table(newD) 
-               
+
+            
+      # get model assumptions
+      ddx[, res := resid(m)] 
+      m_ass_s('Fig_2_VCL', 'VCL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
+
     llvx = data.table(do.call(rbind,lvx) ) 
     llvx[, effect := factor(effect, levels=c("Faeder relative to satellite","Faeder relative to independent","Satellite relative to independent"))] 
     llvx[, response := factor(response, levels=rev(c("Curvilinear", "Straight line", "Average path")))] 
@@ -175,6 +188,11 @@
                       #newD$pred <- apply(predmatrix, 1, quantile, prob=0.5)
       newD$part=i
       lp[[i]] = data.table(newD)
+
+      # get model assumptions
+      ai = a[part == i]
+      ai[, res := resid(m)] 
+      m_ass_s(name = paste0('Fig_2_', i), title = i, mo = m, dat = ai,  categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
 
       print(i)     
       }          
