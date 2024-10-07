@@ -1,0 +1,37 @@
+response,effect,es_ci.length,es_ci.CV
+Acrosome,Intercept (independent), 0.02 (-0.24 -0.28),-0.10 (-0.36 -0.16)
+Acrosome,Satellite relative to independent,-0.07 (-0.56 -0.40), 0.26 (-0.22 -0.74)
+Acrosome,Faeder relative to independent, 0.05 (-0.73 -0.81), 0.34 (-0.42 -1.09)
+Acrosome,Faeder relative to satellite, 0.13 (-0.70 -0.94), 0.07 (-0.73 -0.88)
+Nucleus,Intercept (independent), 0.12 (-0.14 -0.38), 0.09 (-0.16 -0.35)
+Nucleus,Satellite relative to independent,-0.46 (-0.91 -0.01),-0.29 (-0.76 -0.20)
+Nucleus,Faeder relative to independent, 0.02 (-0.73 -0.77),-0.14 (-0.89 -0.62)
+Nucleus,Faeder relative to satellite, 0.48 (-0.34 -1.28), 0.15 (-0.66 -0.97)
+Midpiece,Intercept (independent),-0.21 (-0.47 -0.03),-0.05 (-0.32 -0.21)
+Midpiece,Satellite relative to independent, 0.41 (-0.04 -0.86), 0.27 (-0.22 -0.76)
+Midpiece,Faeder relative to independent, 1.19 ( 0.46 -1.90),-0.22 (-0.99 -0.54)
+Midpiece,Faeder relative to satellite, 0.77 ( 0.00 -1.55),-0.49 (-1.29 -0.34)
+Tail,Intercept (independent),-0.20 (-0.44 -0.06), 0.01 (-0.25 -0.26)
+Tail,Satellite relative to independent, 0.65 ( 0.19 -1.11),-0.14 (-0.61 -0.34)
+Tail,Faeder relative to independent, 0.23 (-0.49 -0.96), 0.33 (-0.45 -1.06)
+Tail,Faeder relative to satellite,-0.42 (-1.21 -0.39), 0.46 (-0.36 -1.27)
+Total,Intercept (independent),-0.18 (-0.43 -0.08), 0.04 (-0.21 -0.30)
+Total,Satellite relative to independent, 0.48 ( 0.03 -0.95),-0.27 (-0.74 -0.20)
+Total,Faeder relative to independent, 0.55 (-0.17 -1.30), 0.35 (-0.38 -1.10)
+Total,Faeder relative to satellite, 0.06 (-0.72 -0.88), 0.62 (-0.15 -1.39)
+Head,Intercept (independent), 0.11 (-0.13 -0.37), 0.01 (-0.25 -0.28)
+Head,Satellite relative to independent,-0.44 (-0.91 -0.02),-0.04 (-0.52 -0.44)
+Head,Faeder relative to independent, 0.03 (-0.72 -0.78), 0.03 (-0.73 -0.76)
+Head,Faeder relative to satellite, 0.47 (-0.33 -1.25), 0.08 (-0.75 -0.87)
+Flagellum,Intercept (independent),-0.24 (-0.49 -0.01), 0.00 (-0.27 -0.27)
+Flagellum,Satellite relative to independent, 0.70 ( 0.25 -1.15),-0.12 (-0.59 -0.36)
+Flagellum,Faeder relative to independent, 0.57 (-0.14 -1.30), 0.39 (-0.37 -1.13)
+Flagellum,Faeder relative to satellite,-0.13 (-0.91 -0.65), 0.51 (-0.29 -1.34)
+Midpiece_rel,Intercept (independent),-0.12 (-0.37 -0.13),
+Midpiece_rel,Satellite relative to independent, 0.14 (-0.32 -0.63),
+Midpiece_rel,Faeder relative to independent, 0.97 ( 0.23 -1.69),
+Midpiece_rel,Faeder relative to satellite, 0.82 ( 0.05 -1.57),
+Flagellum_rel,Intercept (independent),-0.23 (-0.48 -0.01),
+Flagellum_rel,Satellite relative to independent, 0.77 ( 0.31 -1.21),
+Flagellum_rel,Faeder relative to independent, 0.33 (-0.38 -1.03),
+Flagellum_rel,Faeder relative to satellite,-0.44 (-1.20 -0.33),

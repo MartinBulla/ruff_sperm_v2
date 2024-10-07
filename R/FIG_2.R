@@ -41,7 +41,6 @@
       #summary(m)
       #plot(allEffects(m))
       bsim = sim(object = m, n.sims = nsim)
-      
       mb = data.table(bsim@coef)
       names(mb) = c('int','n','s','f')
       mb[, FrelS:=(int+f)-(int+s)]
@@ -50,6 +49,8 @@
       upr = c(apply(bsim@coef, 2, quantile, prob=c(0.975))[3:4], quantile(mb$FrelS, prob = 0.975)) 
       
       lvx[['VAP']]=data.frame(response='Average path',effect=effects_,estimate=v, lwr=lwr, upr=upr)
+      #sum(mb$FrelS<0)/nsim
+      #sum(mb$f<0)/nsim
 
       # get predictions
       m = lm(VAP ~ motileCount_ln + Morph, ddx)

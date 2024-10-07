@@ -773,7 +773,7 @@
     ll = data.table(do.call(rbind,l) ) 
     ll[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
     ll[, effect := factor(effect, levels=c("Faeder relative to satellite","Faeder relative to independent","Satellite relative to independent"))] 
-    ll[, unit := 'male average']
+    ll[, unit := 'linear, male average']
     ll_ = ll[response %in%c("Acrosome", "Nucleus","Midpiece","Tail","Total")]
 
     llcv = data.table(do.call(rbind,lcv) ) 
@@ -914,7 +914,7 @@
     ll_b = data.table(do.call(rbind, l_b))
     ll_b[, response := factor(response, levels = rev(c("Acrosome", "Nucleus", "Head", "Midpiece", "Tail", "Flagellum", "Total", "Midpiece_rel", "Flagellum_rel")))]
     ll_b[, effect := factor(effect, levels = c("Faeder relative to satellite", "Faeder relative to independent", "Satellite relative to independent"))]
-    ll_b[, unit := "male average, control for aviary"]
+    ll_b[, unit := "mixed, male average, control for aviary"]
     ll__b = ll_b[response %in% c("Acrosome", "Nucleus", "Midpiece", "Tail", "Total")]
 
     llcv_b = data.table(do.call(rbind, lcv_b))
@@ -1007,7 +1007,7 @@
     lls = data.table(do.call(rbind,ls) ) 
     lls[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
     lls[, effect := factor(effect, levels=rev(c("Faeder relative to satellite","Faeder relative to independent","Satellite relative to independent")))]
-    lls[, unit := 'single sperm']
+    lls[, unit := 'mixed, single sperm']
 
     llps = data.table(do.call(rbind,lps) ) 
     llps[, part := factor(part, levels=rev(c("Acrosome", "Nucleus", "Head", "Midpiece","Tail","Flagellum","Total","Midpiece_rel","Flagellum_rel")))] 
@@ -1018,7 +1018,7 @@
     llpsr[, Morph := factor(Morph, levels=rev(c("Independent", "Satellite", "Faeder")))]
 
   llll = rbind(ll,ll_b, lls)  
-  llll[, unit := factor(unit, levels=(c("single sperm", "male average, control for aviary","male average")))] 
+  llll[, unit := factor(unit, levels=(c("mixed, single sperm", "mixed, male average, control for aviary","linear, male average")))] 
   llll[response == 'Midpiece_rel', response:='Midpiece\n(relative)']
   llll[response == 'Flagellum_rel', response:='Flagellum\n(relative)']
   llll[, response := factor(response, levels=rev(c("Acrosome", "Nucleus", "Midpiece","Tail","Head", "Flagellum","Total","Midpiece\n(relative)","Flagellum\n(relative)")))] 
@@ -1070,7 +1070,7 @@
     scale_fill_jco(guide = 'none')+
     #scale_color_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
     #scale_fill_jco(name = 'Contrast', guide = guide_legend(reverse = TRUE, order = 1,nrow=3,byrow=TRUE))+
-    scale_shape_manual(name = 'Data', values =c(23,22,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'),order = 0, nrow=3,byrow=TRUE))+
+    scale_shape_manual(name = 'Modedl & data', values =c(23,22,21), guide = guide_legend(reverse = TRUE, override.aes = list(fill = c('grey30'), col = 'grey30'),order = 0, nrow=3,byrow=TRUE))+
     labs(y = NULL, x = "Standardized effect size", subtitle = 'Morphology - length')+
 
     theme_bw() +
@@ -1079,7 +1079,7 @@
         legend.text=element_text(size=7.5, color = 'grey30'),
         #legend.spacing.y = unit(1, 'mm'),
         legend.key.height= unit(0.5,"line"),
-        legend.margin=margin(0,0,0,-60),
+        legend.margin=margin(0,0,0,-40),
         #legend.position=c(0.45,1.6),
 
         axis.ticks = element_blank(),
@@ -1095,6 +1095,6 @@
     gV,gM,
     nrow=2, heights=c(3.6, 6.4), align = 'v'
     )
-  ggsave('Outputs/Fig_S6_width-110mm.png',ggA, width = 11/(5/7), height =20/(5/7), units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_S6_width-110mm_rev.png',ggA, width = 11/(5/7), height =20/(5/7), units = 'cm', bg="white", dpi = 600)
 
 # END
