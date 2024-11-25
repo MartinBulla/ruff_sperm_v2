@@ -1,12 +1,12 @@
-## Supporting information for "Sperm swimming speed and morphology differ slightly among the three genetic morphs of ruff sandpiper (*Calidris pugnax*)"
+## Supporting information for "Sperm swimming speed and morphology differ slightly among the three genetic morphs of ruff sandpiper (*Calidris pugnax*), but show no clear polymorphism"
 
 ![Satellite](./Illustrations/morphs.png)
 
 ### **Overview**
 
-Contains data collection and preregistration protocols, recordings and pictures of sperm to measure sperm motility and morphology in the three ruff morphs, meta-data on individual males, raw data and computer code to generate outputs of the analysis for the paper ([preprint](https://www.biorxiv.org/content/10.1101/2023.07.27.550846v1)). 
+Contains data collection and preregistration protocols, recordings and pictures of sperm to measure sperm motility and morphology in the three ruff morphs, meta-data on individual males, raw data and computer code to generate outputs of the analysis for the [paper](https://www.frontiersin.org/journals/ecology-and-evolution/articles/10.3389/fevo.2024.1476254/abstract). 
 
-When using this content **PLEASE CITE** the [paper](https://www.biorxiv.org/content/10.1101/2023.07.27.550846v1) and [this repository](https://github.com/MartinBulla/ruff_sperm_v2).
+When using this content **PLEASE CITE** the [paper](https://www.frontiersin.org/journals/ecology-and-evolution/articles/10.3389/fevo.2024.1476254/abstract) and [this repository](https://github.com/MartinBulla/ruff_sperm_v2).
 
 ### **Files & Folders**
 [Supplement](https://nbviewer.org/github/MartinBulla/ruff_sperm_v2/blob/main/Supplement.pdf): pdf with supplementary methods, figures and tables
