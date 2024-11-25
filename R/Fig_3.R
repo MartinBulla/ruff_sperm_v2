@@ -1,6 +1,6 @@
 # =============================================================
 # ❗ Runs relative to the project's root directory, 
-# and exports Fig 2 into ./Outputs/
+# and exports Fig 3 into ./Outputs/
 # =============================================================
 
 # TOOLS
@@ -73,7 +73,7 @@
       
       # get model assumptions
       ddx[, res := resid(m)] 
-      m_ass_s('Fig_2_VAP', 'VAP', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
+      m_ass_s('Fig_3_VAP', 'VAP', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
     # VSL
       m = lm(scale(VSL) ~ scale(log(motileCount))  + Morph, ddx)
       #summary(m)
@@ -106,7 +106,7 @@
       
       # get model assumptions
       ddx[, res := resid(m)] 
-      m_ass_s('Fig_2_VSL', 'VSL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
+      m_ass_s('Fig_3_VSL', 'VSL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
     # VCL
       m = lm(scale(VCL) ~scale(log(motileCount)) + Morph, ddx)
       #summary(m)
@@ -140,7 +140,7 @@
             
       # get model assumptions
       ddx[, res := resid(m)] 
-      m_ass_s('Fig_2_VCL', 'VCL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
+      m_ass_s('Fig_3_VCL', 'VCL', mo = m, dat = ddx, fixed = 'motileCount_ln', trans = '', categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
 
     llvx = data.table(do.call(rbind,lvx) ) 
     llvx[, effect := factor(effect, levels=c("Faeder relative to satellite","Faeder relative to independent","Satellite relative to independent"))] 
@@ -193,7 +193,7 @@
       # get model assumptions
       ai = a[part == i]
       ai[, res := resid(m)] 
-      m_ass_s(name = paste0('Fig_2_', i), title = i, mo = m, dat = ai,  categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
+      m_ass_s(name = paste0('Fig_3_', i), title = i, mo = m, dat = ai,  categ = 'Morph', spatial = FALSE, outdir = here::here('Outputs/Model_Ass/'))
 
       print(i)     
       }          
@@ -561,6 +561,6 @@
   blank = ggplot() + theme_void() 
   ggB = ggarrange(blank, ggExp, blank, nrow=3, heights=c(10,92.9, 7.1+4.3))
   ggAll = ggarrange(ggA, ggB, ncol=2, widths=c(5,13))  
-  ggsave('Outputs/Fig_2_width-180mm_v7.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
-  ggsave('Outputs/Fig_2_width-180mm_v7.jpg',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_3_width-180mm_v7.png',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
+  ggsave('Outputs/Fig_3_width-180mm_v7.jpg',ggAll, width = 18/(5/7), height =16, units = 'cm', bg="white", dpi = 600)
 # END

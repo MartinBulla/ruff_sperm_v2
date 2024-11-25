@@ -1,6 +1,6 @@
 # =============================================================
 # ❗ Runs relative to the project's root directory,
-# and exports Fig 3 and S10 into ./Outputs/
+# and exports Fig 4 and S10 into ./Outputs/
 # =============================================================
 
 # TOOLS
@@ -112,7 +112,7 @@
   llvpx[, Motility := factor(Motility, levels=(c("Curvilinear", "Straight line", "Average path")))] 
   llvpx[, trait := factor(trait, levels=rev(c(c('Acrosome', 'Nucleus', 'Midpiece', 'Tail', 'Total', 'Head','Flagellum', 'Midpiece_rel', 'Flagellum_rel'))))] 
 
-# Figure 3
+# Figure 4
   llvx_ = llvx[effect == 'pred']
   llvx_[trait == 'Midpiece_rel', trait:='Midpiece\n(relative)']
   llvx_[trait == 'Flagellum_rel', trait:='Flagellum\n(relative)']
@@ -150,8 +150,8 @@
         panel.border = element_rect(color = 'grey70'),
         panel.grid.minor = element_blank()
         )    
-  ggsave("Outputs/Fig_3_width-40mnm.png", gEvir + theme(plot.tag = element_blank()), width = 4 / (5 / 7), height = 10, units = "cm", bg = "white", dpi = 600)
-  ggsave("Outputs/Fig_3_width-40mnm.jpg", gEvir + theme(plot.tag = element_blank()), width = 4 / (5 / 7), height = 10, units = "cm", bg = "white", dpi = 600)
+  ggsave("Outputs/Fig_4_width-40mnm.png", gEvir + theme(plot.tag = element_blank()), width = 4 / (5 / 7), height = 10, units = "cm", bg = "white", dpi = 600)
+  ggsave("Outputs/Fig_4_width-40mnm.jpg", gEvir + theme(plot.tag = element_blank()), width = 4 / (5 / 7), height = 10, units = "cm", bg = "white", dpi = 600)
 
 # Figure S10
   size_ =1.2
